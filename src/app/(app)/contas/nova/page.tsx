@@ -17,7 +17,7 @@ export default async function PaginaNovaConta() {
   const primeiraDaEmpresa = empresaInicial !== '' && !contas.some((c) => c.empresa.id === empresaInicial);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-xl">
       <CabecalhoPagina
         voltar={<LinkVoltar href="/contas">Contas</LinkVoltar>}
         titulo="Nova conta bancária"
