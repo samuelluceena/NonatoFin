@@ -5,7 +5,7 @@
  * com o extrato. Cada um valida no servidor (Server Action) e mostra os erros
  * no próprio campo.
  */
-import { ArrowDownToLine, ArrowLeftRight, ScanSearch } from 'lucide-react';
+import { ArrowDownLeft, ArrowDownToLine, ArrowLeftRight, ScanSearch } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ import { Campo, Entrada, Seletor, ariaCampo } from '@/components/ui/campo';
 import { CampoMoeda } from '@/components/ui/campo-moeda';
 import { CampoSaldo } from '@/components/ui/campo-saldo';
 import { Dialogo } from '@/components/ui/dialogo';
+import { Selo } from '@/components/ui/selo';
 import { Spinner } from '@/components/ui/spinner';
 import type { ResultadoAcao } from '@/lib/acoes/resultado';
 import { formatarData, type DataISO } from '@/lib/domain/datas';
@@ -175,24 +176,36 @@ function FormularioEntrada({
   return (
     <form
       id="form-salvar-entrada"
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-5"
       onSubmit={(e) => {
         e.preventDefault();
         onEnviar({ contaId, data, valorCentavos: valor, descricao });
       }}
     >
-      {contaFixaId === undefined && (
-        <Campo id="entrada-conta" rotulo="Conta" erro={erros.contaId}>
-          <Seletor {...ariaCampo('entrada-conta', erros.contaId)} value={contaId} onChange={(e) => setContaId(e.target.value)}>
-            <option value="">Selecione a conta</option>
-            {contas.map((c) => (
-              <option key={c.id} value={c.id}>
-                {variasEmpresas ? `${rotuloConta(c)} — ${c.empresa.apelido}` : rotuloConta(c)}
-              </option>
-            ))}
-          </Seletor>
+      <Selo tom="sucesso" className="self-start">
+        <ArrowDownLeft aria-hidden="true" /> Entrada
+      </Selo>
+      {/* O valor primeiro e em destaque: é o que se confere. */}
+      <Campo id="entrada-valor" rotulo="Valor" erro={erros.valorCentavos}>
+        <CampoMoeda {...ariaCampo('entrada-valor', erros.valorCentavos)} tamanho="destaque" valor={valor} onValorChange={setValor} />
+      </Campo>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Campo id="entrada-data" rotulo="Data" erro={erros.data} dica={prevista ? 'Data futura: fica como prevista.' : undefined}>
+          <Entrada {...ariaCampo('entrada-data', erros.data, prevista)} type="date" value={data} onChange={(e) => setData(e.target.value)} />
         </Campo>
-      )}
+        {contaFixaId === undefined && (
+          <Campo id="entrada-conta" rotulo="Conta" erro={erros.contaId}>
+            <Seletor {...ariaCampo('entrada-conta', erros.contaId)} value={contaId} onChange={(e) => setContaId(e.target.value)}>
+              <option value="">Selecione a conta</option>
+              {contas.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {variasEmpresas ? `${rotuloConta(c)} — ${c.empresa.apelido}` : rotuloConta(c)}
+                </option>
+              ))}
+            </Seletor>
+          </Campo>
+        )}
+      </div>
       <Campo id="entrada-descricao" rotulo="Descrição" erro={erros.descricao}>
         <Entrada
           {...ariaCampo('entrada-descricao', erros.descricao)}
@@ -202,14 +215,6 @@ function FormularioEntrada({
           autoComplete="off"
         />
       </Campo>
-      <div className="grid grid-cols-2 gap-3">
-        <Campo id="entrada-valor" rotulo="Valor" erro={erros.valorCentavos}>
-          <CampoMoeda {...ariaCampo('entrada-valor', erros.valorCentavos)} valor={valor} onValorChange={setValor} />
-        </Campo>
-        <Campo id="entrada-data" rotulo="Data" erro={erros.data} dica={prevista ? 'Data futura: fica como prevista.' : undefined}>
-          <Entrada {...ariaCampo('entrada-data', erros.data, prevista)} type="date" value={data} onChange={(e) => setData(e.target.value)} />
-        </Campo>
-      </div>
     </form>
   );
 }

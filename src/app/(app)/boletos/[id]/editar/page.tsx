@@ -29,7 +29,7 @@ export default async function PaginaEditarBoleto({ params }: PageProps<'/boletos
   const serie = lancamento.recorrencia ? await listarSerie(supabase, lancamento.recorrencia.serieId) : [];
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-xl">
       <CabecalhoPagina
         titulo="Editar boleto"
         subtitulo={
