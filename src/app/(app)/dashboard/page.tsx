@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { AlertTriangle, CheckCircle2, CircleAlert, Landmark } from 'lucide-react';
 import { BarrasComparativas } from '@/components/graficos/barras-comparativas';
 import { BarrasFornecedores } from '@/components/graficos/barras-fornecedores';
 import { ComposicaoStatus } from '@/components/graficos/composicao-status';
@@ -10,9 +9,10 @@ import { CabecalhoSecao } from '@/components/ui/cabecalho-secao';
 import { Cartao } from '@/components/ui/cartao';
 import { EstadoVazio } from '@/components/ui/estado-vazio';
 import { Metrica, PainelMetricas } from '@/components/ui/metrica';
-import { Selo } from '@/components/ui/selo';
-import { Valor } from '@/components/ui/valor';
 import { listarContas, saldosDasContas } from '@/features/contas/consultas';
+import { ContasResumo } from '@/features/dashboard/componentes/contas-resumo';
+import { DestaqueSaldo } from '@/features/dashboard/componentes/destaque-saldo';
+import { type Compromisso, ListaCompromissos } from '@/features/dashboard/componentes/lista-compromissos';
 import { carregarBaseRelatorios } from '@/features/dashboard/dados';
 import { AvisoSemEmpresa } from '@/features/empresas/componentes/aviso-sem-empresa';
 import { listarCategorias, obterContextoEmpresas } from '@/features/empresas/consultas';
@@ -32,9 +32,9 @@ const qtd = (n: number) => `${n} ${n === 1 ? 'boleto' : 'boletos'}`;
 
 /**
  * Dashboard em níveis de importância:
- * 1. situação atual (saldo, o que vence até o fim do mês, atrasados);
- * 2. próximos compromissos; 3. resumo (pago no mês, futuro, quantidades);
- * 4. tendência por mês e composição por status; 5. distribuição.
+ * 1. saldo disponível (principal), o que ele cobre até o fim do mês e atrasados;
+ * 2. saldo por conta (contexto); 3. próximos compromissos e composição por status;
+ * 4. resumo (pago no mês, futuro, quantidades); 5. tendência por mês; 6. distribuição.
  * Só apresentação: os números vêm de lib/domain/indicadores.ts e saldos.ts.
  */
 export default async function PaginaDashboard() {
@@ -98,88 +98,58 @@ export default async function PaginaDashboard() {
   const mesAtual = chaveDoMes(hoje);
   const meses = serieMensal(resumos, hoje, adicionarMesesNaChave(mesAtual, -1), 8);
 
+  const compromissos: Compromisso[] = [
+    { rotulo: 'Hoje', detalhe: qtd(ind.hoje.quantidade), totalCentavos: ind.hoje.totalCentavos, href: '/', testId: 'kpi-hoje' },
+    { rotulo: 'Amanhã', detalhe: qtd(ind.amanha.quantidade), totalCentavos: ind.amanha.totalCentavos, href: linkDaLista({ periodo: { tipo: 'amanha' } }), testId: 'kpi-amanha' },
+    { rotulo: 'Esta semana', detalhe: `${qtd(ind.semana.quantidade)} até domingo`, totalCentavos: ind.semana.totalCentavos, href: linkDaLista({ periodo: { tipo: 'semana' } }), testId: 'kpi-semana' },
+    { rotulo: 'Este mês', detalhe: `${qtd(ind.mes.quantidade)} até o fim do mês`, totalCentavos: ind.mes.totalCentavos, href: linkDaLista({ periodo: { tipo: 'mes' } }), testId: 'kpi-mes' },
+    { rotulo: 'Próximo mês', detalhe: qtd(ind.proximoMes.quantidade), totalCentavos: ind.proximoMes.totalCentavos, href: linkDaLista({ periodo: { tipo: 'proximo-mes' } }), testId: 'kpi-proximo-mes' },
+  ];
+
   return (
     <>
       <CabecalhoPagina
         titulo="Dashboard"
         subtitulo={`${selecionada ? `${selecionada.apelido} · ` : empresas.length > 1 ? 'Todas as empresas · ' : ''}Situação em ${formatarData(hoje)}`}
       />
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 lg:gap-10">
 
-        {/* 1. Situação atual */}
-        <PainelMetricas rotulo="Situação atual" className="grid-cols-1 sm:grid-cols-3">
-          {contas.length > 0 ? (
-            <Metrica
-              nivel="destaque"
-              rotulo="Saldo disponível"
-              icone={<Landmark aria-hidden="true" />}
-              valor={saldo.totalCentavos}
-              tom="saldo"
-              detalhe={`${contas.length} ${contas.length === 1 ? 'conta ativa' : 'contas ativas'}`}
-              href="/contas"
-              testId="kpi-saldo"
-            />
-          ) : (
-            <div className="flex flex-col justify-between gap-3 bg-surface p-5">
-              <p className="text-meta font-medium text-fg-3">Saldo disponível</p>
-              <p className="text-sm text-fg-2">Cadastre as contas bancárias para acompanhar o saldo aqui.</p>
-              <LinkBotao href="/contas/nova" variante="secundario" tamanho="sm" className="self-start">
-                Cadastrar conta
-              </LinkBotao>
-            </div>
-          )}
-          <Metrica
-            nivel="destaque"
-            rotulo="A pagar até o fim do mês"
-            valor={aPagarAteFimDoMes}
-            detalhe={`${qtd(quantidadeAteFimDoMes)}${ind.atrasados.quantidade > 0 ? ' · inclui atrasados' : ''}`}
-            href={linkAteFimDoMes}
-            testId="kpi-ate-fim-do-mes"
-            extra={
-              contas.length > 0 &&
-              (coberturaDoMes.cobre ? (
-                <Selo tom="sucesso" data-testid="cobertura-mes">
-                  <CheckCircle2 aria-hidden="true" /> Saldo cobre
-                </Selo>
-              ) : (
-                <Selo tom="aviso" data-testid="cobertura-mes">
-                  <CircleAlert aria-hidden="true" /> Faltam <Valor centavos={coberturaDoMes.faltaCentavos} />
-                </Selo>
-              ))
-            }
-          />
-          <Metrica
-            nivel="destaque"
-            rotulo="Atrasados"
-            icone={ind.atrasados.quantidade > 0 ? <AlertTriangle className="text-danger" aria-hidden="true" /> : undefined}
-            valor={ind.atrasados.totalCentavos}
-            tom="perigo"
-            detalhe={ind.atrasados.quantidade > 0 ? `${qtd(ind.atrasados.quantidade)} vencidos e não pagos` : 'Nenhum boleto atrasado'}
-            href={LINK_ATRASADOS}
-            testId="kpi-atrasados"
-          />
-        </PainelMetricas>
+        {/* 1. Posição financeira: saldo (principal), o que ele cobre e atrasados */}
+        <DestaqueSaldo
+          quantidadeContas={contas.length}
+          saldoCentavos={saldo.totalCentavos}
+          aPagar={{
+            totalCentavos: aPagarAteFimDoMes,
+            detalhe: `${qtd(quantidadeAteFimDoMes)}${ind.atrasados.quantidade > 0 ? ' · inclui atrasados' : ''}`,
+            href: linkAteFimDoMes,
+          }}
+          cobertura={coberturaDoMes}
+          atrasados={{
+            totalCentavos: ind.atrasados.totalCentavos,
+            quantidade: ind.atrasados.quantidade,
+            detalhe: ind.atrasados.quantidade > 0 ? `${qtd(ind.atrasados.quantidade)} vencidos e não pagos` : 'Nenhum boleto atrasado',
+            href: LINK_ATRASADOS,
+          }}
+        />
 
-        {/* 2. Próximos compromissos */}
-        <section aria-labelledby="titulo-compromissos">
-          <CabecalhoSecao id="titulo-compromissos" titulo="Próximos compromissos" detalhe="Em aberto, sem os atrasados" />
-          <PainelMetricas rotulo="Próximos compromissos" className="grid-cols-2 lg:grid-cols-5">
-            <Metrica rotulo="Hoje" valor={ind.hoje.totalCentavos} detalhe={qtd(ind.hoje.quantidade)} href="/" testId="kpi-hoje" />
-            <Metrica rotulo="Amanhã" valor={ind.amanha.totalCentavos} detalhe={qtd(ind.amanha.quantidade)} href={linkDaLista({ periodo: { tipo: 'amanha' } })} testId="kpi-amanha" />
-            <Metrica rotulo="Esta semana" valor={ind.semana.totalCentavos} detalhe={`${qtd(ind.semana.quantidade)} até domingo`} href={linkDaLista({ periodo: { tipo: 'semana' } })} testId="kpi-semana" />
-            <Metrica rotulo="Este mês" valor={ind.mes.totalCentavos} detalhe={`${qtd(ind.mes.quantidade)} até o fim do mês`} href={linkDaLista({ periodo: { tipo: 'mes' } })} testId="kpi-mes" />
-            <Metrica
-              rotulo="Próximo mês"
-              valor={ind.proximoMes.totalCentavos}
-              detalhe={qtd(ind.proximoMes.quantidade)}
-              href={linkDaLista({ periodo: { tipo: 'proximo-mes' } })}
-              testId="kpi-proximo-mes"
-              className="col-span-2 lg:col-span-1"
-            />
-          </PainelMetricas>
-        </section>
+        {/* 2. Contas: contexto secundário do saldo */}
+        <ContasResumo contas={saldo.empresas.flatMap((e) => e.contas)} />
 
-        {/* 3. Resumo */}
+        {/* 3. Próximos compromissos e composição por status */}
+        <div className="grid gap-8 lg:grid-cols-5 lg:gap-6">
+          <section aria-labelledby="titulo-compromissos" className="min-w-0 lg:col-span-3">
+            <CabecalhoSecao id="titulo-compromissos" titulo="Próximos compromissos" detalhe="Em aberto, sem os atrasados" />
+            <ListaCompromissos itens={compromissos} />
+          </section>
+          <section aria-labelledby="titulo-composicao" className="min-w-0 lg:col-span-2">
+            <CabecalhoSecao id="titulo-composicao" titulo="Pago × pendente × atrasado" detalhe="Todos os boletos" />
+            <Cartao className="p-4 sm:p-5">
+              <ComposicaoStatus resumo={geral} />
+            </Cartao>
+          </section>
+        </div>
+
+        {/* 4. Resumo: indicadores secundários */}
         <PainelMetricas rotulo="Resumo" className="grid-cols-2 lg:grid-cols-4">
           <Metrica nivel="compacta" rotulo="Pago no mês" valor={ind.pagoNoMes.totalCentavos} detalhe={qtd(ind.pagoNoMes.quantidade)} href="/historico" testId="kpi-pago-mes" />
           <Metrica nivel="compacta" rotulo="Total futuro a pagar" valor={ind.futuro.totalCentavos} detalhe={qtd(ind.futuro.quantidade)} href={LINK_A_VENCER} testId="kpi-futuro" />
@@ -196,23 +166,15 @@ export default async function PaginaDashboard() {
           />
         </PainelMetricas>
 
-        {/* 4. Tendência e composição */}
-        <div className="grid gap-6 lg:grid-cols-5">
-          <section aria-labelledby="titulo-meses" className="min-w-0 lg:col-span-3">
-            <CabecalhoSecao id="titulo-meses" titulo="Valores por mês" link={{ href: '/meses', rotulo: 'Ver meses' }} />
-            <Cartao className="p-4 sm:p-5">
-              <GraficoMensal meses={meses} mesAtual={mesAtual} />
-            </Cartao>
-          </section>
-          <section aria-labelledby="titulo-composicao" className="min-w-0 lg:col-span-2">
-            <CabecalhoSecao id="titulo-composicao" titulo="Pago × pendente × atrasado" detalhe="Todos os boletos" />
-            <Cartao className="p-4 sm:p-5">
-              <ComposicaoStatus resumo={geral} />
-            </Cartao>
-          </section>
-        </div>
+        {/* 5. Tendência */}
+        <section aria-labelledby="titulo-meses" className="min-w-0">
+          <CabecalhoSecao id="titulo-meses" titulo="Valores por mês" link={{ href: '/meses', rotulo: 'Ver meses' }} />
+          <Cartao className="p-4 sm:p-5">
+            <GraficoMensal meses={meses} mesAtual={mesAtual} />
+          </Cartao>
+        </section>
 
-        {/* 5. Distribuição */}
+        {/* 6. Distribuição */}
         <div className="grid gap-6 lg:grid-cols-2">
           <section aria-labelledby="titulo-fornecedores" className="min-w-0">
             <CabecalhoSecao id="titulo-fornecedores" titulo="Por fornecedor" link={{ href: '/fornecedores', rotulo: 'Ver todos' }} />
