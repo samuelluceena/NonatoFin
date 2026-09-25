@@ -21,7 +21,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { MenuAcoes } from '@/components/ui/menu-acoes';
-import { CabecalhoTabela, CorpoTabela, LinhaTabela, Tabela, Td, Th } from '@/components/ui/tabela';
+import { CorpoTabela, LinhaTabela, Tabela } from '@/components/ui/tabela';
 import { Selo, type TomSelo } from '@/components/ui/selo';
 import { formatarData, type DataISO } from '@/lib/domain/datas';
 import { rotuloConta } from '@/lib/domain/saldos';
@@ -79,10 +79,12 @@ export function SeloTransacao({ status, className }: { status: StatusTransacao; 
   );
 }
 
-function IconeTipo({ t, className }: { t: Transacao; className?: string }) {
+const TAMANHO_ICONE = { md: 'size-8 [&_svg]:size-4', sm: 'size-7 [&_svg]:size-3.5' } as const;
+
+function IconeTipo({ t, tamanho = 'md', className }: { t: Transacao; tamanho?: keyof typeof TAMANHO_ICONE; className?: string }) {
   const Icone = ICONE_TIPO[t.tipo];
   return (
-    <span className={cn('grid size-9 shrink-0 place-items-center rounded-md border [&_svg]:size-4.5', classeIcone(t), className)} aria-hidden="true">
+    <span className={cn('grid shrink-0 place-items-center rounded-md border', TAMANHO_ICONE[tamanho], classeIcone(t), className)} aria-hidden="true">
       <Icone />
     </span>
   );
@@ -131,30 +133,30 @@ function ListaCompacta({ itens, hoje, mostrarEmpresa }: Props) {
     <div className="flex flex-col gap-5 xl:hidden" data-testid="lista-transacoes">
       {agruparPorData(itens).map((grupo) => (
         <section key={grupo.data} aria-label={rotuloDia(grupo.data, hoje)}>
-          <h2 className="mb-2 px-1 text-sm font-medium text-fg-2">{rotuloDia(grupo.data, hoje)}</h2>
-          <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-surface">
+          <h2 className="mb-1.5 px-1 text-meta font-medium text-fg-3">{rotuloDia(grupo.data, hoje)}</h2>
+          <ul className="divide-y divide-border-subtle overflow-hidden rounded-lg border border-border bg-surface">
             {grupo.itens.map((t) => {
               const meta = [ROTULO_TIPO[t.tipo], t.categoria?.nome, textoConta(t), mostrarEmpresa ? t.empresa?.apelido : null].filter(Boolean);
+              const complemento = t.tipo === 'transferencia' ? null : t.complemento;
               return (
                 <li key={t.chave}>
                   <Link
                     href={t.href}
-                    className="flex min-h-16 items-center gap-3 px-3.5 py-3 transition-colors hover:bg-surface-2 focus-visible:-outline-offset-2"
+                    className="flex min-h-16 items-start gap-3 px-3.5 py-3 transition-colors hover:bg-surface-2/60 focus-visible:-outline-offset-2"
                     data-testid="item-transacao"
                     data-tipo={t.tipo}
                   >
-                    <IconeTipo t={t} />
+                    <IconeTipo t={t} className="mt-0.5" />
                     <span className="min-w-0 flex-1">
                       <span className="flex items-baseline justify-between gap-3">
                         <span className="truncate text-body font-medium text-fg">{t.titulo}</span>
                         <ValorTransacao t={t} className="text-body" />
                       </span>
-                      {t.descricao && <span className="mt-0.5 block truncate text-meta text-fg-2">{t.descricao}</span>}
-                      <span className="mt-1 flex items-center justify-between gap-2">
-                        <span className="min-w-0 truncate text-meta text-fg-3">{meta.join(' · ')}</span>
+                      <span className="mt-0.5 flex items-center justify-between gap-3">
+                        <span className="min-w-0 truncate text-meta text-fg-2">{[t.descricao, complemento].filter(Boolean).join(' · ')}</span>
                         <SeloTransacao status={t.status} className="shrink-0" />
                       </span>
-                      {t.complemento && t.tipo !== 'transferencia' && <span className="mt-0.5 block truncate text-xs text-fg-3">{t.complemento}</span>}
+                      <span className="mt-0.5 block truncate text-meta text-fg-3">{meta.join(' · ')}</span>
                     </span>
                   </Link>
                 </li>
@@ -167,59 +169,74 @@ function ListaCompacta({ itens, hoje, mostrarEmpresa }: Props) {
   );
 }
 
-/** Desktop largo: tabela densa (primitivas compartilhadas de components/ui/tabela). */
+/** Célula da tabela: mais baixa que o padrão de ui/tabela (≈48px por linha). */
+const CELULA = 'px-3 py-2.5 align-middle first:pl-4 last:pr-4';
+const CABECALHO = 'px-3 pt-3 pb-2 font-medium first:pl-4 last:pr-4';
+
+/**
+ * Desktop largo: tabela financeira densa. O tipo aparece como ícone + texto
+ * dentro da descrição (sem coluna própria); valor e status lado a lado.
+ */
 function TabelaTransacoes({ itens, mostrarEmpresa }: Omit<Props, 'hoje'>) {
   return (
     <Tabela legenda="Transações" className="hidden xl:block" data-testid="tabela-transacoes">
-      <CabecalhoTabela>
+      <thead className="border-b border-border text-left text-caption text-fg-3">
         <tr>
-          <Th className="w-[6.5rem]">Data</Th>
-          <Th>Descrição</Th>
-          <Th className="w-[8.5rem]">Categoria</Th>
-          <Th className="w-[9rem]">Conta</Th>
-          <Th className="w-[8.5rem]">Tipo</Th>
-          <Th className="w-[7rem]">Status</Th>
-          <Th numerica className="w-[8.5rem]">
+          <th scope="col" className={cn(CABECALHO, 'w-26')}>
+            Data
+          </th>
+          <th scope="col" className={CABECALHO}>
+            Descrição
+          </th>
+          <th scope="col" className={cn(CABECALHO, 'w-36')}>
+            Categoria
+          </th>
+          <th scope="col" className={cn(CABECALHO, 'w-44')}>
+            Conta
+          </th>
+          <th scope="col" className={cn(CABECALHO, 'w-32')}>
+            Status
+          </th>
+          <th scope="col" className={cn(CABECALHO, 'w-36 text-right')}>
             Valor
-          </Th>
-          <Th className="w-12">
+          </th>
+          <th scope="col" className={cn(CABECALHO, 'w-14')}>
             <span className="sr-only">Ações</span>
-          </Th>
+          </th>
         </tr>
-      </CabecalhoTabela>
+      </thead>
       <CorpoTabela>
         {itens.map((t) => {
-          const Icone = ICONE_TIPO[t.tipo];
+          const detalhe = [ROTULO_TIPO[t.tipo], t.descricao, t.tipo === 'transferencia' ? null : t.complemento, mostrarEmpresa ? t.empresa?.apelido : null]
+            .filter(Boolean)
+            .join(' · ');
           return (
             <LinhaTabela key={t.chave} data-testid="linha-transacao" data-tipo={t.tipo}>
-              <Td className="numeros text-fg-2">{formatarData(t.data)}</Td>
-              <Td>
-                <Link href={t.href} className="block truncate font-medium text-fg hover:text-primary-text hover:underline">
-                  {t.titulo}
-                </Link>
-                <span className="block truncate text-meta text-fg-3">
-                  {[t.descricao, t.tipo === 'transferencia' ? null : t.complemento, mostrarEmpresa ? t.empresa?.apelido : null].filter(Boolean).join(' · ') || '—'}
-                </span>
-              </Td>
-              <Td className="truncate text-fg-2">{t.categoria?.nome ?? <span className="text-fg-3">—</span>}</Td>
-              <Td className="truncate text-fg-2" title={textoConta(t) ?? undefined}>
+              <td className={cn(CELULA, 'numeros text-fg-2')}>{formatarData(t.data)}</td>
+              <td className={CELULA}>
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <IconeTipo t={t} tamanho="sm" />
+                  <div className="min-w-0">
+                    <Link href={t.href} className="block truncate font-medium text-fg hover:text-primary-text hover:underline">
+                      {t.titulo}
+                    </Link>
+                    <span className="block truncate text-meta text-fg-3">{detalhe}</span>
+                  </div>
+                </div>
+              </td>
+              <td className={cn(CELULA, 'truncate text-fg-2')}>{t.categoria?.nome ?? <span className="text-fg-3">—</span>}</td>
+              <td className={cn(CELULA, 'truncate text-fg-2')} title={textoConta(t) ?? undefined}>
                 {textoConta(t) ?? <span className="text-fg-3">—</span>}
-              </Td>
-              <Td>
-                <span className="inline-flex items-center gap-1.5 text-fg-2">
-                  <Icone className={cn('size-4 shrink-0', tomDoValor(t) === 'entrada' && 'text-success', tomDoValor(t) === 'saida' && 'text-danger')} aria-hidden="true" />
-                  <span className="truncate">{ROTULO_TIPO[t.tipo]}</span>
-                </span>
-              </Td>
-              <Td>
+              </td>
+              <td className={CELULA}>
                 <SeloTransacao status={t.status} />
-              </Td>
-              <Td numerica>
+              </td>
+              <td className={cn(CELULA, 'numeros text-right')}>
                 <ValorTransacao t={t} />
-              </Td>
-              <Td className="py-1.5 text-right">
+              </td>
+              <td className={cn(CELULA, 'py-1 text-right')}>
                 <MenuAcoes rotulo={`Ações: ${t.titulo}`} itens={itensDoMenu(t)} />
-              </Td>
+              </td>
             </LinhaTabela>
           );
         })}

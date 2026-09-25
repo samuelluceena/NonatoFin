@@ -8,6 +8,7 @@ import { listarTodasAsContas } from '@/features/contas/consultas';
 import { AvisoSemEmpresa } from '@/features/empresas/componentes/aviso-sem-empresa';
 import { listarCategorias, obterContextoEmpresas } from '@/features/empresas/consultas';
 import { listarFornecedores } from '@/features/fornecedores/consultas';
+import { AbasStatus } from '@/features/transacoes/componentes/abas-status';
 import { FiltrosTransacoes } from '@/features/transacoes/componentes/filtros-transacoes';
 import { ListaTransacoes } from '@/features/transacoes/componentes/lista-transacoes';
 import { ResumoDasTransacoes } from '@/features/transacoes/componentes/resumo-transacoes';
@@ -79,6 +80,8 @@ export default async function PaginaTransacoes({ searchParams }: PageProps<'/tra
         }
       />
 
+      <AbasStatus filtros={filtros} />
+
       <FiltrosTransacoes
         filtros={filtros}
         periodoExplicito={periodoEstaNaUrl(params, hoje)}
@@ -106,8 +109,8 @@ export default async function PaginaTransacoes({ searchParams }: PageProps<'/tra
         <>
           <ResumoDasTransacoes resumo={resumo} />
           <ListaTransacoes itens={visiveis} hoje={hoje} mostrarEmpresa={mostrarEmpresa} />
-          <div className="mt-6 flex flex-col items-center gap-3 text-center">
-            <p className="text-sm text-fg-3" data-testid="contagem-transacoes">
+          <div className="mt-4 flex flex-col items-center gap-3 text-center sm:flex-row sm:flex-wrap sm:justify-between sm:text-left">
+            <p className="numeros text-sm text-fg-3" data-testid="contagem-transacoes">
               Mostrando {visiveis.length} de {itens.length}
               {truncado ? '+' : ''}
             </p>
@@ -123,7 +126,7 @@ export default async function PaginaTransacoes({ searchParams }: PageProps<'/tra
               </Link>
             )}
             {truncado && (
-              <p className="max-w-md text-sm text-fg-3" role="note">
+              <p className="max-w-md text-sm text-fg-3 sm:max-w-none sm:basis-full" role="note">
                 Há mais transações antigas neste período. Escolha um período menor ou use os filtros para ver as demais; os totais consideram somente as listadas.
               </p>
             )}

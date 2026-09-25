@@ -41,12 +41,18 @@ export function ResumoDasTransacoes({ resumo }: { resumo: ResumoTransacoes }) {
 
   return (
     <section aria-label="Totais" className="mb-5">
-      <dl className="grid grid-cols-2 overflow-hidden rounded-lg border border-border bg-surface sm:grid-cols-4" data-testid="resumo-transacoes">
+      {/* Faixa plana (sem caixa): a coluna da esquerda encosta na margem do conteúdo. */}
+      <dl className="grid grid-cols-2 border-y border-border sm:grid-cols-4" data-testid="resumo-transacoes">
         {metricas.map((m, i) => (
           <div
             key={m.chave}
             data-testid={`total-${m.chave}`}
-            className={cn('flex min-w-0 flex-col gap-0.5 px-4 py-3', i % 2 === 1 && 'border-l border-border', i >= 2 && 'border-t border-border sm:border-t-0', i === 2 && 'sm:border-l')}
+            className={cn(
+              'flex min-w-0 flex-col gap-0.5 py-3',
+              i % 2 === 0 ? 'pr-4' : 'border-l border-border px-4',
+              i >= 2 && 'border-t border-border sm:border-t-0',
+              i === 2 && 'sm:border-l sm:pl-4',
+            )}
           >
             <dt className="text-meta font-medium text-fg-3">{m.rotulo}</dt>
             <dd className={cn('numeros truncate text-lg font-semibold tracking-tight', m.classe)}>{m.valor}</dd>
@@ -54,7 +60,7 @@ export function ResumoDasTransacoes({ resumo }: { resumo: ResumoTransacoes }) {
           </div>
         ))}
       </dl>
-      <p className="mt-2 px-1 text-xs text-fg-3">Transferências, ajustes e compras no cartão não entram nesses totais (a compra é paga pela fatura).</p>
+      <p className="mt-2 text-xs text-fg-3">Transferências, ajustes e compras no cartão não entram nesses totais (a compra é paga pela fatura).</p>
     </section>
   );
 }
