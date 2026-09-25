@@ -9,22 +9,22 @@ import { ArrowDownToLine, ArrowLeftRight, ScanSearch } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
-import { Botao, type VarianteBotao } from '@/components/ui/botao';
+import { Botao, LinkBotao, type VarianteBotao } from '@/components/ui/botao';
 import { Campo, Entrada, Seletor, ariaCampo } from '@/components/ui/campo';
 import { CampoMoeda } from '@/components/ui/campo-moeda';
 import { CampoSaldo } from '@/components/ui/campo-saldo';
 import { Dialogo } from '@/components/ui/dialogo';
+import { Spinner } from '@/components/ui/spinner';
 import type { ResultadoAcao } from '@/lib/acoes/resultado';
 import { formatarData, type DataISO } from '@/lib/domain/datas';
-import { formatarMoeda, type Centavos } from '@/lib/domain/dinheiro';
-import { ajusteDaConferencia, entradaNasceConfirmada, rotuloConta } from '@/lib/domain/saldos';
+import { formatarMoeda, formatarMoedaComSinal, type Centavos } from '@/lib/domain/dinheiro';
+import { ajusteDaConferencia, contaPadraoDaEmpresa, entradaNasceConfirmada, rotuloConta } from '@/lib/domain/saldos';
 import type { ContaBancaria } from '@/lib/domain/tipos';
 import { conferirSaldo, registrarEntrada, transferir } from '../acoes';
 
-/** Estado comum: aberto, salvando, erros por campo e envio. */
-function useDialogoAcao() {
+/** Envio de um diálogo: salvando, erros por campo; `aoConcluir` fecha. */
+function useEnvio(aoConcluir: () => void) {
   const router = useRouter();
-  const [aberto, setAberto] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erros, setErros] = useState<Record<string, string>>({});
 
@@ -37,8 +37,9 @@ function useDialogoAcao() {
         toast.error(r.erro);
         return false;
       }
-      toast.success(r.mensagem ?? 'Salvo!');
-      setAberto(false);
+      toast.success(r.mensagem ?? 'Alterações salvas.');
+      setErros({});
+      aoConcluir();
       router.refresh();
       return true;
     } catch {
@@ -49,12 +50,20 @@ function useDialogoAcao() {
     }
   }
 
+  return { salvando, erros, limparErros: () => setErros({}), enviar };
+}
+
+/** Estado comum: aberto + envio. */
+function useDialogoAcao() {
+  const [aberto, setAberto] = useState(false);
+  const envio = useEnvio(() => setAberto(false));
+
   function abrir() {
-    setErros({});
+    envio.limparErros();
     setAberto(true);
   }
 
-  return { aberto, abrir, fechar: () => setAberto(false), salvando, erros, enviar };
+  return { ...envio, aberto, abrir, fechar: () => setAberto(false) };
 }
 
 function Rodape({ onCancelar, salvando, rotulo, testId }: { onCancelar: () => void; salvando: boolean; rotulo: string; testId: string }) {
@@ -78,68 +87,147 @@ interface PropsBotao {
 
 // ------------------------------------------------------------------ entrada --
 
-export function BotaoEntrada({ contaId, hoje, variante = 'secundario', className }: PropsBotao & { contaId: string; hoje: DataISO }) {
-  const d = useDialogoAcao();
+interface PropsDialogoEntrada {
+  aberto: boolean;
+  onFechar: () => void;
+  hoje: DataISO;
+  /** Conta fixa (tela da conta). */
+  contaId?: string;
+  /** Contas para escolher (botão "+"); `null` enquanto carrega. */
+  contas?: ContaBancaria[] | null;
+}
+
+/** "Registrar entrada": na tela da conta (conta fixa) ou pelo "+" (escolhe a conta). */
+export function DialogoEntrada({ aberto, onFechar, hoje, contaId, contas }: PropsDialogoEntrada) {
+  const envio = useEnvio(onFechar);
+  const escolherConta = contaId === undefined;
+  const carregando = escolherConta && contas == null;
+  const semContas = escolherConta && contas?.length === 0;
+  const fechar = () => {
+    envio.limparErros();
+    onFechar();
+  };
+
+  return (
+    <Dialogo
+      aberto={aberto}
+      onFechar={fechar}
+      titulo="Registrar entrada"
+      descricao={`Dinheiro que entrou (ou vai entrar) ${escolherConta ? 'em uma conta' : 'nesta conta'}: vendas, depósito, Pix recebido.`}
+      rodape={
+        carregando || semContas ? undefined : (
+          <Rodape onCancelar={fechar} salvando={envio.salvando} rotulo="Salvar entrada" testId="salvar-entrada" />
+        )
+      }
+    >
+      {carregando ? (
+        <div className="grid place-items-center py-8 text-fg-3" role="status" aria-label="Carregando contas">
+          <Spinner className="size-6" />
+        </div>
+      ) : semContas ? (
+        <div className="flex flex-col gap-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+          <p className="text-body text-fg-2">Nenhuma conta bancária ativa. Cadastre uma conta para registrar entradas.</p>
+          <LinkBotao href="/contas/nova" onClick={fechar} larguraTotal>
+            Cadastrar conta
+          </LinkBotao>
+        </div>
+      ) : (
+        <FormularioEntrada
+          hoje={hoje}
+          contaFixaId={contaId}
+          contas={contas ?? []}
+          erros={envio.erros}
+          onEnviar={(dados) => void envio.enviar(() => registrarEntrada(dados))}
+        />
+      )}
+    </Dialogo>
+  );
+}
+
+/** Conta sugerida: a única, ou a padrão quando todas são da mesma empresa. */
+function contaSugerida(contas: ContaBancaria[]): string {
+  if (contas.length === 1) return contas[0].id;
+  const empresas = new Set(contas.map((c) => c.empresa.id));
+  return empresas.size === 1 ? contaPadraoDaEmpresa(contas, contas[0].empresa.id) : '';
+}
+
+/** Campos da entrada. Monta a cada abertura do diálogo, então começa sempre limpo. */
+function FormularioEntrada({
+  hoje,
+  contaFixaId,
+  contas,
+  erros,
+  onEnviar,
+}: {
+  hoje: DataISO;
+  contaFixaId?: string;
+  contas: ContaBancaria[];
+  erros: Record<string, string>;
+  onEnviar: (dados: { contaId: string; data: string; valorCentavos: Centavos; descricao: string }) => void;
+}) {
+  const [contaId, setContaId] = useState(() => contaFixaId ?? contaSugerida(contas));
   const [data, setData] = useState(hoje);
   const [valor, setValor] = useState(0);
   const [descricao, setDescricao] = useState('');
   const prevista = data !== '' && !entradaNasceConfirmada(data, hoje);
+  const variasEmpresas = new Set(contas.map((c) => c.empresa.id)).size > 1;
 
+  return (
+    <form
+      id="form-salvar-entrada"
+      className="flex flex-col gap-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        onEnviar({ contaId, data, valorCentavos: valor, descricao });
+      }}
+    >
+      {contaFixaId === undefined && (
+        <Campo id="entrada-conta" rotulo="Conta" erro={erros.contaId}>
+          <Seletor {...ariaCampo('entrada-conta', erros.contaId)} value={contaId} onChange={(e) => setContaId(e.target.value)}>
+            <option value="">Selecione a conta</option>
+            {contas.map((c) => (
+              <option key={c.id} value={c.id}>
+                {variasEmpresas ? `${rotuloConta(c)} — ${c.empresa.apelido}` : rotuloConta(c)}
+              </option>
+            ))}
+          </Seletor>
+        </Campo>
+      )}
+      <Campo id="entrada-descricao" rotulo="Descrição" erro={erros.descricao}>
+        <Entrada
+          {...ariaCampo('entrada-descricao', erros.descricao)}
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+          placeholder="Vendas do dia"
+          autoComplete="off"
+        />
+      </Campo>
+      <div className="grid grid-cols-2 gap-3">
+        <Campo id="entrada-valor" rotulo="Valor" erro={erros.valorCentavos}>
+          <CampoMoeda {...ariaCampo('entrada-valor', erros.valorCentavos)} valor={valor} onValorChange={setValor} />
+        </Campo>
+        <Campo id="entrada-data" rotulo="Data" erro={erros.data} dica={prevista ? 'Data futura: fica como prevista.' : undefined}>
+          <Entrada {...ariaCampo('entrada-data', erros.data, prevista)} type="date" value={data} onChange={(e) => setData(e.target.value)} />
+        </Campo>
+      </div>
+    </form>
+  );
+}
+
+export function BotaoEntrada({ contaId, hoje, variante = 'secundario', className }: PropsBotao & { contaId: string; hoje: DataISO }) {
+  const [aberto, setAberto] = useState(false);
   return (
     <>
       <Botao
         variante={variante}
         className={className}
-        onClick={() => {
-          setData(hoje);
-          setValor(0);
-          setDescricao('');
-          d.abrir();
-        }}
+        onClick={() => setAberto(true)}
         icone={<ArrowDownToLine className="size-4.5" aria-hidden="true" />}
         data-testid="nova-entrada"
       >
         Entrada
       </Botao>
-      <Dialogo
-        aberto={d.aberto}
-        onFechar={d.fechar}
-        titulo="Registrar entrada"
-        descricao="Dinheiro que entrou (ou vai entrar) nesta conta: vendas, depósito, PIX recebido."
-        rodape={<Rodape onCancelar={d.fechar} salvando={d.salvando} rotulo="Salvar entrada" testId="salvar-entrada" />}
-      >
-        <form
-          id="form-salvar-entrada"
-          className="flex flex-col gap-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void d.enviar(() => registrarEntrada({ contaId, data, valorCentavos: valor, descricao }));
-          }}
-        >
-          <Campo id="entrada-descricao" rotulo="Descrição" erro={d.erros.descricao}>
-            <Entrada
-              {...ariaCampo('entrada-descricao', d.erros.descricao)}
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              placeholder="Vendas do dia"
-              autoComplete="off"
-            />
-          </Campo>
-          <div className="grid grid-cols-2 gap-3">
-            <Campo id="entrada-valor" rotulo="Valor" erro={d.erros.valorCentavos}>
-              <CampoMoeda {...ariaCampo('entrada-valor', d.erros.valorCentavos)} valor={valor} onValorChange={setValor} />
-            </Campo>
-            <Campo
-              id="entrada-data"
-              rotulo="Data"
-              erro={d.erros.data}
-              dica={prevista ? 'Data futura: fica como prevista.' : undefined}
-            >
-              <Entrada {...ariaCampo('entrada-data', d.erros.data, prevista)} type="date" value={data} onChange={(e) => setData(e.target.value)} />
-            </Campo>
-          </div>
-        </form>
-      </Dialogo>
+      <DialogoEntrada aberto={aberto} onFechar={() => setAberto(false)} hoje={hoje} contaId={contaId} />
     </>
   );
 }
@@ -260,7 +348,7 @@ export function BotaoConferir({
         icone={<ScanSearch className="size-4.5" aria-hidden="true" />}
         data-testid="conferir-saldo"
       >
-        Conferir com extrato
+        Conferir com o extrato
       </Botao>
       <Dialogo
         aberto={d.aberto}
@@ -285,7 +373,7 @@ export function BotaoConferir({
             <dd className="text-right">{formatarMoeda(saldoCentavos)}</dd>
             <dt className="font-medium text-fg">Ajuste</dt>
             <dd className={ajuste === 0 ? 'text-right font-semibold text-success' : 'text-right font-semibold'}>
-              {ajuste === 0 ? 'Nenhum — está certo' : ajuste > 0 ? `+ ${formatarMoeda(ajuste)}` : `− ${formatarMoeda(-ajuste)}`}
+              {ajuste === 0 ? 'Nenhum — está certo' : formatarMoedaComSinal(ajuste)}
             </dd>
           </dl>
         </form>

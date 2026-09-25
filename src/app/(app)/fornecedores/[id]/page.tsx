@@ -7,7 +7,7 @@ import { Cartao, TituloSecao } from '@/components/ui/cartao';
 import { ChipsFiltro } from '@/components/ui/chips-filtro';
 import { EstadoVazio } from '@/components/ui/estado-vazio';
 import { FiltroPeriodo } from '@/components/ui/filtro-periodo';
-import { Indicador } from '@/components/ui/indicador';
+import { Metrica, PainelMetricas } from '@/components/ui/metrica';
 import { Valor } from '@/components/ui/valor';
 import { listarLancamentosDoFornecedor } from '@/features/lancamentos/consultas';
 import { ListaLancamentos } from '@/features/lancamentos/componentes/lista-lancamentos';
@@ -75,8 +75,8 @@ export default async function PaginaFornecedor({ params, searchParams }: PagePro
 
       <header className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight break-words text-fg sm:text-[28px]">{fornecedor.nome}</h1>
-          <p className="mt-1 text-[15px] text-fg-2">
+          <h1 className="text-title font-semibold break-words text-fg">{fornecedor.nome}</h1>
+          <p className="mt-1 text-body text-fg-2">
             {resumo.quantidadeTotal} {resumo.quantidadeTotal === 1 ? 'boleto' : 'boletos'}
             {proximo ? ` · próximo vencimento ${formatarData(proximo)}` : ' · sem vencimentos futuros'}
           </p>
@@ -89,12 +89,12 @@ export default async function PaginaFornecedor({ params, searchParams }: PagePro
         </div>
       </header>
 
-      <section aria-label="Totais do fornecedor" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Indicador rotulo="Valor total" valor={resumo.totalCentavos} detalhe={`${resumo.quantidadeTotal} boletos`} testId="forn-total" />
-        <Indicador rotulo="A pagar" valor={resumo.pendenteCentavos} detalhe={`${resumo.quantidadePendente} pendentes`} testId="forn-pendente" />
-        <Indicador rotulo="Pago" valor={resumo.pagoCentavos} detalhe={`${resumo.quantidadePaga} pagos`} testId="forn-pago" />
-        <Indicador rotulo="Atrasado" valor={resumo.atrasadoCentavos} detalhe={`${resumo.quantidadeAtrasada} atrasados`} tom="perigo" testId="forn-atrasado" />
-      </section>
+      <PainelMetricas rotulo="Totais do fornecedor" className="grid-cols-2 lg:grid-cols-4">
+        <Metrica rotulo="Valor total" valor={resumo.totalCentavos} detalhe={`${resumo.quantidadeTotal} boletos`} testId="forn-total" />
+        <Metrica rotulo="A pagar" valor={resumo.pendenteCentavos} detalhe={`${resumo.quantidadePendente} pendentes`} testId="forn-pendente" />
+        <Metrica rotulo="Pago" valor={resumo.pagoCentavos} detalhe={`${resumo.quantidadePaga} pagos`} testId="forn-pago" />
+        <Metrica rotulo="Atrasado" valor={resumo.atrasadoCentavos} detalhe={`${resumo.quantidadeAtrasada} atrasados`} tom="perigo" testId="forn-atrasado" />
+      </PainelMetricas>
 
       <Cartao className="mt-4 flex items-center justify-between gap-3 p-4 text-sm">
         <span className="text-fg-2">Parcelas futuras em aberto</span>
@@ -119,7 +119,7 @@ export default async function PaginaFornecedor({ params, searchParams }: PagePro
           />
         </div>
         {lancamentos.length === 0 ? (
-          <EstadoVazio titulo="Nenhuma conta para este filtro" />
+          <EstadoVazio titulo="Nenhum boleto para este filtro" descricao="Escolha outro status ou período para ver os boletos deste fornecedor." />
         ) : (
           <ListaLancamentos lancamentos={lancamentos} hoje={hoje} />
         )}

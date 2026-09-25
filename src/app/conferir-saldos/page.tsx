@@ -47,24 +47,24 @@ export default async function PaginaConferirSaldos() {
       </header>
 
       <h1 className="text-2xl font-semibold tracking-tight text-fg">Confira os saldos de hoje</h1>
-      <p className="mt-1 text-[15px] text-fg-2 first-letter:uppercase">
+      <p className="mt-1 text-body text-fg-2 first-letter:uppercase">
         {nomeDiaDaSemana(hoje)}, {formatarData(hoje)}. Digite o saldo que o app de cada banco mostra agora.
       </p>
 
       {vencidos.length > 0 && (
         <section aria-labelledby="titulo-ja-pagou" className="mt-6">
-          <h2 id="titulo-ja-pagou" className="text-[15px] font-semibold text-fg">
+          <h2 id="titulo-ja-pagou" className="text-body font-semibold text-fg">
             1. Antes: alguma destas já foi paga?
           </h2>
-          <p className="mb-3 text-[13px] text-fg-3">
+          <p className="mb-3 text-meta text-fg-3">
             Marque como pago o que já saiu do banco. Assim o saldo do sistema desconta o pagamento e não sobra ajuste à toa.
           </p>
           <Cartao className="divide-y divide-border" data-testid="vencidos-para-pagar">
             {vencidos.map((l) => (
               <div key={l.id} className="flex flex-wrap items-center gap-3 p-3.5">
                 <span className="min-w-48 flex-1">
-                  <span className="block truncate text-[15px] text-fg">{l.fornecedor.nome}</span>
-                  <span className="numeros block truncate text-[13px] text-fg-3">
+                  <span className="block truncate text-body text-fg">{l.fornecedor.nome}</span>
+                  <span className="numeros block truncate text-meta text-fg-3">
                     {formatarData(l.vencimento)} · <Valor centavos={l.valorCentavos} />
                     {l.conta ? ` · ${l.conta.apelido}` : ' · sem conta'}
                   </span>
@@ -77,7 +77,7 @@ export default async function PaginaConferirSaldos() {
       )}
 
       <section aria-labelledby="titulo-saldos" className="mt-6">
-        <h2 id="titulo-saldos" className="mb-3 text-[15px] font-semibold text-fg">
+        <h2 id="titulo-saldos" className="mb-3 text-body font-semibold text-fg">
           {vencidos.length > 0 ? '2. Saldo de cada conta' : 'Saldo de cada conta'}
         </h2>
         <ConferenciaDiaria key={chave} contas={pendentes} />

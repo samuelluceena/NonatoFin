@@ -24,7 +24,7 @@ export function DialogoCodigo({ lancamentoId, aberto, onFechar }: { lancamentoId
         toast.error(r.erro);
         return;
       }
-      toast.success(r.mensagem ?? 'Código salvo!');
+      toast.success(r.mensagem ?? 'Código salvo.');
       setCodigo('');
       setErro(undefined);
       onFechar();

@@ -104,7 +104,7 @@ export function BotaoPagamento({ lancamentoId, pago, empresaId, conta, tamanho =
       icone={<CheckCircle2 className="size-4.5 text-success" aria-hidden="true" />}
       data-testid="marcar-pago"
     >
-      MARCAR COMO PAGO
+      Marcar como pago
     </Botao>
   );
 }

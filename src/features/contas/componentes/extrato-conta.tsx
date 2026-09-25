@@ -3,7 +3,7 @@ import { CheckCircle2, Trash2 } from 'lucide-react';
 import { BotaoConfirmar } from '@/components/ui/botao-confirmar';
 import { Cartao, TituloSecao } from '@/components/ui/cartao';
 import { formatarData, type DataISO } from '@/lib/domain/datas';
-import { formatarMoeda, type Centavos } from '@/lib/domain/dinheiro';
+import { formatarMoeda, formatarMoedaComSinal, type Centavos } from '@/lib/domain/dinheiro';
 import { rotuloMovimento } from '@/lib/domain/saldos';
 import type { MovimentoConta } from '@/lib/domain/tipos';
 import { cn } from '@/lib/utils/cn';
@@ -21,7 +21,6 @@ interface LinhaExtrato {
   movimento?: MovimentoConta;
 }
 
-const valorComSinal = (v: Centavos) => (v > 0 ? `+ ${formatarMoeda(v)}` : v < 0 ? `− ${formatarMoeda(-v)}` : formatarMoeda(0));
 
 /** Junta movimentos (entradas, transferências, conferências) e pagamentos, do mais recente ao mais antigo. */
 export function montarExtrato(movimentos: MovimentoConta[], pagamentos: PagamentoDaConta[], historicoCompleto: boolean): LinhaExtrato[] {
@@ -100,13 +99,13 @@ export function ExtratoConta({ linhas }: { linhas: LinhaExtrato[] }) {
         {linhas.map((l) => {
           const conteudo = (
             <>
-              <span className="numeros w-12 shrink-0 text-[13px] text-fg-3">{formatarData(l.data).slice(0, 5)}</span>
+              <span className="numeros w-12 shrink-0 text-meta text-fg-3">{formatarData(l.data).slice(0, 5)}</span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[15px] text-fg">{l.titulo}</span>
-                {l.detalhe && <span className="block truncate text-[13px] text-fg-3">{l.detalhe}</span>}
+                <span className="block truncate text-body text-fg">{l.titulo}</span>
+                {l.detalhe && <span className="block truncate text-meta text-fg-3">{l.detalhe}</span>}
               </span>
-              <span className={cn('numeros shrink-0 text-[15px] font-medium', l.valorCentavos > 0 ? 'text-success' : l.valorCentavos < 0 ? 'text-fg' : 'text-fg-3')}>
-                {valorComSinal(l.valorCentavos)}
+              <span className={cn('numeros shrink-0 text-body font-medium', l.valorCentavos > 0 ? 'text-success' : l.valorCentavos < 0 ? 'text-fg' : 'text-fg-3')}>
+                {formatarMoedaComSinal(l.valorCentavos)}
               </span>
             </>
           );
@@ -140,8 +139,8 @@ export function EntradasAConfirmar({ entradas }: { entradas: MovimentoConta[] })
         {entradas.map((m) => (
           <div key={m.id} className="flex min-h-14 flex-wrap items-center gap-2 px-4 py-2.5" data-testid="entrada-a-confirmar">
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[15px] text-fg">{m.descricao ?? 'Entrada prevista'}</span>
-              <span className="numeros block text-[13px] text-fg-3">
+              <span className="block truncate text-body text-fg">{m.descricao ?? 'Entrada prevista'}</span>
+              <span className="numeros block text-meta text-fg-3">
                 Prevista para {formatarData(m.data)} · {formatarMoeda(m.valorCentavos)}
               </span>
             </span>

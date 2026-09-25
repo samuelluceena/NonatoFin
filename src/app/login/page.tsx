@@ -18,13 +18,13 @@ export default async function PaginaLogin({ searchParams }: PageProps<'/login'>)
       <div className="w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
           <Logo tamanho="lg" />
-          <p className="mt-3 text-[15px] text-fg-2">Boletos, contas a pagar e planejamento financeiro.</p>
+          <p className="mt-3 text-body text-fg-2">Boletos, contas a pagar e planejamento financeiro.</p>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-6 shadow-md">
+        <div className="rounded-xl border border-border bg-surface p-6 shadow-sm">
           <h1 className="mb-5 text-lg font-semibold">Entrar no {APP.nome}</h1>
           <FormularioLogin voltar={voltar} />
         </div>
-        <p className="mt-6 text-center text-[13px] text-fg-3">
+        <p className="mt-6 text-center text-meta text-fg-3">
           Acesso restrito. Não há cadastro público.
         </p>
       </div>

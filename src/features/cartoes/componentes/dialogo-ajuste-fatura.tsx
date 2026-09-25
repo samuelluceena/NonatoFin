@@ -10,7 +10,7 @@ import { CampoMoeda } from '@/components/ui/campo-moeda';
 import { Dialogo } from '@/components/ui/dialogo';
 import { Segmentado } from '@/components/ui/segmentado';
 import { LIMITES } from '@/lib/config';
-import { formatarMoeda } from '@/lib/domain/dinheiro';
+import { formatarMoeda, formatarMoedaComSinal, formatarMoedaSaldo } from '@/lib/domain/dinheiro';
 import { definirAjusteFatura } from '../acoes';
 
 interface Props {
@@ -119,9 +119,9 @@ export function DialogoAjusteFatura({ lancamentoId, ajusteAtual, observacaoAtual
             <dt className="text-fg-2">Compras</dt>
             <dd className="text-right">{formatarMoeda(somaParcelas)}</dd>
             <dt className="text-fg-2">Ajuste</dt>
-            <dd className="text-right">{ajuste < 0 ? `− ${formatarMoeda(-ajuste)}` : formatarMoeda(ajuste)}</dd>
+            <dd className="text-right">{formatarMoedaComSinal(ajuste)}</dd>
             <dt className="font-medium text-fg">Total da fatura</dt>
-            <dd className={novoTotal > 0 ? 'text-right font-semibold' : 'text-right font-semibold text-danger'}>{formatarMoeda(novoTotal)}</dd>
+            <dd className={novoTotal > 0 ? 'text-right font-semibold' : 'text-right font-semibold text-danger'}>{formatarMoedaSaldo(novoTotal)}</dd>
           </dl>
         </div>
       </Dialogo>

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
 import { LinkVoltar } from '@/components/ui/link-voltar';
 import { FormularioConta } from '@/features/contas/componentes/formulario-conta';
 import { listarTodasAsContas } from '@/features/contas/consultas';
@@ -27,7 +26,7 @@ export default async function PaginaNovaConta() {
       {empresas.length === 0 ? (
         <AvisoSemEmpresa />
       ) : (
-        <Cartao className="p-4 sm:p-6">
+        <>
           <FormularioConta
             empresas={empresas}
             empresasComConta={[...new Set(contas.map((c) => c.empresa.id))]}
@@ -41,7 +40,7 @@ export default async function PaginaNovaConta() {
               saldoInicialCentavos: 0,
             }}
           />
-        </Cartao>
+        </>
       )}
     </div>
   );

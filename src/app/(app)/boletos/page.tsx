@@ -39,6 +39,7 @@ export default async function PaginaBoletos({ searchParams }: PageProps<'/boleto
   const opcoesContas = contas
     .filter((c) => !empresaId || c.empresa.id === empresaId)
     .map((c) => ({ id: c.id, rotulo: `${rotuloConta(c)}${mostrarEmpresa ? ` · ${c.empresa.apelido}` : ''}${c.ativa ? '' : ' (inativa)'}` }));
+  const filtrado = Object.keys(parametrosDosFiltros(filtros)).length > 0;
   const resumo = [rotuloDoPeriodo(filtros.periodo), filtros.status === 'todos' ? null : rotuloDoStatus(filtros.status)].filter(Boolean).join(' · ');
 
   return (
@@ -53,7 +54,7 @@ export default async function PaginaBoletos({ searchParams }: PageProps<'/boleto
         acoes={
           <div className="hidden sm:block">
             <LinkBotao href="/boletos/novo" icone={<Plus className="size-5" aria-hidden="true" />}>
-              NOVO BOLETO
+              Novo boleto
             </LinkBotao>
           </div>
         }
@@ -70,11 +71,18 @@ export default async function PaginaBoletos({ searchParams }: PageProps<'/boleto
         <EstadoVazio
           icone={<SearchX />}
           titulo="Nenhum boleto encontrado"
-          descricao={filtros.busca ? 'Tente outro termo ou "Limpar filtros".' : 'Não há boletos para estes filtros.'}
+          descricao={filtrado ? 'Nenhum boleto corresponde aos filtros aplicados.' : 'Não há boletos neste período.'}
           acao={
-            <LinkBotao href="/boletos/novo" variante="suave" icone={<Plus className="size-5" aria-hidden="true" />}>
-              Novo boleto
-            </LinkBotao>
+            <div className="flex flex-wrap justify-center gap-2">
+              {filtrado && (
+                <LinkBotao href="/boletos" variante="secundario">
+                  Limpar filtros
+                </LinkBotao>
+              )}
+              <LinkBotao href="/boletos/novo" variante="suave" icone={<Plus aria-hidden="true" />}>
+                Novo boleto
+              </LinkBotao>
+            </div>
           }
         />
       ) : (

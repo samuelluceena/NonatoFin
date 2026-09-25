@@ -45,7 +45,7 @@ export function BotoesExportar({ filtros, compacto = false }: Props) {
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 10_000);
-      toast.success('Exportação concluída!', { description: link.download });
+      toast.success('Exportação concluída.', { description: link.download });
     } catch {
       toast.error('Erro de conexão ao exportar. Tente novamente.');
     } finally {

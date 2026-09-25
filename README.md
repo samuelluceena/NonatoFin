@@ -2,20 +2,22 @@
 
 **NonatoFin** é um sistema pessoal para controle de **boletos, contas a pagar, fornecedores e planejamento financeiro**. Foi feito primeiro para o celular (*mobile-first*) e pode ser instalado como app (PWA).
 
-Fluxo do dia a dia: abrir o NonatoFin → ver **o que vence hoje** → **COPIAR CÓDIGO** com um toque → pagar no app do banco → **MARCAR COMO PAGO** → próximo.
+Fluxo do dia a dia: abrir o NonatoFin → ver **o que vence hoje** → **Copiar código** com um toque → pagar no app do banco → **Marcar como pago** → próximo.
 
 ## Funcionalidades
+- **Transações:** visão cronológica de tudo que entra e sai — contas a pagar, pagamentos, entradas, transferências, ajustes e compras no cartão —, com filtros (período, tipo, status, empresa, categoria, conta, fornecedor), pesquisa e totais que separam o que já movimentou dinheiro do que ainda é obrigação.
+- **Ações rápidas ("+"):** no celular, o botão central abre Despesa (conta a pagar ou compra no cartão) e Entrada; no desktop, o mesmo menu fica no topo da barra lateral.
 - **Hoje:** total e quantidade do dia, atrasados e próximos vencimentos, com botões grandes de copiar código e marcar como pago; saldo × saídas de hoje por conta.
 - **Contas bancárias e saldo:** contas por empresa (apelido, banco e só os 4 últimos dígitos), conta de débito padrão, saldo calculado (entradas, transferências, pagamentos), conferência com o extrato e **conferência obrigatória no primeiro acesso do dia**; total geral, por empresa e por conta.
 - **Fechar o dia:** texto pronto para o WhatsApp com saldos, pagas hoje, pendentes e contas do **próximo dia útil** (feriados nacionais calculados), com saldo após pagar.
 - **Boletos:** cadastro único ou **vários meses** (o valor é de cada lançamento, sem divisão, e o dia 31 é preservado). Edição e exclusão em série (somente este / este e os próximos / todos), desfazer pagamento, **filtros combináveis** (período — dia, mês ou intervalo —, status, fornecedor, categoria, conta) e pesquisa; exporta o que está filtrado.
-- **Dashboard:** a pagar hoje, amanhã, na semana, no mês e no próximo mês; atrasados, total futuro, pago no mês e quantidades; gráficos por mês, por fornecedor e pago × pendente.
+- **Dashboard:** situação atual (saldo disponível, a pagar até o fim do mês e se o saldo cobre, atrasados), próximos compromissos (hoje, amanhã, semana, mês, próximo mês), pago no mês, total futuro, tendência por mês, composição por status e distribuição por fornecedor, categoria e empresa.
 - **Empresas (CNPJ):** controle de várias empresas no mesmo login; seletor no topo filtra todas as telas ("Todas" ou uma empresa). CNPJ validado, inclusive o novo alfanumérico.
-- **Categorias** editáveis: boleto de fornecedor, empréstimo, despesa fixa, despesa variada, cartão de crédito…
+- **Categorias** editáveis (também acessíveis por Transações), com quantos registros usam cada uma; categoria em uso não pode ser excluída.
 - **Cartões de crédito:** compras à vista ou parceladas (até 48x) viram **faturas a pagar** automaticamente, com ajuste (juros/estorno) e trava após o pagamento.
 - **Fornecedores:** sem duplicidade por maiúsculas ou acentos, com totais por status, detalhe e comparativo.
 - **Contas por mês**, **Histórico** de pagamentos e **Exportação** em CSV e Excel.
-- **Temas** Claro, Escuro e Sistema (a escolha fica salva), identidade preto/grafite + azul, fonte Geist Sans.
+- **Visual:** design system próprio (grafite + azul, Geist Sans), temas **Claro e Escuro** (botão sol/lua, escolha salva, sem flash), barra lateral agrupada e recolhível no desktop, barra inferior no celular. Veja [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md).
 - **Segurança:** login sem cadastro público, RLS no banco, lista de usuários autorizados e nenhuma chave no navegador.
 
 ## Tecnologias

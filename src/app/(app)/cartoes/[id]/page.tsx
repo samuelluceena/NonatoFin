@@ -26,10 +26,10 @@ function ListaFaturas({ faturas, hoje }: { faturas: Lancamento[]; hoje: string }
       {faturas.map((f) => (
         <Link key={f.id} href={`/boletos/${f.id}`} className="flex min-h-14 items-center gap-3 px-4 py-3 hover:bg-surface-2" data-testid="item-fatura">
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[15px] font-medium text-fg">{f.fatura ? formatarMes(f.fatura.mes) : f.descricao}</span>
-            <span className="numeros block text-[13px] text-fg-2">Vence {formatarData(f.vencimento)}</span>
+            <span className="block truncate text-body font-medium text-fg">{f.fatura ? formatarMes(f.fatura.mes) : f.descricao}</span>
+            <span className="numeros block text-meta text-fg-2">Vence {formatarData(f.vencimento)}</span>
           </span>
-          <Valor centavos={f.valorCentavos} className="shrink-0 text-[15px] font-semibold" />
+          <Valor centavos={f.valorCentavos} className="shrink-0 text-body font-semibold" />
           <SeloStatus status={calcularStatus(f, hoje)} className="max-sm:hidden" />
         </Link>
       ))}
@@ -101,7 +101,7 @@ export default async function PaginaCartao({ params }: PageProps<'/cartoes/[id]'
             icone={<ShoppingBag />}
             titulo="Nenhuma compra lançada"
             descricao="Lance as compras do cartão (à vista ou parceladas). Cada parcela entra na fatura do mês certo."
-            acao={cartao.ativo ? <LinkBotao href={`/cartoes/compras/nova?cartao=${cartao.id}`}>Lançar compra</LinkBotao> : undefined}
+            acao={cartao.ativo ? <LinkBotao href={`/cartoes/compras/nova?cartao=${cartao.id}`} variante="suave">Nova compra</LinkBotao> : undefined}
           />
         ) : (
           <Cartao className="divide-y divide-border">
@@ -113,15 +113,15 @@ export default async function PaginaCartao({ params }: PageProps<'/cartoes/[id]'
                 data-testid="item-compra"
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[15px] font-medium text-fg">{c.descricao}</span>
-                  <span className="numeros block truncate text-[13px] text-fg-2">
+                  <span className="block truncate text-body font-medium text-fg">{c.descricao}</span>
+                  <span className="numeros block truncate text-meta text-fg-2">
                     {formatarData(c.dataCompra)} · {c.categoria.nome}
                   </span>
-                  <span className="numeros block text-[13px] text-fg-3">
+                  <span className="numeros block text-meta text-fg-3">
                     {resumoParcelas(c.valorTotalCentavos, c.parcelas)} · {c.parcelas === 1 ? 'fatura' : 'desde'} {formatarMes(c.primeiraFaturaMes)}
                   </span>
                 </span>
-                <Valor centavos={c.valorTotalCentavos} className="shrink-0 text-[15px] font-semibold" />
+                <Valor centavos={c.valorTotalCentavos} className="shrink-0 text-body font-semibold" />
               </Link>
             ))}
           </Cartao>

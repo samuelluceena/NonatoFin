@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
 import { LinkVoltar } from '@/components/ui/link-voltar';
 import { Trash2 } from 'lucide-react';
 import { BotaoConfirmar } from '@/components/ui/botao-confirmar';
@@ -29,7 +28,7 @@ export default async function PaginaEditarCompra({ params }: PageProps<'/cartoes
         voltar={<LinkVoltar href={`/cartoes/${compra.cartaoId}`}>{cartao?.nome ?? 'Cartão'}</LinkVoltar>}
         titulo="Editar compra"
       />
-      <Cartao className="p-4 sm:p-6">
+      <>
         <FormularioCompra
           edicaoId={compra.id}
           cartoes={opcoes}
@@ -45,7 +44,7 @@ export default async function PaginaEditarCompra({ params }: PageProps<'/cartoes
             observacao: compra.observacao ?? '',
           }}
         />
-      </Cartao>
+      </>
       <div className="mt-6 flex justify-end">
         <BotaoConfirmar
           rotulo="Excluir"

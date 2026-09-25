@@ -16,20 +16,24 @@ export function Logo({
   className,
   tamanho = 'md',
   compacto = false,
+  apenasSimbolo = false,
 }: {
   className?: string;
   tamanho?: 'md' | 'lg';
   /** Em telas estreitas mostra só o símbolo (abre espaço para o seletor de empresa). */
   compacto?: boolean;
+  /** Só o símbolo (sidebar recolhida); o nome continua para leitores de tela. */
+  apenasSimbolo?: boolean;
 }) {
   return (
-    <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <SimboloLogo className={tamanho === 'lg' ? 'size-11' : 'size-8'} />
+    <span className={cn('inline-flex items-center gap-2', className)}>
+      <SimboloLogo className={tamanho === 'lg' ? 'size-11' : 'size-7'} />
       <span
         className={cn(
           'font-semibold tracking-tight text-fg',
-          tamanho === 'lg' ? 'text-[26px]' : 'text-[19px]',
+          tamanho === 'lg' ? 'text-2xl' : 'text-base',
           compacto && 'max-[440px]:sr-only',
+          apenasSimbolo && 'sr-only',
         )}
       >
         Nonato<span className="text-primary-text">Fin</span>

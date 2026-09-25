@@ -69,7 +69,7 @@ export async function saldosDasContas(supabase: ClienteSupabase): Promise<Map<st
   return new Map((data ?? []).map((s) => [s.conta_id, Number(s.saldo_centavos)]));
 }
 
-interface LinhaMovimento {
+export interface LinhaMovimento {
   id: string;
   conta_id: string;
   tipo: string;
@@ -82,7 +82,7 @@ interface LinhaMovimento {
   created_at: string;
 }
 
-function paraMovimento(m: LinhaMovimento): MovimentoConta {
+export function paraMovimento(m: LinhaMovimento): MovimentoConta {
   const tipo = m.tipo === 'entrada' || m.tipo === 'transferencia' || m.tipo === 'conferencia' ? m.tipo : null;
   if (!tipo) throw new Error(`Tipo de movimento desconhecido: ${m.tipo}`);
   return {
@@ -99,7 +99,7 @@ function paraMovimento(m: LinhaMovimento): MovimentoConta {
   };
 }
 
-const COLUNAS_MOVIMENTO =
+export const COLUNAS_MOVIMENTO =
   'id, conta_id, tipo, data, valor_centavos, saldo_informado, descricao, confirmado, transferencia_id, created_at';
 
 /** Movimentos da conta, do mais recente para o mais antigo. */

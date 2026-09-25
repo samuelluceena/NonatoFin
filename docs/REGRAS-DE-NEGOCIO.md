@@ -39,8 +39,9 @@ Todas as regras ficam em funções puras em `src/lib/domain/` (testadas em `test
 - Com uma única empresa não há filtro nem seletor.
 
 ## Categorias
-- Lista editável (Configurações → Categorias). As padrão são criadas no primeiro uso: **Boleto de fornecedor, Empréstimo, Despesa fixa, Despesa variada, Cartão de crédito**.
-- Nome único sem maiúsculas/acentos. Categoria em uso (lançamentos, compras ou cartões) **não pode ser excluída** — renomeie.
+- Lista editável (Configurações → Categorias, ou **Transações → Categorias**). Cada categoria mostra quantos lançamentos, compras no cartão e cartões a usam, com o selo "Em uso". As padrão são criadas no primeiro uso: **Boleto de fornecedor, Empréstimo, Despesa fixa, Despesa variada, Cartão de crédito**.
+- Nome único sem maiúsculas/acentos. Categoria em uso (lançamentos, compras ou cartões) **não pode ser excluída** — a tela avisa antes ("Esta categoria está sendo utilizada em transações e não pode ser excluída") e o banco bloqueia de qualquer forma (FK `on delete restrict`). Edite o nome se preferir.
+- Não há categoria inativa/arquivada (exigiria migration — veja DECISOES.md, D21).
 - Cada lançamento tem uma categoria; há filtro por categoria em Boletos e totais por categoria no Dashboard.
 - Empréstimos e despesas fixas mensais usam o cadastro **Vários meses** (mesmo valor por mês, dia preservado). Nenhuma regra fiscal ou de juros é calculada pelo sistema.
 
@@ -159,7 +160,14 @@ Botões: **Copiar texto** e **Enviar no WhatsApp** (abre `wa.me` com o texto; vo
 **Dia útil** = segunda a sexta, exceto feriados com agência fechada: nacionais fixos (01/01, 21/04, 01/05, 07/09, 12/10, 02/11, 15/11, 20/11, 25/12), Carnaval (segunda e terça), Sexta-feira Santa e Corpus Christi — os móveis calculados pela Páscoa (`lib/domain/dias-uteis.ts`). **Feriados da sua cidade/estado** não são conhecidos pelo app: cadastre em `FERIADOS_LOCAIS` (`lib/config.ts`), no formato `'MM-DD'` (todo ano) ou `'AAAA-MM-DD'` (um ano só).
 
 ## Dashboard
-Considera os dados reais do banco:
+Apresentação em níveis (só leitura; nenhum cálculo novo):
+1. **Situação atual:** saldo disponível (soma dos saldos das contas ativas, `saldos_contas()` + `agruparSaldos`), **a pagar até o fim do mês** (= "A pagar este mês" + "Atrasados", o mesmo conjunto que a tela Contas compara) com "Saldo cobre / Faltam R$ …" (`cobertura`, a mesma regra da tela Contas) e **atrasados**.
+2. **Próximos compromissos:** hoje, amanhã, semana, este mês, próximo mês (sem os atrasados).
+3. **Resumo:** pago no mês, total futuro, quantidades.
+4. **Tendência** (valores por mês) e **composição** (pago × pendente × atrasado, em barra empilhada).
+5. **Distribuição:** fornecedor, categoria e empresa (barras ranqueadas por métrica).
+
+Indicadores (dados reais do banco):
 | Indicador | Regra |
 |---|---|
 | A pagar hoje | pendentes com vencimento = hoje |
@@ -179,6 +187,26 @@ Para cada fornecedor (ou mês de vencimento): quantidade total, pendentes, pagos
 
 ## Totais por empresa e por categoria
 Dashboard: "Por categoria" sempre; "Por empresa" quando o seletor está em "Todas as empresas" e há 2+ empresas. Mesma soma por status dos fornecedores; grupos sem lançamentos não aparecem.
+
+## Transações
+Visão cronológica e centralizada da movimentação (menu **Transações**). **Não existe tabela de transações**: a lista é composta do que já existe, e nenhuma regra financeira é copiada. Código: `lib/domain/transacoes.ts` e `features/transacoes/`.
+
+| Origem | Tipo na tela | Data | Status | Valor |
+|---|---|---|---|---|
+| Lançamento pendente | **Conta a pagar** (obrigação: o dinheiro ainda não saiu) | vencimento | Pendente / Atrasado (derivado, como em Boletos) | − (cor neutra) |
+| Lançamento pago | **Pagamento** (saída de caixa) | data do pagamento (fuso de São Paulo) | Pago | − vermelho |
+| Entrada (movimento) | **Entrada** | data | Confirmado / Previsto | + verde (prevista: neutra) |
+| Transferência (par de movimentos) | **Transferência** — um item "origem → destino" | data | Confirmado | sem sinal, neutra |
+| Conferência com diferença | **Ajuste** ("Conferência com o extrato" ou "Saldo inicial") | data | Confirmado | + ou −, neutra |
+| Compra no cartão | **Compra no cartão** (informativa: sai pela fatura) | data da compra | Na fatura | sem sinal, neutra |
+
+- Cor é só reforço: todo item tem ícone, rótulo do tipo, status em texto e valor com sinal.
+- Faturas de cartão são lançamentos: aparecem como Conta a pagar/Pagamento (uma vez só). Conferências **sem diferença** (a conferência diária) não aparecem.
+- **Totais**: Entradas (confirmadas), Pagamentos, A pagar (em aberto, com quantas atrasadas) e A receber (entradas previstas). Transferências, ajustes e compras no cartão **não** entram (a compra seria contada duas vezes com a fatura).
+- **Filtros** (na URL, combináveis): período (o mesmo de Boletos; padrão "Este mês"; com pesquisa e sem período, todo o período), tipo, status, empresa (só com o seletor do topo em "Todas"), categoria, conta (ou "Sem conta definida") e fornecedor, além da pesquisa (descrição, observação e fornecedor sem acento). Um filtro que não existe numa origem a exclui: fornecedor só existe em lançamentos; categoria, em lançamentos e compras; conta, em lançamentos e movimentos.
+- Status por tipo: Em aberto / A vencer / Atrasados (contas a pagar), Pagos (pagamentos), Previstos (entradas previstas), Confirmados (entradas, transferências e ajustes).
+- Ordem: data mais recente primeiro. Cada origem traz no máximo 500 itens; se alguma passar disso, a lista é cortada numa data segura e a tela pede um período menor. A tela mostra 50 itens por vez ("Mostrar mais").
+- Tocar num item abre a tela que já existe: lançamento → detalhe do boleto; entrada, ajuste e transferência → extrato da conta; compra → edição da compra.
 
 ## Histórico
 Lista boletos pagos, do pagamento mais recente para o mais antigo; filtros por fornecedor, período (data do pagamento) e pesquisa.

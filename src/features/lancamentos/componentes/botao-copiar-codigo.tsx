@@ -40,7 +40,7 @@ export function BotaoCopiarCodigo({ lancamentoId, codigo, tamanho = 'lg', classN
           icone={<Plus className="size-5" aria-hidden="true" />}
           onClick={() => setAdicionar(true)}
         >
-          ADICIONAR CÓDIGO
+          Adicionar código
         </Botao>
         <DialogoCodigo lancamentoId={lancamentoId} aberto={adicionar} onFechar={() => setAdicionar(false)} />
       </>
@@ -55,7 +55,7 @@ export function BotaoCopiarCodigo({ lancamentoId, codigo, tamanho = 'lg', classN
       return;
     }
     setCopiado(true);
-    toast.success('Código copiado!', { description: 'Cole no aplicativo do seu banco.' });
+    toast.success('Código copiado.', { description: 'Cole no aplicativo do seu banco.' });
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setCopiado(false), 2500);
   }
@@ -67,12 +67,12 @@ export function BotaoCopiarCodigo({ lancamentoId, codigo, tamanho = 'lg', classN
         tamanho={tamanho}
         larguraTotal
         onClick={copiar}
-        className={cn('tracking-wide', copiado && '!bg-success-soft !text-success border border-success-border !shadow-none', className)}
+        className={cn(copiado && '!bg-success-soft !text-success border border-success-border !shadow-none', className)}
         icone={copiado ? <Check className="size-5" aria-hidden="true" /> : <Copy className="size-5" aria-hidden="true" />}
         aria-live="polite"
         data-testid="copiar-codigo"
       >
-        {copiado ? 'CÓDIGO COPIADO!' : 'COPIAR CÓDIGO'}
+        {copiado ? 'Código copiado' : 'Copiar código'}
       </Botao>
       <Dialogo
         aberto={manual}
@@ -80,7 +80,7 @@ export function BotaoCopiarCodigo({ lancamentoId, codigo, tamanho = 'lg', classN
         titulo="Copie o código manualmente"
         descricao="Seu navegador bloqueou a cópia automática. Toque e segure o código abaixo e escolha Copiar."
       >
-        <p className="mb-4 select-all break-all rounded-md border border-border bg-surface-2 p-3 font-mono text-[15px]">
+        <p className="mb-4 select-all break-all rounded-md border border-border bg-surface-2 p-3 font-mono text-body">
           {formatarCodigo(codigo)}
         </p>
       </Dialogo>

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Cartao, TituloSecao } from '@/components/ui/cartao';
 import { formatarData } from '@/lib/domain/datas';
-import { formatarMoeda } from '@/lib/domain/dinheiro';
+import { formatarMoedaComSinal, formatarMoedaSaldo } from '@/lib/domain/dinheiro';
 import type { EventoPrevisto, LinhaPrevisao } from '@/lib/domain/saldos';
 import { cn } from '@/lib/utils/cn';
 
@@ -19,17 +19,16 @@ export function PrevisaoConta({ linhas, dias }: { linhas: Linha[]; dias: number 
         {linhas.map((l, i) => {
           const conteudo = (
             <>
-              <span className={cn('numeros w-12 shrink-0 text-[13px]', l.data < l.dataEfetiva ? 'font-medium text-danger' : 'text-fg-3')}>
+              <span className={cn('numeros w-12 shrink-0 text-meta', l.data < l.dataEfetiva ? 'font-medium text-danger' : 'text-fg-3')}>
                 {formatarData(l.data).slice(0, 5)}
               </span>
-              <span className="min-w-0 flex-1 truncate text-[15px] text-fg">{l.descricao}</span>
+              <span className="min-w-0 flex-1 truncate text-body text-fg">{l.descricao}</span>
               <span className="text-right">
-                <span className={cn('numeros block text-[15px] font-medium', l.tipo === 'entrada' ? 'text-success' : 'text-fg')}>
-                  {l.tipo === 'entrada' ? '+ ' : '− '}
-                  {formatarMoeda(l.valorCentavos)}
+                <span className={cn('numeros block text-body font-medium', l.tipo === 'entrada' ? 'text-success' : 'text-fg')}>
+                  {formatarMoedaComSinal(l.tipo === 'entrada' ? l.valorCentavos : -l.valorCentavos)}
                 </span>
-                <span className={cn('numeros block text-[12px]', l.saldoApos < 0 ? 'font-medium text-danger' : 'text-fg-3')}>
-                  saldo {formatarMoeda(l.saldoApos)}
+                <span className={cn('numeros block text-caption', l.saldoApos < 0 ? 'font-medium text-danger' : 'text-fg-3')}>
+                  saldo {formatarMoedaSaldo(l.saldoApos)}
                 </span>
               </span>
             </>

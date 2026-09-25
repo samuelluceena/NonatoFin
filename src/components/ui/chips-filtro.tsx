@@ -11,7 +11,7 @@ interface Chip {
 export function ChipsFiltro({ chips, rotulo }: { chips: Chip[]; rotulo: string }) {
   return (
     <nav aria-label={rotulo} className="sem-barra-rolagem -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <ul className="flex w-max gap-2 sm:w-auto sm:flex-wrap">
+      <ul className="flex w-max gap-1.5 sm:w-auto sm:flex-wrap">
         {chips.map((c) => (
           <li key={c.href}>
             <Link
@@ -20,10 +20,10 @@ export function ChipsFiltro({ chips, rotulo }: { chips: Chip[]; rotulo: string }
               scroll={false}
               aria-current={c.ativo ? 'true' : undefined}
               className={cn(
-                'inline-flex h-10 items-center rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors',
+                'inline-flex h-10 items-center rounded-md border px-3.5 text-sm font-medium whitespace-nowrap transition-colors duration-150 lg:h-9',
                 c.ativo
-                  ? 'border-primary bg-primary text-primary-fg'
-                  : 'border-border-strong bg-surface text-fg-2 hover:border-primary/50 hover:text-fg',
+                  ? 'border-info-border bg-primary-soft text-primary-soft-fg'
+                  : 'border-border bg-surface text-fg-2 hover:border-border-strong hover:text-fg',
               )}
             >
               {c.rotulo}

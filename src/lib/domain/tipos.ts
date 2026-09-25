@@ -43,6 +43,13 @@ export interface Categoria {
   ordem: number;
 }
 
+/** Registros que usam uma categoria (categoria em uso não pode ser excluída). */
+export interface UsoCategoria {
+  lancamentos: number;
+  compras: number;
+  cartoes: number;
+}
+
 /** Conta bancária de uma empresa (de onde saem os pagamentos). */
 export interface ContaBancaria {
   id: string;

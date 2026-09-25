@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AlertTriangle, CalendarClock, CheckCircle2, ClipboardCheck, Plus } from 'lucide-react';
 import { LinkBotao } from '@/components/ui/botao';
+import { CabecalhoSecao } from '@/components/ui/cabecalho-secao';
 import { Cartao } from '@/components/ui/cartao';
 import { EstadoVazio } from '@/components/ui/estado-vazio';
 import { Valor } from '@/components/ui/valor';
@@ -43,19 +44,19 @@ export default async function PaginaHoje() {
         <Cartao className="mb-4 overflow-hidden p-0">
           <div className="flex items-start justify-between gap-4 p-5">
             <div>
-              <h1 id="titulo-hoje" className="text-[13px] font-semibold tracking-wide text-fg-3 uppercase">
+              <h1 id="titulo-hoje" className="text-meta font-medium text-fg-3">
                 Hoje — {formatarData(hoje)}
               </h1>
               <p className="text-sm text-fg-2 first-letter:uppercase">
                 {nomeDiaDaSemana(hoje)}
                 {selecionada && <span className="text-fg-3"> · {selecionada.apelido}</span>}
               </p>
-              <p className="mt-3 text-[15px] text-fg-2" data-testid="qtd-hoje">
+              <p className="mt-3 text-body text-fg-2" data-testid="qtd-hoje">
                 {pendentesHoje.length === 0
                   ? 'Nenhum boleto pendente para hoje'
                   : `${pendentesHoje.length} ${pendentesHoje.length === 1 ? 'boleto a pagar' : 'boletos a pagar'}`}
               </p>
-              <Valor centavos={totalHoje} className="mt-1 block text-[32px] leading-tight font-semibold tracking-tight text-fg" />
+              <Valor centavos={totalHoje} className="mt-1 block text-display leading-tight font-semibold tracking-tight text-fg" />
               {pagosHoje > 0 && (
                 <p className="mt-1 flex items-center gap-1.5 text-sm text-success">
                   <CheckCircle2 className="size-4" aria-hidden="true" />
@@ -64,8 +65,8 @@ export default async function PaginaHoje() {
               )}
             </div>
             <div className="hidden shrink-0 sm:block">
-              <LinkBotao href="/boletos/novo" icone={<Plus className="size-5" aria-hidden="true" />}>
-                NOVO BOLETO
+              <LinkBotao href="/boletos/novo" variante="secundario" icone={<Plus className="size-5" aria-hidden="true" />}>
+                Novo boleto
               </LinkBotao>
             </div>
           </div>
@@ -77,7 +78,7 @@ export default async function PaginaHoje() {
               <AlertTriangle className="size-4.5 shrink-0" aria-hidden="true" />
               {atrasados.length} {atrasados.length === 1 ? 'boleto atrasado' : 'boletos atrasados'} ·{' '}
               <Valor centavos={totalAtrasados} />
-              <span className="ml-auto text-[13px] underline-offset-2 hover:underline">Ver</span>
+              <span className="ml-auto text-meta underline-offset-2 hover:underline">Ver</span>
             </Link>
           )}
         </Cartao>
@@ -116,10 +117,20 @@ export default async function PaginaHoje() {
 
       {atrasados.length > 0 && (
         <section aria-labelledby="titulo-atrasados">
-          <h2 id="titulo-atrasados" className="mb-3 flex items-center gap-2 text-lg font-semibold text-fg">
-            <AlertTriangle className="size-5 text-danger" aria-hidden="true" />
-            Atrasados
-          </h2>
+          <CabecalhoSecao
+            id="titulo-atrasados"
+            titulo={
+              <span className="inline-flex items-center gap-1.5">
+                <AlertTriangle className="size-4 text-danger" aria-hidden="true" />
+                Atrasados
+              </span>
+            }
+            detalhe={
+              <>
+                {atrasados.length} {atrasados.length === 1 ? 'boleto' : 'boletos'} · <Valor centavos={totalAtrasados} className="font-medium text-danger" />
+              </>
+            }
+          />
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {atrasados.map((b) => (
               <CartaoLancamento key={b.id} lancamento={b} hoje={hoje} />
@@ -129,17 +140,13 @@ export default async function PaginaHoje() {
       )}
 
       <section aria-labelledby="titulo-proximos">
-        <div className="mb-3 flex items-baseline justify-between gap-3">
-          <h2 id="titulo-proximos" className="flex items-center gap-2 text-lg font-semibold text-fg">
-            <CalendarClock className="size-5 text-primary-text" aria-hidden="true" />
-            Próximos vencimentos
-          </h2>
-          <Link href={linkDaLista({ periodo: { tipo: 'todos' }, status: 'pendentes' })} className="text-sm font-medium text-primary-text hover:underline">
-            Ver todos
-          </Link>
-        </div>
+        <CabecalhoSecao
+          id="titulo-proximos"
+          titulo={`Próximos ${LIMITES.diasProximosVencimentos} dias`}
+          link={{ href: linkDaLista({ periodo: { tipo: 'todos' }, status: 'pendentes' }), rotulo: 'Ver todos' }}
+        />
         {proximos.length === 0 ? (
-          <EstadoVazio titulo={`Nenhum vencimento nos próximos ${LIMITES.diasProximosVencimentos} dias`} />
+          <EstadoVazio icone={<CalendarClock />} titulo="Não há contas vencendo neste período." descricao={`Nada vence nos próximos ${LIMITES.diasProximosVencimentos} dias.`} />
         ) : (
           <ListaLancamentos lancamentos={proximos} hoje={hoje} />
         )}

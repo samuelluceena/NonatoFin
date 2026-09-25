@@ -9,6 +9,7 @@ import { cadastrarBoleto, dataRelativa, ehCelular, navegarPara, semRolagemHorizo
 const PAGINAS = [
   '/',
   '/dashboard',
+  '/transacoes',
   '/boletos',
   '/boletos/novo',
   '/fornecedores',
@@ -92,6 +93,7 @@ test('navegação adequada ao tamanho da tela e alcance de todas as páginas', a
   }
   for (const [rotulo, titulo] of [
     ['Dashboard', 'Dashboard'],
+    ['Transações', 'Transações'],
     ['Boletos', 'Boletos'],
     ['Meses', 'Contas por mês'],
     ['Contas', 'Contas'],
@@ -133,9 +135,9 @@ for (const tema of ['light', 'dark'] as const) {
     await page.evaluate((t) => localStorage.setItem('nonatofin-tema', t), tema);
     await cadastrarBoleto(page, { fornecedor: unico('Modal'), descricao: 'Modal', vencimento: dataRelativa(1), valorDigitos: '1000' });
     await page.getByTestId('excluir-boleto').click();
-    const dialogo = page.getByRole('dialog', { name: 'Excluir boleto?' });
+    const dialogo = page.getByRole('alertdialog', { name: 'Excluir boleto?' });
     await expect(dialogo).toBeVisible();
-    // O modal usa a superfície do tema e o texto principal do tema.
+    // O modal usa a superfície elevada do tema e o texto principal do tema.
     const cores = await dialogo.evaluate((el) => {
       const s = getComputedStyle(el);
       const raiz = getComputedStyle(document.documentElement);
@@ -147,7 +149,7 @@ for (const tema of ['light', 'dark'] as const) {
         d.remove();
         return c;
       };
-      return { fundo: s.backgroundColor, texto: s.color, surface: resolver(raiz.getPropertyValue('--surface')), fg: resolver(raiz.getPropertyValue('--fg')) };
+      return { fundo: s.backgroundColor, texto: s.color, surface: resolver(raiz.getPropertyValue('--surface-elevated')), fg: resolver(raiz.getPropertyValue('--fg')) };
     });
     expect(cores.fundo).toBe(cores.surface);
     expect(cores.texto).toBe(cores.fg);

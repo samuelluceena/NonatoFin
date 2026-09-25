@@ -28,10 +28,10 @@ export function ListaSerie({ serie, atualId, hoje }: { serie: Lancamento[]; atua
                 {l.recorrencia?.parcela}/{l.recorrencia?.totalParcelas}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="numeros block text-[15px] text-fg">{formatarData(l.vencimento)}</span>
-                <Valor centavos={l.valorCentavos} className="block text-[13px] text-fg-2 sm:hidden" />
+                <span className="numeros block text-body text-fg">{formatarData(l.vencimento)}</span>
+                <Valor centavos={l.valorCentavos} className="block text-meta text-fg-2 sm:hidden" />
               </span>
-              <Valor centavos={l.valorCentavos} className="hidden text-[15px] font-medium sm:inline" />
+              <Valor centavos={l.valorCentavos} className="hidden text-body font-medium sm:inline" />
               <SeloStatus status={calcularStatus(l, hoje)} />
             </Link>
           );

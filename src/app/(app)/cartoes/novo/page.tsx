@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
 import { LinkVoltar } from '@/components/ui/link-voltar';
 import { FormularioCartao } from '@/features/cartoes/componentes/formulario-cartao';
 import { categoriaPadrao } from '@/features/cartoes/padroes';
@@ -30,7 +29,7 @@ export default async function PaginaNovoCartao() {
       {empresas.length === 0 ? (
         <AvisoSemEmpresa />
       ) : (
-        <Cartao className="p-4 sm:p-6">
+        <>
           <FormularioCartao
             empresas={empresas}
             categorias={categorias}
@@ -49,7 +48,7 @@ export default async function PaginaNovoCartao() {
               ativo: true,
             }}
           />
-        </Cartao>
+        </>
       )}
     </div>
   );

@@ -81,7 +81,7 @@ export default async function PaginaConta({ params }: PageProps<'/contas/[id]'>)
           <div>
             <p className="text-sm text-fg-3">Saldo hoje</p>
             <span data-testid="saldo-conta">
-              <Valor centavos={saldo} className={cn('mt-1 block text-[34px] leading-none font-semibold tracking-tight', saldo < 0 && 'text-danger')} />
+              <Valor centavos={saldo} className={cn('mt-1 block text-display leading-none font-semibold tracking-tight', saldo < 0 && 'text-danger')} />
             </span>
           </div>
           <div className="sm:text-right">

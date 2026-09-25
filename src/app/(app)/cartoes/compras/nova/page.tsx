@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { CreditCard } from 'lucide-react';
 import { LinkBotao } from '@/components/ui/botao';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
 import { EstadoVazio } from '@/components/ui/estado-vazio';
 import { LinkVoltar } from '@/components/ui/link-voltar';
 import { FormularioCompra } from '@/features/cartoes/componentes/formulario-compra';
@@ -43,7 +42,7 @@ export default async function PaginaNovaCompra({ searchParams }: PageProps<'/car
           acao={<LinkBotao href="/cartoes/novo">Cadastrar cartão</LinkBotao>}
         />
       ) : (
-        <Cartao className="p-4 sm:p-6">
+        <>
           <FormularioCompra
             cartoes={cartoes}
             categorias={categorias}
@@ -58,7 +57,7 @@ export default async function PaginaNovaCompra({ searchParams }: PageProps<'/car
               observacao: '',
             }}
           />
-        </Cartao>
+        </>
       )}
     </div>
   );

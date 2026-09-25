@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Info, Pencil } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { LinkBotao } from '@/components/ui/botao';
 import { Cartao } from '@/components/ui/cartao';
+import { Aviso } from '@/components/ui/formulario';
 import { LinhaDetalhe, ListaDetalhes } from '@/components/ui/lista-detalhes';
 import { LinkVoltar } from '@/components/ui/link-voltar';
 import { SeloStatus } from '@/components/ui/selo-status';
@@ -63,8 +64,8 @@ export default async function PaginaBoleto({ params }: PageProps<'/boletos/[id]'
           <SeloStatus status={status} />
         </div>
 
-        <Valor centavos={lancamento.valorCentavos} className="mt-4 block text-[34px] leading-none font-semibold tracking-tight" />
-        <p className="mt-2 text-[15px] text-fg-2">
+        <Valor centavos={lancamento.valorCentavos} className="mt-4 block text-display leading-none font-semibold tracking-tight" />
+        <p className="mt-2 text-body text-fg-2">
           Vencimento:{' '}
           <span className={cn('numeros font-medium', status === 'atrasado' ? 'text-danger' : 'text-fg')}>{formatarData(lancamento.vencimento)}</span>
           {fatura && <span className="text-fg-3"> · Fatura {formatarMes(fatura.mes)}</span>}
@@ -79,7 +80,7 @@ export default async function PaginaBoleto({ params }: PageProps<'/boletos/[id]'
         {lancamento.codigoBarras && (
           <div className="mt-5">
             <p className="mb-1.5 text-sm text-fg-3">Código de barras / linha digitável</p>
-            <p className="rounded-md border border-border bg-surface-2 p-3 font-mono text-[15px] leading-relaxed break-words select-all" data-testid="codigo-completo">
+            <p className="rounded-md border border-border bg-surface-2 p-3 font-mono text-body leading-relaxed break-words select-all" data-testid="codigo-completo">
               {formatarCodigo(lancamento.codigoBarras)}
             </p>
           </div>
@@ -97,7 +98,7 @@ export default async function PaginaBoleto({ params }: PageProps<'/boletos/[id]'
         <ListaDetalhes className="mt-5 border-t border-border">
           <LinhaDetalhe rotulo="Empresa">
             {lancamento.empresa.apelido}
-            {lancamento.empresa.cnpj && <span className="numeros block text-[13px] text-fg-3">CNPJ {formatarCnpj(lancamento.empresa.cnpj)}</span>}
+            {lancamento.empresa.cnpj && <span className="numeros block text-meta text-fg-3">CNPJ {formatarCnpj(lancamento.empresa.cnpj)}</span>}
           </LinhaDetalhe>
           <LinhaDetalhe rotulo="Categoria">{lancamento.categoria.nome}</LinhaDetalhe>
           <LinhaDetalhe rotulo={status === 'pago' ? 'Pago pela conta' : 'Debitar da conta'}>
@@ -157,12 +158,11 @@ export default async function PaginaBoleto({ params }: PageProps<'/boletos/[id]'
           )}
         </div>
         {fatura && (
-          <p className="mt-3 flex gap-2 text-[13px] text-fg-3">
-            <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          <Aviso className="mt-4">
             {status === 'pago'
               ? 'Fatura paga: as compras dela ficam travadas. Desfaça o pagamento para alterá-las.'
               : 'O valor da fatura é a soma das parcelas das compras mais o ajuste. Para mudar, edite as compras ou ajuste o valor.'}
-          </p>
+          </Aviso>
         )}
       </Cartao>
 

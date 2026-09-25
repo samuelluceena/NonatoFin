@@ -31,12 +31,12 @@ export function TextoFechamento({ texto }: { texto: string }) {
           onClick={async () => {
             if (await copiarTexto(texto)) {
               setCopiado(true);
-              toast.success('Texto copiado! Agora é só colar no WhatsApp.');
+              toast.success('Texto copiado. Agora é só colar no WhatsApp.');
               setTimeout(() => setCopiado(false), 2500);
             } else toast.error('Não foi possível copiar. Selecione o texto e copie manualmente.');
           }}
         >
-          {copiado ? 'Copiado!' : 'Copiar texto'}
+          {copiado ? 'Copiado' : 'Copiar texto'}
         </Botao>
         <a href={linkWhatsApp(texto)} target="_blank" rel="noopener noreferrer" className={classesBotao('primario', 'md')}>
           <MessageCircle className="size-5" aria-hidden="true" />
@@ -44,7 +44,7 @@ export function TextoFechamento({ texto }: { texto: string }) {
         </a>
       </div>
       <div
-        className="rounded-lg border border-border bg-surface p-4 text-[15px] leading-relaxed break-words whitespace-pre-wrap text-fg shadow-sm"
+        className="rounded-lg border border-border bg-surface p-4 text-body leading-relaxed break-words whitespace-pre-wrap text-fg shadow-sm"
         data-testid="texto-fechamento"
         aria-label="Texto do fechamento"
       >

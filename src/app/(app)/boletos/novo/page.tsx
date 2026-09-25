@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
 import { FormularioLancamento } from '@/features/lancamentos/componentes/formulario-lancamento';
 import { AvisoSemEmpresa } from '@/features/empresas/componentes/aviso-sem-empresa';
 import { listarTodasAsContas } from '@/features/contas/consultas';
@@ -32,7 +31,7 @@ export default async function PaginaNovoBoleto({ searchParams }: PageProps<'/bol
       {empresas.length === 0 ? (
         <AvisoSemEmpresa />
       ) : (
-        <Cartao className="p-4 sm:p-6">
+        <>
           <FormularioLancamento
             fornecedores={fornecedores}
             empresas={empresas}
@@ -46,7 +45,7 @@ export default async function PaginaNovoBoleto({ searchParams }: PageProps<'/bol
               vencimento,
             }}
           />
-        </Cartao>
+        </>
       )}
     </div>
   );

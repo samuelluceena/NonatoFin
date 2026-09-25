@@ -4,6 +4,7 @@ import { Landmark, Plus } from 'lucide-react';
 import { LinkBotao } from '@/components/ui/botao';
 import { BotaoConfirmar } from '@/components/ui/botao-confirmar';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
+import { CabecalhoSecao } from '@/components/ui/cabecalho-secao';
 import { Cartao, TituloSecao } from '@/components/ui/cartao';
 import { EstadoVazio } from '@/components/ui/estado-vazio';
 import { Valor } from '@/components/ui/valor';
@@ -16,7 +17,6 @@ import { AvisoSemEmpresa } from '@/features/empresas/componentes/aviso-sem-empre
 import { obterContextoEmpresas } from '@/features/empresas/consultas';
 import { exigirUsuario } from '@/lib/auth/sessao';
 import { fimDoMes, hojeISO } from '@/lib/domain/datas';
-import { cn } from '@/lib/utils/cn';
 
 export const metadata: Metadata = { title: 'Contas' };
 
@@ -51,7 +51,7 @@ export default async function PaginaContas() {
           contas.length > 0 ? (
             <span data-testid="saldo-total">
               {selecionada ? `${selecionada.apelido} · ` : empresas.length > 1 ? 'Todas as empresas · ' : ''}
-              Saldo total: <Valor centavos={grupos.totalCentavos} className={cn('font-semibold', grupos.totalCentavos < 0 ? 'text-danger' : 'text-fg')} />
+              Saldo total: <Valor centavos={grupos.totalCentavos} tom="negativo-perigo" className="font-semibold" />
             </span>
           ) : undefined
         }
@@ -79,11 +79,16 @@ export default async function PaginaContas() {
             const quantosSemConta = semConta.get(g.empresa.id) ?? 0;
             return (
               <section key={g.empresa.id} aria-labelledby={`empresa-${g.empresa.id}`} data-testid="grupo-empresa">
-                <div className="mb-2 flex items-baseline justify-between gap-3 px-1">
-                  <TituloSecao id={`empresa-${g.empresa.id}`}>{g.empresa.apelido}</TituloSecao>
-                  <Valor centavos={g.totalCentavos} className={cn('text-sm font-semibold', g.totalCentavos < 0 && 'text-danger')} />
-                </div>
-                <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <CabecalhoSecao
+                  id={`empresa-${g.empresa.id}`}
+                  titulo={g.empresa.apelido}
+                  detalhe={
+                    <>
+                      Total <Valor centavos={g.totalCentavos} tom="negativo-perigo" className="font-semibold" />
+                    </>
+                  }
+                />
+                <ul className="divide-y divide-border-subtle overflow-hidden rounded-lg border border-border bg-surface">
                   {g.contas.map(({ conta, saldoCentavos }) => (
                     <li key={conta.id} className="min-w-0">
                       <CartaoConta conta={conta} saldoCentavos={saldoCentavos} saidasCentavos={saidas.porConta.get(conta.id) ?? 0} ate={ate} />
@@ -111,7 +116,7 @@ export default async function PaginaContas() {
           })}
 
           {saidas.semContaQuantidade > 0 && (
-            <p className="px-1 text-[13px] text-fg-3" data-testid="saidas-sem-conta">
+            <p className="px-1 text-meta text-fg-3" data-testid="saidas-sem-conta">
               Sem conta definida: {saidas.semContaQuantidade} {saidas.semContaQuantidade === 1 ? 'conta' : 'contas'} até o fim do mês (
               <Valor centavos={saidas.semContaCentavos} />) não entram no saldo de nenhuma conta.
             </p>

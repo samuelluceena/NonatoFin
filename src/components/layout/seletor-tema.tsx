@@ -1,19 +1,19 @@
 'use client';
 
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useSyncExternalStore } from 'react';
+import { classesBotaoIcone } from '@/components/ui/botao';
 import { Segmentado } from '@/components/ui/segmentado';
 
-export type PreferenciaTema = 'light' | 'dark' | 'system';
+export type Tema = 'light' | 'dark';
 
-export const OPCOES_TEMA: { valor: PreferenciaTema; rotulo: string }[] = [
+export const OPCOES_TEMA: { valor: Tema; rotulo: string }[] = [
   { valor: 'light', rotulo: 'Claro' },
   { valor: 'dark', rotulo: 'Escuro' },
-  { valor: 'system', rotulo: 'Sistema' },
 ];
 
-const ICONES = { light: Sun, dark: Moon, system: Monitor } as const;
+const ICONES = { light: Sun, dark: Moon } as const;
 
 /** true somente após montar no navegador (o tema salvo só existe lá). */
 function useMontado() {
@@ -24,15 +24,16 @@ function useMontado() {
   );
 }
 
-function preferenciaAtual(theme: string | undefined): PreferenciaTema {
-  return theme === 'light' || theme === 'dark' ? theme : 'system';
+/** Tema aplicado; qualquer valor antigo (ex.: "system" salvo) conta como o que está na tela. */
+function temaAtual(resolvedTheme: string | undefined): Tema {
+  return resolvedTheme === 'dark' ? 'dark' : 'light';
 }
 
-/** Seletor completo: Claro / Escuro / Sistema (página de Configurações). */
+/** Seletor da página de Configurações: Claro / Escuro. */
 export function SeletorTema() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const montado = useMontado();
-  const valor = montado ? preferenciaAtual(theme) : 'system';
+  const valor = montado ? temaAtual(resolvedTheme) : 'light';
 
   return (
     <Segmentado
@@ -48,26 +49,29 @@ export function SeletorTema() {
   );
 }
 
-/** Botão compacto que alterna Claro → Escuro → Sistema (cabeçalho). */
-export function SeletorTemaCompacto() {
-  const { theme, setTheme } = useTheme();
+/**
+ * Botão do cabeçalho: sol no claro, lua no escuro; um clique alterna.
+ * Os dois ícones são renderizados e a classe `.dark` (aplicada antes da
+ * primeira pintura pelo next-themes) decide qual aparece — sem piscar e
+ * sem diferença entre o HTML do servidor e a hidratação.
+ */
+export function SeletorTemaCompacto({ className }: { className?: string }) {
+  const { resolvedTheme, setTheme } = useTheme();
   const montado = useMontado();
-  const atual = montado ? preferenciaAtual(theme) : 'system';
-  const indice = OPCOES_TEMA.findIndex((o) => o.valor === atual);
-  const proximo = OPCOES_TEMA[(indice + 1) % OPCOES_TEMA.length];
-  const Icone = ICONES[atual];
-  const rotuloAtual = OPCOES_TEMA[indice].rotulo;
+  const escuro = montado && temaAtual(resolvedTheme) === 'dark';
 
   return (
     <button
       type="button"
-      onClick={() => setTheme(proximo.valor)}
-      className="grid size-11 place-items-center rounded-md text-fg-2 transition-colors hover:bg-surface-2 hover:text-fg"
-      aria-label={`Tema: ${rotuloAtual}. Tocar para mudar para ${proximo.rotulo}.`}
-      title={`Tema: ${rotuloAtual}`}
+      onClick={() => setTheme(escuro ? 'light' : 'dark')}
+      className={classesBotaoIcone('md', className)}
+      aria-label="Tema escuro"
+      aria-pressed={montado ? escuro : undefined}
+      title={escuro ? 'Mudar para o tema claro' : 'Mudar para o tema escuro'}
       data-testid="alternar-tema"
     >
-      <Icone className="size-5" aria-hidden="true" />
+      <Sun className="dark:hidden" aria-hidden="true" />
+      <Moon className="hidden dark:block" aria-hidden="true" />
     </button>
   );
 }

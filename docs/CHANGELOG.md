@@ -2,6 +2,21 @@
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). Versão exibida em Configurações → Sobre (vem do `package.json`).
 
+## [Não publicado] — redesign premium
+
+### Adicionado
+- **Transações:** visão cronológica de contas a pagar, pagamentos, entradas, transferências, ajustes e compras no cartão, composta dos dados existentes (sem tabela nova). Filtros, pesquisa, totais que separam caixa de obrigação, lista por dia no celular e tabela no desktop.
+- **Ações rápidas ("+"):** Despesa (conta a pagar ou compra no cartão) e Entrada (com escolha da conta), no celular e no desktop.
+- **Categorias:** quantos registros usam cada uma, selo "Em uso" e acesso direto por Transações.
+
+### Alterado
+- **Design system** próprio: tokens semânticos, tema escuro com profundidade, escala tipográfica, raios e sombras discretos, componentes padronizados (botões, campos, selos, diálogos/sheets, menus, métricas, tabelas, listas, filtros, formulários).
+- **Tema:** só Claro e Escuro, botão sol/lua de um clique, sem flash.
+- **Navegação:** sidebar agrupada e recolhível no desktop; barra inferior Hoje · Transações · + · Dashboard · Mais no celular.
+- **Dashboard** em níveis (situação atual, compromissos, resumo, tendência, composição, distribuição), sem cálculos novos.
+- **Listas, filtros e formulários:** tabelas/listas de painel, filtros compactos com popover/sheet e filtros ativos removíveis, formulários em seções, confirmações destrutivas explicando o impacto.
+- **Textos:** sentence case e mensagens de retorno padronizadas ("Pagamento registrado.", "Transferência concluída.").
+
 ## [1.2.0] — 2026-09-24
 
 ### Adicionado (Etapa 4 — Fechar o dia)

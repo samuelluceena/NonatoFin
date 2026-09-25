@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2 } from 'lucide-react';
+import { Building2, ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
@@ -25,6 +25,7 @@ export function SeletorEmpresa({ empresas, selecionadaId, className }: Props) {
     <label className={cn('relative flex min-w-0 items-center', className)}>
       <span className="sr-only">Empresa</span>
       <Building2 className="pointer-events-none absolute left-2.5 size-4 text-fg-3" aria-hidden="true" />
+      <ChevronsUpDown className="pointer-events-none absolute right-2 size-3.5 text-fg-3" aria-hidden="true" />
       <select
         data-testid="seletor-empresa"
         value={selecionadaId ?? TODAS_EMPRESAS}
@@ -37,7 +38,7 @@ export function SeletorEmpresa({ empresas, selecionadaId, className }: Props) {
             router.refresh();
           });
         }}
-        className="h-10 w-full min-w-0 truncate rounded-md border border-border-strong bg-surface pr-7 pl-8 text-base font-medium text-fg focus:border-ring focus:outline-none disabled:opacity-60"
+        className="h-10 w-full min-w-0 appearance-none truncate rounded-md border border-border bg-surface pr-7 pl-8 text-base font-medium text-fg shadow-xs transition-colors hover:border-border-strong focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-none disabled:opacity-60 lg:h-9"
       >
         <option value={TODAS_EMPRESAS}>Todas as empresas</option>
         {empresas.map((e) => (

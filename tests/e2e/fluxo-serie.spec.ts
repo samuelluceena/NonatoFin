@@ -39,7 +39,7 @@ test('série de 5 lançamentos: criar, editar próximos e excluir um', async ({ 
   await expect(page.getByLabel('Usar o mesmo código em todos os lançamentos')).not.toBeChecked();
 
   await page.getByRole('button', { name: 'Criar lançamentos' }).click();
-  await expect(page.getByText('5 lançamentos criados!')).toBeVisible();
+  await expect(page.getByText('5 lançamentos criados.')).toBeVisible();
   await expect(page).toHaveURL(/\/boletos\/[0-9a-f-]{36}$/);
 
   // 2 e 3. Conferir valores e datas (31/01 -> 28/02 -> 31/03 -> 30/04 -> 31/05)
@@ -54,7 +54,7 @@ test('série de 5 lançamentos: criar, editar próximos e excluir um', async ({ 
   await expect(page.getByTestId('codigo-completo')).toBeVisible();
   await linhas.nth(1).click();
   await expect(page.getByTestId('codigo-completo')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'ADICIONAR CÓDIGO' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Adicionar código' })).toBeVisible();
 
   // 4. Conferir fornecedor
   await page.getByRole('link', { name: fornecedor }).click();
@@ -73,7 +73,7 @@ test('série de 5 lançamentos: criar, editar próximos e excluir um', async ({ 
   await expect(dialogo).toBeVisible();
   await dialogo.getByText('Alterar este e os próximos').click();
   await dialogo.getByRole('button', { name: 'Salvar' }).click();
-  await expect(page.getByText('3 boletos atualizados!')).toBeVisible();
+  await expect(page.getByText('3 boletos atualizados.')).toBeVisible();
 
   // 6. Validar
   linhas = await linhasDaSerie(page);
@@ -87,7 +87,7 @@ test('série de 5 lançamentos: criar, editar próximos e excluir um', async ({ 
   await linhas.nth(1).click();
   await expect(page.getByText('Parcela 2/5').first()).toBeVisible();
   await page.getByTestId('excluir-boleto').click();
-  const dialogoExcluir = page.getByRole('dialog', { name: 'Excluir boleto da série' });
+  const dialogoExcluir = page.getByRole('alertdialog', { name: 'Excluir boleto da série' });
   await expect(dialogoExcluir.getByLabel(/Excluir somente este/)).toBeChecked();
   await dialogoExcluir.getByTestId('confirmar-exclusao').click();
   await expect(page.getByText('Boleto excluído.')).toBeVisible();
@@ -111,13 +111,13 @@ test('excluir "este e os próximos" e "todos" em série', async ({ page }) => {
   await page.locator('#valorCentavos').pressSequentially('10000');
   await page.getByLabel('Quantidade de lançamentos').fill('4');
   await page.getByRole('button', { name: 'Criar lançamentos' }).click();
-  await expect(page.getByText('4 lançamentos criados!')).toBeVisible();
+  await expect(page.getByText('4 lançamentos criados.')).toBeVisible();
 
   let linhas = await linhasDaSerie(page);
   await linhas.nth(2).click(); // parcela 3
   await expect(page.getByText('Parcela 3/4').first()).toBeVisible();
   await page.getByTestId('excluir-boleto').click();
-  let dialogo = page.getByRole('dialog', { name: 'Excluir boleto da série' });
+  let dialogo = page.getByRole('alertdialog', { name: 'Excluir boleto da série' });
   await dialogo.getByText('Excluir este e os próximos').click();
   await dialogo.getByTestId('confirmar-exclusao').click();
   await expect(page.getByText('2 boletos excluídos.')).toBeVisible();
@@ -129,7 +129,7 @@ test('excluir "este e os próximos" e "todos" em série', async ({ page }) => {
   linhas = await linhasDaSerie(page);
   await expect(linhas).toHaveCount(2);
   await page.getByTestId('excluir-boleto').click();
-  dialogo = page.getByRole('dialog', { name: 'Excluir boleto da série' });
+  dialogo = page.getByRole('alertdialog', { name: 'Excluir boleto da série' });
   await dialogo.getByText('Excluir todos').click();
   await dialogo.getByTestId('confirmar-exclusao').click();
   await expect(page.getByText('2 boletos excluídos.')).toBeVisible();

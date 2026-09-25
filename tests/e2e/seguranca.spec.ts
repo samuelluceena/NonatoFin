@@ -6,6 +6,7 @@ import { expect, test } from '@playwright/test';
 const ROTAS_PRIVADAS = [
   '/',
   '/dashboard',
+  '/transacoes',
   '/boletos',
   '/boletos/novo',
   '/boletos/00000000-0000-0000-0000-000000000000',

@@ -26,8 +26,8 @@ export function ListaLancamentos({ lancamentos, hoje }: { lancamentos: Lancament
       {[...grupos.entries()].map(([data, itens]) => (
         <section key={data} aria-label={rotuloDia(data, hoje)}>
           <div className="mb-2 flex items-baseline justify-between gap-3 px-1">
-            <h2 className="text-sm font-semibold text-fg-2">{rotuloDia(data, hoje)}</h2>
-            <span className="text-[13px] text-fg-3">
+            <h2 className="text-sm font-medium text-fg-2">{rotuloDia(data, hoje)}</h2>
+            <span className="text-meta text-fg-3">
               {itens.length} {itens.length === 1 ? 'boleto' : 'boletos'} ·{' '}
               <Valor centavos={somarCentavos(itens.map((b) => b.valorCentavos))} />
             </span>

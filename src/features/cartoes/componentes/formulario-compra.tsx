@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { BarraAcoesFormulario } from '@/components/ui/barra-acoes-formulario';
 import { AreaTexto, Campo, Entrada, Seletor, ariaCampo } from '@/components/ui/campo';
 import { CampoMoeda } from '@/components/ui/campo-moeda';
+import { Aviso, PainelFormulario, SecaoFormulario } from '@/components/ui/formulario';
 import { LIMITES } from '@/lib/config';
 import { faturaDaCompra, planejarParcelas, proximasCompetencias, resumoParcelas, vencimentoDaFatura } from '@/lib/domain/cartoes';
 import { adicionarMesesNaChave, ehChaveMesValida, ehDataISOValida, formatarData, formatarMes } from '@/lib/domain/datas';
@@ -37,12 +38,12 @@ function Previa({ cartao, total, parcelas, primeira }: { cartao: Cartao; total: 
   const plano = planejarParcelas(total, parcelas, primeira);
   const visiveis = plano.length <= 6 ? plano : [...plano.slice(0, 4), ...plano.slice(-1)];
   return (
-    <div className="rounded-md border border-primary/30 bg-primary-soft p-3.5" data-testid="previa-parcelas">
-      <p className="mb-2 flex gap-2 text-sm font-medium text-primary-soft-fg" role="status">
+    <div className="rounded-md border border-info-border bg-info-soft p-3.5" data-testid="previa-parcelas">
+      <p className="mb-2 flex gap-2 text-sm font-medium text-info" role="status">
         <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
         {resumoParcelas(total, parcelas)}
       </p>
-      <ol className="numeros flex flex-col gap-1.5 text-[13px] text-fg-2">
+      <ol className="numeros flex flex-col gap-1.5 text-meta text-fg-2">
         {visiveis.map((p, i) => (
           <li key={p.numero} className="flex items-start justify-between gap-3">
             <span className="min-w-0">
@@ -116,7 +117,7 @@ export function FormularioCompra({ cartoes, categorias, edicaoId, valoresIniciai
         for (const [campo, msg] of Object.entries(r.campos ?? {})) setError(campo as keyof ValoresCompra, { message: msg });
         return;
       }
-      toast.success(r.mensagem ?? 'Salvo!');
+      toast.success(r.mensagem ?? 'Alterações salvas.');
       router.push(destino ?? `/cartoes/${valores.cartaoId}`);
     } catch {
       toast.error('Erro de conexão. Verifique sua internet e tente novamente.');
@@ -128,136 +129,145 @@ export function FormularioCompra({ cartoes, categorias, edicaoId, valoresIniciai
 
   return (
     <form onSubmit={(e) => void handleSubmit(aoValidar)(e)} noValidate className="flex flex-col gap-5">
-      <Campo
-        id="cartaoId"
-        rotulo="Cartão"
-        erro={errors.cartaoId?.message}
-        dica={cartao ? `Fecha dia ${cartao.diaFechamento} · vence dia ${cartao.diaVencimento}` : undefined}
-      >
-        <Seletor {...ariaCampo('cartaoId', errors.cartaoId?.message, Boolean(cartao))} {...register('cartaoId')}>
-          <option value="">Selecione o cartão</option>
-          {cartoes.map((c) => (
-            <option key={c.id} value={c.id}>
-              {rotuloCartao(c)}
-            </option>
-          ))}
-        </Seletor>
-      </Campo>
+      <PainelFormulario>
+        <SecaoFormulario titulo="Compra">
+          <Campo
+            id="cartaoId"
+            rotulo="Cartão"
+            erro={errors.cartaoId?.message}
+            dica={cartao ? `Fecha dia ${cartao.diaFechamento} · vence dia ${cartao.diaVencimento}` : undefined}
+          >
+            <Seletor {...ariaCampo('cartaoId', errors.cartaoId?.message, Boolean(cartao))} {...register('cartaoId')}>
+              <option value="">Selecione o cartão</option>
+              {cartoes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {rotuloCartao(c)}
+                </option>
+              ))}
+            </Seletor>
+          </Campo>
 
-      <Campo id="descricao" rotulo="O que foi comprado" erro={errors.descricao?.message} dica="Ex.: Tecidos Loja Centro, Passagem SP.">
-        <Entrada {...ariaCampo('descricao', errors.descricao?.message, true)} {...register('descricao')} autoComplete="off" maxLength={LIMITES.descricaoMax} />
-      </Campo>
+          <Campo id="descricao" rotulo="O que foi comprado" erro={errors.descricao?.message} dica="Ex.: Tecidos Loja Centro, Passagem SP.">
+            <Entrada {...ariaCampo('descricao', errors.descricao?.message, true)} {...register('descricao')} autoComplete="off" maxLength={LIMITES.descricaoMax} />
+          </Campo>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <Campo id="dataCompra" rotulo="Data da compra" erro={errors.dataCompra?.message}>
-          <Entrada {...ariaCampo('dataCompra', errors.dataCompra?.message)} {...register('dataCompra')} type="date" min="2000-01-01" max="2100-12-31" />
-        </Campo>
-        <Campo id="categoriaId" rotulo="Categoria" erro={errors.categoriaId?.message}>
-          <Seletor {...ariaCampo('categoriaId', errors.categoriaId?.message)} {...register('categoriaId')}>
-            <option value="">Selecione a categoria</option>
-            {categorias.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nome}
-              </option>
-            ))}
-          </Seletor>
-        </Campo>
-      </div>
-
-      <div className="grid grid-cols-[1fr_8.5rem] gap-4">
-        <Campo id="valorTotalCentavos" rotulo="Valor total" erro={errors.valorTotalCentavos?.message}>
-          <Controller
-            control={control}
-            name="valorTotalCentavos"
-            render={({ field }) => (
-              <CampoMoeda
-                {...ariaCampo('valorTotalCentavos', errors.valorTotalCentavos?.message)}
-                name={field.name}
-                valor={field.value}
-                onValorChange={field.onChange}
-                onBlur={field.onBlur}
-                ref={field.ref}
-              />
-            )}
-          />
-        </Campo>
-        <Campo id="parcelas" rotulo="Parcelas" erro={errors.parcelas?.message}>
-          <Controller
-            control={control}
-            name="parcelas"
-            render={({ field }) => (
-              <Seletor
-                {...ariaCampo('parcelas', errors.parcelas?.message)}
-                name={field.name}
-                ref={field.ref}
-                onBlur={field.onBlur}
-                value={String(field.value)}
-                onChange={(e) => field.onChange(Number(e.target.value))}
-              >
-                {Array.from({ length: LIMITES.parcelasCartaoMax }, (_, i) => i + 1).map((n) => (
-                  <option key={n} value={n}>
-                    {n === 1 ? 'À vista' : `${n}x`}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Campo id="dataCompra" rotulo="Data da compra" erro={errors.dataCompra?.message}>
+              <Entrada {...ariaCampo('dataCompra', errors.dataCompra?.message)} {...register('dataCompra')} type="date" min="2000-01-01" max="2100-12-31" />
+            </Campo>
+            <Campo id="categoriaId" rotulo="Categoria" erro={errors.categoriaId?.message}>
+              <Seletor {...ariaCampo('categoriaId', errors.categoriaId?.message)} {...register('categoriaId')}>
+                <option value="">Selecione a categoria</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nome}
                   </option>
                 ))}
               </Seletor>
-            )}
-          />
-        </Campo>
-      </div>
+            </Campo>
+          </div>
 
-      <Campo
-        id="primeiraFaturaMes"
-        rotulo={parcelas > 1 ? 'Fatura da 1ª parcela' : 'Fatura'}
-        erro={errors.primeiraFaturaMes?.message}
-        dica={
-          automatica && primeira === automatica
-            ? 'Calculada pela data da compra e pelo fechamento do cartão.'
-            : automatica
-              ? `Pela data da compra seria ${formatarMes(automatica)}.`
-              : 'Escolha o cartão e a data para calcular.'
-        }
-      >
-        <Seletor
-          {...ariaCampo('primeiraFaturaMes', errors.primeiraFaturaMes?.message, true)}
-          {...register('primeiraFaturaMes', { onChange: () => setFaturaManual(true) })}
-          disabled={opcoesFatura.length === 0}
-        >
-          {opcoesFatura.length === 0 && <option value="">—</option>}
-          {opcoesFatura.map((m) => (
-            <option key={m} value={m}>
-              {formatarMes(m)}
-              {cartao ? ` — vence ${formatarData(vencimentoDaFatura(m, cartao.diaVencimento))}` : ''}
-              {m === automatica ? ' (automática)' : ''}
-            </option>
-          ))}
-        </Seletor>
-      </Campo>
-      {faturaManual && automatica && primeira !== automatica && (
-        <button
-          type="button"
-          className="-mt-3 self-start text-sm font-medium text-primary-text hover:underline"
-          onClick={() => {
-            setFaturaManual(false);
-            setValue('primeiraFaturaMes', automatica, { shouldValidate: true });
-          }}
-        >
-          Usar a fatura automática
-        </button>
-      )}
+        </SecaoFormulario>
 
-      {cartao && <Previa cartao={cartao} total={total} parcelas={parcelas} primeira={primeira} />}
+        <SecaoFormulario titulo="Valor e parcelas" descricao="O total é dividido em centavos; a sobra vai para a 1ª parcela.">
+          <div className="grid grid-cols-[1fr_8.5rem] gap-4">
+            <Campo id="valorTotalCentavos" rotulo="Valor total" erro={errors.valorTotalCentavos?.message}>
+              <Controller
+                control={control}
+                name="valorTotalCentavos"
+                render={({ field }) => (
+                  <CampoMoeda
+                    {...ariaCampo('valorTotalCentavos', errors.valorTotalCentavos?.message)}
+                    name={field.name}
+                    valor={field.value}
+                    onValorChange={field.onChange}
+                    onBlur={field.onBlur}
+                    ref={field.ref}
+                  />
+                )}
+              />
+            </Campo>
+            <Campo id="parcelas" rotulo="Parcelas" erro={errors.parcelas?.message}>
+              <Controller
+                control={control}
+                name="parcelas"
+                render={({ field }) => (
+                  <Seletor
+                    {...ariaCampo('parcelas', errors.parcelas?.message)}
+                    name={field.name}
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    value={String(field.value)}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                  >
+                    {Array.from({ length: LIMITES.parcelasCartaoMax }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        {n === 1 ? 'À vista' : `${n}x`}
+                      </option>
+                    ))}
+                  </Seletor>
+                )}
+              />
+            </Campo>
+          </div>
 
-      <Campo id="observacao" rotulo="Observação" opcional erro={errors.observacao?.message}>
-        <AreaTexto {...ariaCampo('observacao', errors.observacao?.message)} {...register('observacao')} rows={2} maxLength={LIMITES.observacaoMax} />
-      </Campo>
+          <Campo
+            id="primeiraFaturaMes"
+            rotulo={parcelas > 1 ? 'Fatura da 1ª parcela' : 'Fatura'}
+            erro={errors.primeiraFaturaMes?.message}
+            dica={
+              automatica && primeira === automatica
+                ? 'Calculada pela data da compra e pelo fechamento do cartão.'
+                : automatica
+                  ? `Pela data da compra seria ${formatarMes(automatica)}.`
+                  : 'Escolha o cartão e a data para calcular.'
+            }
+          >
+            <Seletor
+              {...ariaCampo('primeiraFaturaMes', errors.primeiraFaturaMes?.message, true)}
+              {...register('primeiraFaturaMes', { onChange: () => setFaturaManual(true) })}
+              disabled={opcoesFatura.length === 0}
+            >
+              {opcoesFatura.length === 0 && <option value="">—</option>}
+              {opcoesFatura.map((m) => (
+                <option key={m} value={m}>
+                  {formatarMes(m)}
+                  {cartao ? ` — vence ${formatarData(vencimentoDaFatura(m, cartao.diaVencimento))}` : ''}
+                  {m === automatica ? ' (automática)' : ''}
+                </option>
+              ))}
+            </Seletor>
+          </Campo>
+          {faturaManual && automatica && primeira !== automatica && (
+            <button
+              type="button"
+              className="-mt-3 self-start text-sm font-medium text-primary-text hover:underline"
+              onClick={() => {
+                setFaturaManual(false);
+                setValue('primeiraFaturaMes', automatica, { shouldValidate: true });
+              }}
+            >
+              Usar a fatura automática
+            </button>
+          )}
 
-      {edicaoId && (
-        <p className="flex gap-2 rounded-md bg-surface-2 p-3 text-[13px] text-fg-2">
-          <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-          Ao salvar, as parcelas são recalculadas. Não é possível alterar uma compra que tenha parcela em fatura já paga — desfaça o pagamento da fatura
-          antes.
-        </p>
-      )}
+          {cartao && <Previa cartao={cartao} total={total} parcelas={parcelas} primeira={primeira} />}
+
+        </SecaoFormulario>
+
+        <SecaoFormulario titulo="Detalhes">
+          <Campo id="observacao" rotulo="Observação" opcional erro={errors.observacao?.message}>
+            <AreaTexto {...ariaCampo('observacao', errors.observacao?.message)} {...register('observacao')} rows={2} maxLength={LIMITES.observacaoMax} />
+          </Campo>
+
+          {edicaoId && (
+            <Aviso>
+              Ao salvar, as parcelas são recalculadas. Não é possível alterar uma compra que tenha parcela em fatura já paga — desfaça o pagamento da fatura
+              antes.
+            </Aviso>
+          )}
+        </SecaoFormulario>
+      </PainelFormulario>
 
       <BarraAcoesFormulario rotuloSalvar={edicaoId ? 'Salvar alterações' : 'Lançar compra'} salvando={salvando} />
     </form>

@@ -62,6 +62,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Artefatos gerados (relatórios e rastros de testes, banco local).
+    "test-results/**",
+    "playwright-report/**",
+    "coverage/**",
+    ".local-stack/**",
   ]),
 ]);
 

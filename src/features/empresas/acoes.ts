@@ -15,7 +15,7 @@ import { esquemaCategoria, esquemaEmpresa } from './esquemas';
 
 const EMPRESA_EM_USO = 'Esta empresa tem lançamentos, cartões ou contas bancárias e não pode ser excluída.';
 const CATEGORIA_EM_USO =
-  'Esta categoria está em uso (lançamentos, compras ou cartões) e não pode ser excluída. Você pode renomeá-la.';
+  'Esta categoria está sendo utilizada em transações (lançamentos, compras ou cartões) e não pode ser excluída. Você pode renomeá-la.';
 
 function linhaEmpresa(d: z.infer<typeof esquemaEmpresa>) {
   return {
@@ -32,7 +32,7 @@ export async function criarEmpresa(entrada: unknown): Promise<ResultadoAcao<{ id
   const { data, error } = await supabase.from('empresas').insert(linhaEmpresa(v.data)).select('id').single();
   if (error) return falha(mensagemDeErro(error, 'criar empresa'));
   revalidarTudo();
-  return sucesso({ id: data.id }, 'Empresa cadastrada!');
+  return sucesso({ id: data.id }, 'Empresa cadastrada.');
 }
 
 export async function atualizarEmpresa(id: unknown, entrada: unknown): Promise<ResultadoAcao> {
@@ -45,7 +45,7 @@ export async function atualizarEmpresa(id: unknown, entrada: unknown): Promise<R
   if (error) return falha(mensagemDeErro(error, 'atualizar empresa'));
   if (!data?.length) return falha('Empresa não encontrada.');
   revalidarTudo();
-  return sucesso(undefined, 'Empresa atualizada!');
+  return sucesso(undefined, 'Empresa atualizada.');
 }
 
 export async function excluirEmpresa(id: unknown): Promise<ResultadoAcao> {
@@ -84,7 +84,7 @@ export async function criarCategoria(nome: unknown): Promise<ResultadoAcao<{ id:
   const { data, error } = await supabase.from('categorias').insert({ nome: v.data }).select('id').single();
   if (error) return falha(mensagemDeErro(error, 'criar categoria'));
   revalidarTudo();
-  return sucesso({ id: data.id }, 'Categoria criada!');
+  return sucesso({ id: data.id }, 'Categoria criada.');
 }
 
 export async function renomearCategoria(id: unknown, nome: unknown): Promise<ResultadoAcao> {
@@ -97,7 +97,7 @@ export async function renomearCategoria(id: unknown, nome: unknown): Promise<Res
   if (error) return falha(mensagemDeErro(error, 'renomear categoria'));
   if (!data?.length) return falha('Categoria não encontrada.');
   revalidarTudo();
-  return sucesso(undefined, 'Categoria renomeada!');
+  return sucesso(undefined, 'Categoria atualizada.');
 }
 
 export async function excluirCategoria(id: unknown): Promise<ResultadoAcao> {

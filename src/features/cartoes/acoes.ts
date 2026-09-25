@@ -45,7 +45,7 @@ export async function criarCartao(entrada: unknown): Promise<ResultadoAcao<{ id:
       .single();
     if (error) throw error;
     revalidarTudo();
-    return sucesso({ id: data.id }, 'Cartão cadastrado!');
+    return sucesso({ id: data.id }, 'Cartão cadastrado.');
   } catch (erro) {
     return falha(mensagemDeErro(erro, 'criar cartão'));
   }
@@ -80,7 +80,7 @@ export async function atualizarCartao(id: unknown, entrada: unknown): Promise<Re
     if (error) throw error;
     if (!data?.length) return falha('Cartão não encontrado.');
     revalidarTudo();
-    return sucesso(undefined, 'Cartão atualizado!');
+    return sucesso(undefined, 'Cartão atualizado.');
   } catch (erro) {
     return falha(mensagemDeErro(erro, 'atualizar cartão'));
   }
@@ -118,7 +118,7 @@ export async function registrarCompra(entrada: unknown): Promise<ResultadoAcao<{
   if (error || !data) return falha(mensagemDeErro(error, 'registrar compra'));
   revalidarTudo();
   const n = v.data.parcelas;
-  return sucesso({ id: data }, n === 1 ? 'Compra lançada!' : `Compra lançada em ${n} parcelas!`);
+  return sucesso({ id: data }, n === 1 ? 'Compra lançada.' : `Compra lançada em ${n} parcelas.`);
 }
 
 export async function atualizarCompra(id: unknown, entrada: unknown): Promise<ResultadoAcao> {
@@ -130,7 +130,7 @@ export async function atualizarCompra(id: unknown, entrada: unknown): Promise<Re
   const { error } = await supabase.rpc('atualizar_compra_cartao', { p_id: idOk.data, ...argsCompra(v.data) });
   if (error) return falha(mensagemDeErro(error, 'atualizar compra'));
   revalidarTudo();
-  return sucesso(undefined, 'Compra atualizada!');
+  return sucesso(undefined, 'Compra atualizada.');
 }
 
 export async function excluirCompra(id: unknown): Promise<ResultadoAcao> {
@@ -157,5 +157,5 @@ export async function definirAjusteFatura(lancamentoId: unknown, entrada: unknow
   });
   if (error) return falha(mensagemDeErro(error, 'ajustar fatura'));
   revalidarTudo();
-  return sucesso(undefined, 'Fatura ajustada!');
+  return sucesso(undefined, 'Fatura ajustada.');
 }

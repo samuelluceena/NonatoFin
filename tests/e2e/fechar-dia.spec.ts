@@ -12,8 +12,8 @@ test('fechar o dia gera o texto para o WhatsApp', async ({ page, context, browse
   const proxima = unico('Proximo Util');
 
   await cadastrarBoleto(page, { fornecedor: paga, descricao: 'Energia', vencimento: dataRelativa(0), valorDigitos: '15000' });
-  await page.getByRole('button', { name: 'MARCAR COMO PAGO' }).click();
-  await expect(page.getByText('Boleto marcado como pago!')).toBeVisible();
+  await page.getByRole('button', { name: 'Marcar como pago' }).click();
+  await expect(page.getByText('Pagamento registrado.')).toBeVisible();
   await cadastrarBoleto(page, { fornecedor: pendente, descricao: 'Parcela', vencimento: dataRelativa(-1), valorDigitos: '10000' });
   await cadastrarBoleto(page, { fornecedor: proxima, descricao: 'Aluguel', vencimento: proximoDiaUtil(dataRelativa(0)), valorDigitos: '80000' });
 
@@ -46,7 +46,9 @@ test('fechar o dia gera o texto para o WhatsApp', async ({ page, context, browse
   if (browserName === 'chromium') {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.getByRole('button', { name: 'Copiar texto' }).click();
-    await expect(page.getByText('Texto copiado!')).toBeVisible();
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(textoWhats);
+    await expect(page.getByText('Texto copiado.')).toBeVisible();
+    // O Windows guarda as quebras de linha como CRLF na área de transferência.
+    const copiado = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copiado.replaceAll('\r\n', '\n')).toBe(textoWhats);
   }
 });

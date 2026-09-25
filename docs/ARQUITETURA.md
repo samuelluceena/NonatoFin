@@ -30,7 +30,7 @@ Supabase: Auth (GoTrue) + PostgREST + Postgres (RLS, constraints, funções)
 | Estilo | Tailwind CSS v4 + tokens CSS | Design system centralizado em `globals.css` |
 | Banco/Auth | Supabase (Postgres + Auth) | Gratuito, RLS nativa, migrations versionadas |
 | Formulários | React Hook Form + Zod | Validação idêntica no navegador e no servidor |
-| Tema | next-themes | Claro/Escuro/Sistema, sem flash |
+| Tema | next-themes | Claro/Escuro (sem "Sistema"), sem flash |
 | Fonte | Geist Sans (pacote `geist`, local) | Sem depender do Google Fonts |
 | Notificações | sonner | Toasts leves e acessíveis |
 | Ícones | lucide-react | Tree-shaking (só os usados) |
@@ -98,6 +98,7 @@ nonatofin/
 │  │  └─ (app)/               Rotas autenticadas (layout com menu e seletor de empresa)
 │  │     ├─ page.tsx          Hoje
 │  │     ├─ dashboard/        Indicadores e gráficos
+│  │     ├─ transacoes/       Visão centralizada da movimentação (composta; sem tabela própria)
 │  │     ├─ boletos/          Lista, novo, [id] (detalhe), [id]/editar — lançamentos
 │  │     ├─ contas/           Contas bancárias (saldos), nova, [id] (extrato e previsão), [id]/editar
 │  │     ├─ fechar-dia/       Texto do fechamento do dia (WhatsApp)
@@ -110,6 +111,7 @@ nonatofin/
 │  │  ├─ lancamentos/         Modelo central: consultas, acoes, esquemas, mapeadores, serie, componentes/
 │  │  ├─ contas/              Contas bancárias, saldo, entradas, transferências, conferências
 │  │  ├─ fechamento/          Dados e tela do "Fechar o dia"
+│  │  ├─ transacoes/          Transações: consultas (compõe lançamentos, movimentos e compras) e componentes
 │  │  ├─ cartoes/             Cartões, compras parceladas, faturas
 │  │  ├─ empresas/            Empresas, categorias, empresa selecionada (cookie), seletor do topo
 │  │  ├─ fornecedores/        Fornecedores
@@ -118,10 +120,10 @@ nonatofin/
 │  │  ├─ exportacao/          csv.ts, xlsx.ts, linhas.ts, botões
 │  │  └─ auth/acoes.ts        Login/logout
 │  ├─ components/
-│  │  ├─ ui/                  Design system: Botao, Campo, CampoMoeda, CampoSaldo, Cartao, Dialogo,
-│  │  │                       Segmentado, BarraAcoesFormulario, BotaoConfirmar, ListaDetalhes, LinkVoltar…
+│  │  ├─ ui/                  Design system: Botao/BotaoIcone, Campo, CampoMoeda, CampoSaldo, Cartao, Dialogo,
+│  │  │                       Selo, Dica, Esqueleto, MenuAcoes, BotaoFiltros, Segmentado, BarraAcoesFormulario…
 │  │  ├─ graficos/            Gráficos leves em SVG/CSS (mensal, comparativos, status)
-│  │  ├─ layout/              Menu lateral, barra inferior, cabeçalho, navegação, tema
+│  │  ├─ layout/              Sidebar (agrupada, recolhível), barra inferior + "Mais", cabeçalho, navegação, ações rápidas, tema
 │  │  └─ providers/           Tema + notificações
 │  └─ lib/
 │     ├─ config.ts            Nome, versão, fuso, LIMITES (sem números mágicos)
@@ -133,6 +135,8 @@ nonatofin/
 │     │  ├─ filtros.ts        Filtros da lista (URL ↔ filtros → critério de busca)
 │     │  ├─ indicadores.ts    Cálculos do dashboard, fornecedores, meses, grupos
 │     │  ├─ saldos.ts         Previsão de saldo, cobertura, conta padrão, agrupamento
+│     │  ├─ transacoes.ts     Transações: filtros ↔ URL, plano por origem, tipos/status, mescla, totais
+│     │  ├─ categorias.ts     Uso das categorias
 │     │  ├─ dias-uteis.ts     Feriados nacionais (Páscoa, Carnaval…) e próximo dia útil
 │     │  ├─ fechamento.ts     Texto do "Fechar o dia" e saldo após pagar
 │     │  ├─ cartoes.ts        Fechamento, fatura da compra, divisão em parcelas
@@ -204,6 +208,7 @@ nonatofin/
 | Contas e saldo | `app/(app)/contas/*`, `features/contas/*`, `lib/domain/saldos.ts`, funções SQL `saldos_contas`/`conferir_saldo`/`transferir_entre_contas` |
 | Fechar o dia | `app/(app)/fechar-dia/page.tsx`, `features/fechamento/*`, `lib/domain/fechamento.ts` (texto), `lib/domain/dias-uteis.ts`, `FERIADOS_LOCAIS` em `lib/config.ts` |
 | Conta ao pagar | `features/lancamentos/componentes/conta-do-pagamento.tsx` (diálogo único no layout) e `botao-pagamento.tsx` |
+| Transações | `app/(app)/transacoes/page.tsx`, `features/transacoes/*`, `lib/domain/transacoes.ts` (reaproveita `consultaFiltrada`/`filtroBusca` de lançamentos e os mapeadores de contas e cartões) |
 | Tema | `components/providers/provedores.tsx`, `components/layout/seletor-tema.tsx`, `globals.css` |
 | PWA | `app/manifest.ts`, `public/icons/*`, `scripts/gerar-icones.mjs` |
 

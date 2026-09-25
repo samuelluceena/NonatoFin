@@ -13,7 +13,8 @@ function cnpjAleatorio(): string {
 }
 
 const seletorVisivel = (page: Page) => page.getByTestId('seletor-empresa').filter({ visible: true });
-const dialogo = (page: Page) => page.getByRole('dialog');
+/** Diálogo aberto (comum ou de confirmação — alertdialog). */
+const dialogo = (page: Page) => page.getByRole('dialog').or(page.getByRole('alertdialog'));
 
 test('cadastra, valida CNPJ e exclui uma empresa', async ({ page }) => {
   const apelido = unico('Empresa');
@@ -28,7 +29,7 @@ test('cadastra, valida CNPJ e exclui uma empresa', async ({ page }) => {
   await dialogo(page).getByLabel('CNPJ').fill(cnpj);
   await expect(dialogo(page).getByText('CNPJ válido.')).toBeVisible();
   await dialogo(page).getByRole('button', { name: 'Salvar' }).click();
-  await expect(page.getByText('Empresa cadastrada!')).toBeVisible();
+  await expect(page.getByText('Empresa cadastrada.')).toBeVisible();
   const lista = page.getByTestId('lista-empresas');
   await expect(lista.getByText(apelido)).toBeVisible();
   await expect(lista.getByText(`CNPJ ${cnpj.slice(0, 2)}.${cnpj.slice(2, 5)}.${cnpj.slice(5, 8)}/${cnpj.slice(8, 12)}-${cnpj.slice(12)}`)).toBeVisible();
@@ -81,30 +82,37 @@ test('seletor do topo filtra os lançamentos por empresa', async ({ page }) => {
   await expect(page.getByTestId('secao-por-categoria')).toBeVisible();
 });
 
-test('cria, renomeia e exclui categoria; categoria em uso não é excluída', async ({ page }) => {
+test('cria, edita e exclui categoria; categoria em uso não é excluída', async ({ page }) => {
   const nome = unico('Impostos');
   await page.goto('/configuracoes/categorias');
   await page.getByRole('button', { name: 'Nova categoria' }).click();
   await dialogo(page).getByLabel('Nome').fill(nome);
   await dialogo(page).getByRole('button', { name: 'Salvar' }).click();
-  await expect(page.getByText('Categoria criada!')).toBeVisible();
+  await expect(page.getByText('Categoria criada.')).toBeVisible();
 
-  await page.getByRole('button', { name: `Renomear ${nome}` }).click();
+  await expect(page.getByTestId('item-categoria').filter({ hasText: nome }).getByTestId('uso-categoria')).toHaveText('Sem uso');
+  await page.getByRole('button', { name: `Editar ${nome}` }).click();
+  await expect(dialogo(page).getByRole('heading', { name: 'Editar categoria' })).toBeVisible();
   await dialogo(page).getByLabel('Nome').fill(`${nome} 2`);
   await dialogo(page).getByRole('button', { name: 'Salvar' }).click();
-  await expect(page.getByText('Categoria renomeada!')).toBeVisible();
+  await expect(page.getByText('Categoria atualizada.')).toBeVisible();
 
   await page.getByRole('button', { name: `Excluir ${nome} 2` }).click();
-  await dialogo(page).getByRole('button', { name: 'Excluir' }).click();
+  await dialogo(page).getByRole('button', { name: 'Excluir categoria' }).click();
   await expect(page.getByText('Categoria excluída.')).toBeVisible();
   await expect(page.getByTestId('lista-categorias').getByText(`${nome} 2`)).toHaveCount(0);
 
   // "Boleto de fornecedor" está em uso pelos boletos de outros testes.
   await cadastrarBoleto(page, { categoria: 'Boleto de fornecedor', fornecedor: unico('Uso'), descricao: 'Em uso', vencimento: dataRelativa(2), valorDigitos: '100' });
   await page.goto('/configuracoes/categorias');
+  const emUso = page.getByTestId('item-categoria').filter({ hasText: 'Boleto de fornecedor' });
+  await expect(emUso.getByTestId('selo-em-uso')).toHaveText('Em uso');
+  await expect(emUso.getByTestId('uso-categoria')).toContainText(/\d+ lançamentos?/);
   await page.getByRole('button', { name: 'Excluir Boleto de fornecedor' }).click();
-  await dialogo(page).getByRole('button', { name: 'Excluir' }).click();
-  await expect(page.getByText(/está em uso/)).toBeVisible();
+  await expect(dialogo(page).getByTestId('aviso-categoria-em-uso')).toContainText('está sendo utilizada em transações e não pode ser excluída');
+  await expect(dialogo(page).getByRole('button', { name: 'Excluir categoria' })).toHaveCount(0);
+  await dialogo(page).getByRole('button', { name: 'Entendi' }).click();
+  await expect(page.getByTestId('lista-categorias').getByText('Boleto de fornecedor')).toBeVisible();
 });
 
 test('cartão: compra parcelada vira faturas, ajuste e trava após pagar', async ({ page }) => {
@@ -137,7 +145,7 @@ test('cartão: compra parcelada vira faturas, ajuste e trava após pagar', async
   await expect(previa.getByRole('listitem')).toHaveCount(3);
   await semRolagemHorizontal(page);
   await page.getByRole('button', { name: 'Lançar compra' }).click();
-  await expect(page.getByText('Compra lançada em 3 parcelas!')).toBeVisible();
+  await expect(page.getByText('Compra lançada em 3 parcelas.')).toBeVisible();
   await expect(page).toHaveURL(/\/cartoes\/[0-9a-f-]{36}$/);
   await expect(page.getByTestId('item-compra')).toHaveCount(1);
   await expect(page.getByTestId('item-fatura')).toHaveCount(3);
@@ -152,7 +160,7 @@ test('cartão: compra parcelada vira faturas, ajuste e trava após pagar', async
   await dialogo(page).getByLabel('Valor do ajuste').pressSequentially('500');
   await expect(page.getByTestId('resumo-ajuste')).toContainText(/R\$\s38,34/);
   await page.getByTestId('salvar-ajuste').click();
-  await expect(page.getByText('Fatura ajustada!')).toBeVisible();
+  await expect(page.getByText('Fatura ajustada.')).toBeVisible();
   await expect(page.getByTestId('totais-fatura')).toContainText(/Total da fatura\s*R\$\s38,34/);
   await semRolagemHorizontal(page);
 

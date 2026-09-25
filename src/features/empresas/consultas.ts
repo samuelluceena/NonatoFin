@@ -2,7 +2,7 @@ import 'server-only';
 import { cache } from 'react';
 import { cookies } from 'next/headers';
 import { mensagemDeErro } from '@/lib/acoes/erros';
-import type { Categoria, Empresa } from '@/lib/domain/tipos';
+import type { Categoria, Empresa, UsoCategoria } from '@/lib/domain/tipos';
 import { criarClienteServidor, type ClienteSupabase } from '@/lib/supabase/server';
 import { ErroConsulta } from '@/lib/supabase/consultas';
 import { COOKIE_EMPRESA } from './constantes';
@@ -53,3 +53,22 @@ export const listarCategorias = cache(async (): Promise<Categoria[]> => {
   if (r.error) throw new ErroConsulta(mensagemDeErro(r.error, 'criar categorias padrão'));
   return r.data ?? [];
 });
+
+type Contagem = { count: number }[] | null;
+
+/**
+ * Quantos registros usam cada categoria (lançamentos, compras no cartão e
+ * cartões — as tabelas com FK para categorias). Contagem feita no banco, em
+ * uma consulta, sempre com RLS (só os registros do próprio usuário).
+ */
+export async function listarUsoDasCategorias(supabase: ClienteSupabase): Promise<Map<string, UsoCategoria>> {
+  const { data, error } = await supabase
+    .from('categorias')
+    .select(
+      'id, lancamentos:lancamentos!lancamentos_categoria_fk(count), compras:compras_cartao!compras_categoria_fk(count), cartoes:cartoes!cartoes_categoria_fk(count)',
+    )
+    .overrideTypes<{ id: string; lancamentos: Contagem; compras: Contagem; cartoes: Contagem }[], { merge: false }>();
+  if (error) throw new ErroConsulta(mensagemDeErro(error, 'contar uso das categorias'));
+  const total = (c: Contagem) => Number(c?.[0]?.count ?? 0);
+  return new Map((data ?? []).map((c) => [c.id, { lancamentos: total(c.lancamentos), compras: total(c.compras), cartoes: total(c.cartoes) }]));
+}

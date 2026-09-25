@@ -11,8 +11,11 @@ import { revalidarTudo } from '@/lib/acoes/revalidar';
 import { exigirUsuario } from '@/lib/auth/sessao';
 import { hojeISO } from '@/lib/domain/datas';
 import { entradaNasceConfirmada } from '@/lib/domain/saldos';
-import type { ContaResumida } from '@/lib/domain/tipos';
+import type { ContaBancaria, ContaResumida } from '@/lib/domain/tipos';
+import { ErroConsulta } from '@/lib/supabase/consultas';
 import { esquemaId, textoOuNulo } from '@/lib/validacao';
+import { obterContextoEmpresas } from '@/features/empresas/consultas';
+import { listarContas } from './consultas';
 import {
   esquemaConferencia,
   esquemaConta,
@@ -46,7 +49,7 @@ export async function criarConta(entrada: unknown): Promise<ResultadoAcao<{ id: 
   const conferencia = await supabase.rpc('conferir_saldo', { p_conta_id: data.id, p_saldo_informado: v.data.saldoInicialCentavos });
   if (conferencia.error) return falha(mensagemDeErro(conferencia.error, 'saldo inicial'));
   revalidarTudo();
-  return sucesso({ id: data.id }, 'Conta cadastrada!');
+  return sucesso({ id: data.id }, 'Conta cadastrada.');
 }
 
 export async function atualizarConta(id: unknown, entrada: unknown): Promise<ResultadoAcao> {
@@ -65,7 +68,7 @@ export async function atualizarConta(id: unknown, entrada: unknown): Promise<Res
   }
   if (!data?.length) return falha('Conta não encontrada.');
   revalidarTudo();
-  return sucesso(undefined, 'Conta atualizada!');
+  return sucesso(undefined, 'Conta atualizada.');
 }
 
 export async function excluirConta(id: unknown): Promise<ResultadoAcao> {
@@ -95,7 +98,7 @@ export async function registrarEntrada(entrada: unknown): Promise<ResultadoAcao>
   });
   if (error) return falha(mensagemDeErro(error, 'registrar entrada'));
   revalidarTudo();
-  return sucesso(undefined, confirmado ? 'Entrada registrada!' : 'Entrada prevista registrada!');
+  return sucesso(undefined, confirmado ? 'Entrada adicionada.' : 'Entrada prevista adicionada.');
 }
 
 /** Entrada prevista que se confirmou: passa a contar no saldo, na data de hoje. */
@@ -112,7 +115,7 @@ export async function confirmarEntrada(id: unknown): Promise<ResultadoAcao> {
   if (error) return falha(mensagemDeErro(error, 'confirmar entrada'));
   if (!data?.length) return falha('Entrada não encontrada.');
   revalidarTudo();
-  return sucesso(undefined, 'Entrada confirmada!');
+  return sucesso(undefined, 'Entrada confirmada.');
 }
 
 /** Exclui uma entrada ou conferência (transferências: excluirTransferencia). */
@@ -140,7 +143,7 @@ export async function transferir(entrada: unknown): Promise<ResultadoAcao> {
   });
   if (error) return falha(mensagemDeErro(error, 'transferir'));
   revalidarTudo();
-  return sucesso(undefined, 'Transferência registrada!');
+  return sucesso(undefined, 'Transferência concluída.');
 }
 
 export async function excluirTransferencia(transferenciaId: unknown): Promise<ResultadoAcao> {
@@ -162,13 +165,13 @@ export async function conferirSaldo(entrada: unknown): Promise<ResultadoAcao<{ a
   if (error || !data) return falha(mensagemDeErro(error, 'conferir saldo'));
   revalidarTudo();
   const ajuste = Number(data.valor_centavos);
-  return sucesso({ ajusteCentavos: ajuste }, ajuste === 0 ? 'Saldo conferido: está certo!' : 'Saldo conferido e ajustado.');
+  return sucesso({ ajusteCentavos: ajuste }, ajuste === 0 ? 'Saldo conferido: está certo.' : 'Saldo conferido e ajustado.');
 }
 
 const esquemaConferenciasDoDia = z
   .array(esquemaConferencia)
   .min(1, 'Nenhuma conta para conferir.')
-  .max(50, 'Contas demais.');
+  .max(50, 'São contas demais para conferir de uma vez (máximo de 50).');
 
 /**
  * Conferência do primeiro acesso do dia: grava uma conferência por conta
@@ -187,7 +190,7 @@ export async function conferirSaldosDoDia(entrada: unknown): Promise<ResultadoAc
   revalidarTudo();
   return sucesso(
     { ajustadas },
-    ajustadas === 0 ? 'Saldos conferidos. Tudo certo!' : `Saldos conferidos (${ajustadas} ${ajustadas === 1 ? 'conta ajustada' : 'contas ajustadas'}).`,
+    ajustadas === 0 ? 'Saldos conferidos. Tudo certo.' : `Saldos conferidos (${ajustadas} ${ajustadas === 1 ? 'conta ajustada' : 'contas ajustadas'}).`,
   );
 }
 
@@ -216,6 +219,20 @@ export async function aplicarContaPadrao(empresaId: unknown): Promise<ResultadoA
   revalidarTudo();
   const n = data?.length ?? 0;
   return sucesso({ quantidade: n }, n === 1 ? '1 lançamento atualizado.' : `${n} lançamentos atualizados.`);
+}
+
+/**
+ * Contas ativas para registrar uma entrada pelo botão "+" (fora da tela da
+ * conta): as da empresa selecionada no topo, ou de todas.
+ */
+export async function contasParaEntrada(): Promise<ResultadoAcao<ContaBancaria[]>> {
+  const { supabase } = await exigirUsuario();
+  try {
+    const { empresaId } = await obterContextoEmpresas();
+    return sucesso(await listarContas(supabase, { empresaId, somenteAtivas: true }));
+  } catch (erro) {
+    return falha(erro instanceof ErroConsulta ? erro.message : mensagemDeErro(erro, 'listar contas para entrada'));
+  }
 }
 
 /** Contas ativas de uma empresa (para escolher a conta na hora de pagar). */

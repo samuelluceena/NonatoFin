@@ -16,6 +16,9 @@
 12. **Exportação** — `/api/exportar` exige sessão, usa RLS e responde com `Cache-Control: no-store`.
 13. **CSV injection** — campos que começam com `= + - @` são neutralizados na exportação.
 
+## Consultas compostas (Transações)
+A tela Transações só lê: compõe lançamentos, movimentos de conta e compras no cartão com o cliente do usuário (RLS em todas as consultas), sem tabela nova e sem chave de serviço. O teste de integração `transacoes.test.ts` confere que outro usuário não vê nada com nenhum filtro (inclusive passando ids de conta, empresa ou fornecedor do dono). A contagem de uso das categorias também passa pela RLS.
+
 ## Variáveis de ambiente
 
 | Variável | Onde | Segredo? |

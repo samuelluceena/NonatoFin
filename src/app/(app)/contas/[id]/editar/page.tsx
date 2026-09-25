@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
 import { BotaoConfirmar } from '@/components/ui/botao-confirmar';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
 import { LinkVoltar } from '@/components/ui/link-voltar';
 import { excluirConta } from '@/features/contas/acoes';
 import { FormularioConta } from '@/features/contas/componentes/formulario-conta';
@@ -23,7 +22,7 @@ export default async function PaginaEditarConta({ params }: PageProps<'/contas/[
   return (
     <div className="mx-auto max-w-2xl">
       <CabecalhoPagina voltar={<LinkVoltar href={`/contas/${conta.id}`}>{conta.apelido}</LinkVoltar>} titulo="Editar conta" />
-      <Cartao className="p-4 sm:p-6">
+      <>
         <FormularioConta
           edicaoId={conta.id}
           empresas={empresas}
@@ -37,7 +36,7 @@ export default async function PaginaEditarConta({ params }: PageProps<'/contas/[
             saldoInicialCentavos: 0,
           }}
         />
-      </Cartao>
+      </>
       <div className="mt-6 flex justify-end">
         <BotaoConfirmar
           rotulo="Excluir"

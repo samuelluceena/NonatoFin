@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
 import { LinkVoltar } from '@/components/ui/link-voltar';
 import { Trash2 } from 'lucide-react';
 import { BotaoConfirmar } from '@/components/ui/botao-confirmar';
@@ -36,7 +35,7 @@ export default async function PaginaEditarCartao({ params }: PageProps<'/cartoes
         voltar={<LinkVoltar href={`/cartoes/${cartao.id}`}>{cartao.nome}</LinkVoltar>}
         subtitulo="Mudanças de nome, empresa, emissor, categoria e vencimento são aplicadas às faturas em aberto."
       />
-      <Cartao className="p-4 sm:p-6">
+      <>
         <FormularioCartao
           edicaoId={cartao.id}
           empresas={empresas}
@@ -56,7 +55,7 @@ export default async function PaginaEditarCartao({ params }: PageProps<'/cartoes
             ativo: cartao.ativo,
           }}
         />
-      </Cartao>
+      </>
       <div className="mt-6 flex justify-end">
         <BotaoConfirmar
           rotulo="Excluir"

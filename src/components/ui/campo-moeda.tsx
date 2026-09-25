@@ -17,7 +17,7 @@ interface Props extends Omit<ComponentProps<'input'>, 'value' | 'onChange' | 'ty
 export function CampoMoeda({ valor, onValorChange, className, ...props }: Props) {
   return (
     <div className="relative">
-      <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-fg-3" aria-hidden="true">
+      <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-3" aria-hidden="true">
         R$
       </span>
       <input
@@ -27,7 +27,7 @@ export function CampoMoeda({ valor, onValorChange, className, ...props }: Props)
         value={valor > 0 ? formatarNumeroMoeda(valor) : ''}
         placeholder="0,00"
         onChange={(e) => onValorChange(centavosDosDigitos(e.target.value))}
-        className={classeControle(cn('numeros h-12 pl-11 text-[17px] font-medium', className))}
+        className={classeControle(cn('numeros h-11 pl-10 text-lead font-medium lg:h-10', className))}
         {...props}
       />
     </div>
