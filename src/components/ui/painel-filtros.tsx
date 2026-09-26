@@ -77,7 +77,8 @@ function Popover({ onFechar, ancora, titulo, descricao, children, rodape }: Omit
   useEffect(() => {
     const botao = ancora.current;
     painel.current?.querySelector<HTMLElement>('select, input, button:not([aria-label="Fechar"])')?.focus();
-    const tecla = (e: KeyboardEvent) => e.key === 'Escape' && fechar.current();
+    // Esc já tratado por um controle interno (ex.: lista do Seletor aberta) não fecha o painel.
+    const tecla = (e: KeyboardEvent) => e.key === 'Escape' && !e.defaultPrevented && fechar.current();
     const fora = (e: PointerEvent) => {
       const alvo = e.target as Node;
       if (!painel.current?.contains(alvo) && !botao?.contains(alvo)) fechar.current();

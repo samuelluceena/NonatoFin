@@ -114,14 +114,9 @@ export function FormularioCartao({ empresas, categorias, fornecedores, contas, h
             <Seletor
               {...ariaCampo('empresaId', errors.empresaId?.message)}
               {...register('empresaId', { onChange: (e) => setValue('contaId', contaPadraoDaEmpresa(contas, e.target.value)) })}
-            >
-              <option value="">Selecione a empresa</option>
-              {empresas.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.apelido}
-                </option>
-              ))}
-            </Seletor>
+              placeholder="Selecione a empresa"
+              opcoes={empresas.map((e) => ({ valor: e.id, rotulo: e.apelido }))}
+            />
           </Campo>
 
           <div className="grid gap-4 sm:grid-cols-[1fr_10rem]">
@@ -197,14 +192,12 @@ export function FormularioCartao({ empresas, categorias, fornecedores, contas, h
             erro={errors.categoriaFaturaId?.message}
             dica="Usada no lançamento a pagar de cada fatura. Cada compra tem a sua própria categoria."
           >
-            <Seletor {...ariaCampo('categoriaFaturaId', errors.categoriaFaturaId?.message, true)} {...register('categoriaFaturaId')}>
-              <option value="">Selecione a categoria</option>
-              {categorias.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nome}
-                </option>
-              ))}
-            </Seletor>
+            <Seletor
+              {...ariaCampo('categoriaFaturaId', errors.categoriaFaturaId?.message, true)}
+              {...register('categoriaFaturaId')}
+              placeholder="Selecione a categoria"
+              opcoes={categorias.map((c) => ({ valor: c.id, rotulo: c.nome }))}
+            />
           </Campo>
 
           <Controller

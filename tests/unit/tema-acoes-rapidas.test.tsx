@@ -207,8 +207,11 @@ describe('ações rápidas ("+")', () => {
     await user.click(screen.getByTestId('acao-entrada'));
 
     const conta = await screen.findByLabelText('Conta');
-    expect(conta).toHaveValue(CONTA.id);
-    expect(within(conta).getByRole('option', { name: 'Itaú PJ •••• 4321' })).toBeInTheDocument();
+    expect(conta).toHaveAttribute('data-valor', CONTA.id);
+    expect(conta).toHaveTextContent('Itaú PJ •••• 4321');
+    await user.click(conta);
+    expect(screen.getByRole('option', { name: 'Itaú PJ •••• 4321' })).toHaveAttribute('aria-selected', 'true');
+    await user.keyboard('{Escape}');
     await user.type(screen.getByLabelText('Descrição'), 'Pix recebido');
     await user.type(screen.getByLabelText('Valor'), '2500');
     await user.click(screen.getByTestId('salvar-entrada'));

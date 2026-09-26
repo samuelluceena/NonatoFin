@@ -69,8 +69,8 @@ test('seletor do topo filtra os lançamentos por empresa', async ({ page }) => {
 
   // O novo boleto já vem com a empresa selecionada.
   await page.goto('/boletos/novo');
-  await expect(page.locator('#empresaId').filter({ visible: true })).toHaveValue(/[0-9a-f-]{36}/);
-  await expect(page.locator('#empresaId option:checked')).toHaveText(EMPRESAS_E2E[1].apelido);
+  await expect(page.locator('#empresaId').filter({ visible: true })).toHaveAttribute('data-valor', /[0-9a-f-]{36}/);
+  await expect(page.locator('#empresaId').filter({ visible: true })).toHaveText(EMPRESAS_E2E[1].apelido);
 
   await page.goto(`/boletos?filtro=todos&q=${encodeURIComponent(marca)}`);
   await escolherOpcao(seletorVisivel(page), 'Todas as empresas');
@@ -127,7 +127,7 @@ test('cartão: compra parcelada vira faturas, ajuste e trava após pagar', async
   await page.getByLabel('Dia do fechamento').fill('3');
   await page.getByLabel('Dia do vencimento').fill('10');
   await expect(page.getByTestId('exemplo-fatura')).toBeVisible();
-  await expect(page.locator('#categoriaFaturaId option:checked')).toHaveText('Cartão de crédito');
+  await expect(page.locator('#categoriaFaturaId')).toHaveText('Cartão de crédito');
   await semRolagemHorizontal(page);
   await page.getByRole('button', { name: 'Salvar cartão' }).click();
   await expect(page).toHaveURL(/\/cartoes\/[0-9a-f-]{36}$/);
@@ -136,7 +136,7 @@ test('cartão: compra parcelada vira faturas, ajuste e trava após pagar', async
   // 2. Compra de R$ 100,00 em 3x
   await page.getByRole('link', { name: 'Nova compra' }).first().click();
   await expect(page).toHaveURL(/\/cartoes\/compras\/nova\?cartao=/);
-  await expect(page.locator('#cartaoId option:checked')).toContainText(nome);
+  await expect(page.locator('#cartaoId')).toContainText(nome);
   await page.getByLabel('O que foi comprado').fill('Tecidos');
   await page.locator('#valorTotalCentavos').pressSequentially('10000');
   await escolherOpcao(page.locator('#parcelas').filter({ visible: true }), '3x');

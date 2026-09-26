@@ -95,7 +95,8 @@ Curto e discreto (150–220ms, curva `--ease-suave`): `animate-surgir` (menus, F
 | `Botao` / `LinkBotao` | `primario` (uma por tela), `secundario`, `fantasma`, `perigo`, `suave`; `sm` 36px, `md` 44px no celular / 40px no desktop, `lg` 48px; `carregando` + `textoCarregando` |
 | `BotaoIcone` | Botão só com ícone (nome acessível obrigatório): 36px ou 44/40px |
 | `BotaoFiltros` | "Filtros" com contador (Boletos, Transações) |
-| `Campo`, `Entrada`, `AreaTexto`, `Seletor`, `CampoMoeda`, `CampoSaldo` | Fundo `input`, borda forte, foco com anel azul, erro com `role="alert"`; 44px (40px no desktop) |
+| `Campo`, `Entrada`, `AreaTexto`, `CampoMoeda`, `CampoSaldo` | Fundo `input`, borda forte, foco com anel azul, erro com `role="alert"`; 44px (40px no desktop) |
+| `Seletor` | Select customizado único do app (**nenhum `<select>` nativo**): combobox WAI-ARIA, lista na top layer (Popover API) acima de diálogos e fora de áreas com overflow; variantes `campo`, `filtro` (chip) e `compacto` (empresa global). Ver "Seletor" abaixo |
 | `Cartao`, `TituloSecao` | Superfície com borda; título de seção em sentence case |
 | `CabecalhoPagina` | PageHeader: voltar (opcional), título, descrição curta, ações |
 | `Selo`, `SeloStatus` | Badge com tons `neutro`/`info`/`sucesso`/`aviso`/`perigo`; status com ícone + texto |
@@ -121,6 +122,11 @@ Estados: hover (cor/borda), foco visível (contorno azul 2px), ativo (`scale-[0.
 - **Hierarquia:** uma ação `primario` por tela (ou por diálogo); demais ações `secundario`; ações discretas `fantasma`; exclusão `perigo`. Botões só com ícone usam `BotaoIcone` (nome acessível obrigatório).
 - **Estados:** hover (cor/borda), foco (contorno azul 2px), ativo (`scale-[0.98]`), carregando (spinner + texto, desabilitado — impede duplo clique), desabilitado (50%).
 - **Campos:** rótulo sempre visível (placeholder não substitui rótulo), dica abaixo quando ajuda, erro abaixo com `role="alert"` ligado por `aria-describedby` e borda vermelha. 44px no celular, 40px no desktop, texto 16px. Datas com o seletor nativo; valores com `CampoMoeda` (máscara de banco, centavos).
+- **Seletor** (`components/ui/seletor.tsx`, reexportado por `campo.tsx`): toda escolha de lista usa ele — não use `<select>` nativo.
+  - API: `opcoes={[{ valor, rotulo, desabilitada? }]}`, `placeholder` (opção de valor `''` em tom neutro), `value`/`onChange` (controlado) ou `{...register('campo')}` do React Hook Form; `ariaCampo()` e `<Campo>` continuam dando rótulo, dica e erro. `onChange`/`onBlur` recebem `{ target: { name, value } }`; o valor é sempre string (converta no `Controller` quando o esquema pede número, como em Parcelas).
+  - Visual: gatilho igual aos campos (cantos `md`, borda, chevron que gira ao abrir); lista em `surface-elevated` com uma sombra, opções ≥ 44px no celular, hover/ativa em `surface-2`, selecionada com ✓ discreto. Sem animação além de um `surgir` de 160ms.
+  - Teclado: Enter/Espaço/setas abrem; setas, Home/End e PageUp/PageDown navegam (pulam opções desabilitadas); letras saltam para a opção; Enter/Espaço escolhem; Esc fecha só a lista (não o diálogo/painel); Tab fecha. Clique fora, rolagem e redimensionar fecham; o foco volta ao gatilho.
+  - Testes E2E: `escolherOpcao(seletor, rótulo)`, `valorSeletor()` (lê `data-valor`) e `opcoesSeletor()` em `tests/e2e/auxiliares.ts`.
 
 ## Ações rápidas (FAB)
 - Celular: o **+** central da barra inferior abre um *speed dial* acima dele (fundo escurecido): **Despesa** (vermelho, seta para cima → Conta a pagar / Compra no cartão, com "Voltar") e **Entrada** (verde, seta para baixo → diálogo de entrada). O + vira × no mesmo lugar.

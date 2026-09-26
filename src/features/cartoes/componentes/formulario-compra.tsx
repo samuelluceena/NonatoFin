@@ -160,13 +160,11 @@ export function FormularioCompra({ cartoes, categorias, edicaoId, valoresIniciai
                   onBlur={field.onBlur}
                   value={String(field.value)}
                   onChange={(e) => field.onChange(Number(e.target.value))}
-                >
-                  {Array.from({ length: LIMITES.parcelasCartaoMax }, (_, i) => i + 1).map((n) => (
-                    <option key={n} value={n}>
-                      {n === 1 ? 'À vista' : `${n}x`}
-                    </option>
-                  ))}
-                </Seletor>
+                  opcoes={Array.from({ length: LIMITES.parcelasCartaoMax }, (_, i) => i + 1).map((n) => ({
+                    valor: String(n),
+                    rotulo: n === 1 ? 'À vista' : `${n}x`,
+                  }))}
+                />
               )}
             />
           </Campo>
@@ -183,14 +181,12 @@ export function FormularioCompra({ cartoes, categorias, edicaoId, valoresIniciai
           erro={errors.cartaoId?.message}
           dica={cartao ? `Fecha dia ${cartao.diaFechamento} · vence dia ${cartao.diaVencimento}` : undefined}
         >
-          <Seletor {...ariaCampo('cartaoId', errors.cartaoId?.message, Boolean(cartao))} {...register('cartaoId')}>
-            <option value="">Selecione o cartão</option>
-            {cartoes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {rotuloCartao(c)}
-              </option>
-            ))}
-          </Seletor>
+          <Seletor
+            {...ariaCampo('cartaoId', errors.cartaoId?.message, Boolean(cartao))}
+            {...register('cartaoId')}
+            placeholder="Selecione o cartão"
+            opcoes={cartoes.map((c) => ({ valor: c.id, rotulo: rotuloCartao(c) }))}
+          />
         </Campo>
 
         <div className="grid gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
@@ -215,16 +211,15 @@ export function FormularioCompra({ cartoes, categorias, edicaoId, valoresIniciai
                 {...ariaCampo('primeiraFaturaMes', errors.primeiraFaturaMes?.message, true)}
                 {...register('primeiraFaturaMes', { onChange: () => setFaturaManual(true) })}
                 disabled={opcoesFatura.length === 0}
-              >
-                {opcoesFatura.length === 0 && <option value="">—</option>}
-                {opcoesFatura.map((m) => (
-                  <option key={m} value={m}>
-                    {formatarMes(m)}
-                    {cartao ? ` — vence ${formatarData(vencimentoDaFatura(m, cartao.diaVencimento))}` : ''}
-                    {m === automatica ? ' (automática)' : ''}
-                  </option>
-                ))}
-              </Seletor>
+                placeholder={opcoesFatura.length === 0 ? '—' : undefined}
+                opcoes={opcoesFatura.map((m) => ({
+                  valor: m,
+                  rotulo:
+                    formatarMes(m) +
+                    (cartao ? ` — vence ${formatarData(vencimentoDaFatura(m, cartao.diaVencimento))}` : '') +
+                    (m === automatica ? ' (automática)' : ''),
+                }))}
+              />
             </Campo>
             {faturaManual && automatica && primeira !== automatica && (
               <button
@@ -249,14 +244,12 @@ export function FormularioCompra({ cartoes, categorias, edicaoId, valoresIniciai
             <Entrada {...ariaCampo('descricao', errors.descricao?.message, true)} {...register('descricao')} autoComplete="off" maxLength={LIMITES.descricaoMax} />
           </Campo>
           <Campo id="categoriaId" rotulo="Categoria" erro={errors.categoriaId?.message}>
-            <Seletor {...ariaCampo('categoriaId', errors.categoriaId?.message)} {...register('categoriaId')}>
-              <option value="">Selecione a categoria</option>
-              {categorias.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nome}
-                </option>
-              ))}
-            </Seletor>
+            <Seletor
+              {...ariaCampo('categoriaId', errors.categoriaId?.message)}
+              {...register('categoriaId')}
+              placeholder="Selecione a categoria"
+              opcoes={categorias.map((c) => ({ valor: c.id, rotulo: c.nome }))}
+            />
           </Campo>
         </div>
       </Secao>

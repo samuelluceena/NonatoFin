@@ -1,13 +1,13 @@
 'use client';
 
-import type { ComponentProps } from 'react';
 import { Campo, Seletor, ariaCampo } from '@/components/ui/campo';
+import type { PropsSeletor } from '@/components/ui/seletor';
 import { rotuloConta } from '@/lib/domain/saldos';
 import type { ContaBancaria } from '@/lib/domain/tipos';
 
-type PropsSeletor = Omit<ComponentProps<'select'>, 'id' | 'children'>;
+type PropsCampoSeletor = Omit<PropsSeletor, 'id' | 'opcoes' | 'placeholder'>;
 
-interface Props extends PropsSeletor {
+interface Props extends PropsCampoSeletor {
   id?: string;
   rotulo?: string;
   /** Todas as contas; o campo mostra só as da empresa escolhida. */
@@ -40,15 +40,15 @@ export function CampoConta({
         : 'De onde o dinheiro vai sair. Opcional.');
   return (
     <Campo id={id} rotulo={rotulo} opcional erro={erro} dica={dicaFinal}>
-      <Seletor {...ariaCampo(id, erro, true)} {...props} disabled={props.disabled || opcoes.length === 0}>
-        <option value="">Sem conta definida</option>
-        {opcoes.map((c) => (
-          <option key={c.id} value={c.id}>
-            {rotuloConta(c)}
-            {c.padrao ? ' (padrão)' : ''}
-          </option>
-        ))}
-      </Seletor>
+      <Seletor
+        {...ariaCampo(id, erro, true)}
+        {...props}
+        disabled={props.disabled || opcoes.length === 0}
+        opcoes={[
+          { valor: '', rotulo: 'Sem conta definida' },
+          ...opcoes.map((c) => ({ valor: c.id, rotulo: `${rotuloConta(c)}${c.padrao ? ' (padrão)' : ''}` })),
+        ]}
+      />
     </Campo>
   );
 }

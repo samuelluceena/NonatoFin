@@ -5,7 +5,7 @@
  * barra inferior) e desktop (botão do menu lateral).
  */
 import { expect, test, type Page } from '@playwright/test';
-import { EMPRESAS_E2E, ehCelular, escolherOpcao, semRolagemHorizontal, unico } from './auxiliares';
+import { EMPRESAS_E2E, ehCelular, escolherOpcao, opcoesSeletor, semRolagemHorizontal, unico, valorSeletor } from './auxiliares';
 
 const EMPRESA = EMPRESAS_E2E[1].apelido;
 
@@ -101,7 +101,7 @@ test('Entrada → escolhe a conta e registra no saldo', async ({ page }) => {
   const dialogo = page.getByRole('dialog', { name: 'Registrar entrada' });
   await expect(dialogo).toBeVisible();
   const conta = dialogo.locator('#entrada-conta');
-  const rotulo = await conta.locator('option', { hasText: apelido }).textContent();
+  const rotulo = (await opcoesSeletor(conta)).find((t) => t.includes(apelido));
   await escolherOpcao(conta, rotulo!);
   await dialogo.getByLabel('Descrição').fill('Pix recebido');
   await dialogo.locator('#entrada-valor').pressSequentially('2500');
@@ -122,7 +122,7 @@ test('Entrada sem conta escolhida mostra o erro no campo', async ({ page }) => {
   const dialogo = page.getByRole('dialog', { name: 'Registrar entrada' });
   const conta = dialogo.locator('#entrada-conta');
   await expect(conta).toBeVisible();
-  if ((await conta.inputValue()) !== '') await conta.selectOption('');
+  if ((await valorSeletor(conta)) !== '') await escolherOpcao(conta, 'Selecione a conta');
   await dialogo.getByLabel('Descrição').fill('Teste');
   await dialogo.locator('#entrada-valor').pressSequentially('100');
   await page.getByTestId('salvar-entrada').click();

@@ -77,14 +77,9 @@ export function FormularioConta({ empresas, empresasComConta = [], edicaoId, val
                 if (!edicaoId) setValue('padrao', !empresasComConta.includes(e.target.value));
               },
             })}
-          >
-            <option value="">Selecione a empresa</option>
-            {empresas.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.apelido}
-              </option>
-            ))}
-          </Seletor>
+            placeholder="Selecione a empresa"
+            opcoes={empresas.map((e) => ({ valor: e.id, rotulo: e.apelido }))}
+          />
         </Campo>
 
         <Campo id="apelido" rotulo="Apelido da conta" erro={errors.apelido?.message} dica="Como aparece nas telas. Ex.: Itaú PJ, Nubank Loja.">

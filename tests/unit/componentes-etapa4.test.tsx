@@ -11,6 +11,7 @@ import { Dialogo } from '@/components/ui/dialogo';
 import { Aviso, CampoMarcacao } from '@/components/ui/formulario';
 import { Metrica, PainelMetricas } from '@/components/ui/metrica';
 import { PainelFiltros } from '@/components/ui/painel-filtros';
+import { Seletor } from '@/components/ui/seletor';
 import { Valor } from '@/components/ui/valor';
 
 vi.mock('next/link', () => ({
@@ -98,12 +99,15 @@ function ComPainel({ onFechar }: { onFechar: () => void }) {
       <button ref={botao}>Filtros</button>
       <p>fora</p>
       <PainelFiltros aberto ancora={botao} onFechar={onFechar} rodape={<button>Aplicar</button>}>
-        <label>
-          Categoria
-          <select defaultValue="">
-            <option value="">Todas</option>
-          </select>
-        </label>
+        <label htmlFor="painel-categoria">Categoria</label>
+        <Seletor
+          id="painel-categoria"
+          defaultValue=""
+          opcoes={[
+            { valor: '', rotulo: 'Todas' },
+            { valor: 'tecidos', rotulo: 'Tecidos' },
+          ]}
+        />
       </PainelFiltros>
     </>
   );
@@ -123,6 +127,23 @@ describe('PainelFiltros', () => {
     expect(onFechar).toHaveBeenCalledTimes(2);
     fireEvent.pointerDown(screen.getByLabelText('Categoria'));
     expect(onFechar).toHaveBeenCalledTimes(2); // clique dentro não fecha
+  });
+
+  it('Seletor dentro do painel: Esc fecha só a lista e escolher uma opção não fecha o painel', async () => {
+    desktop = true;
+    const user = userEvent.setup();
+    const onFechar = vi.fn();
+    render(<ComPainel onFechar={onFechar} />);
+    const campo = screen.getByLabelText('Categoria');
+    await user.click(campo);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(onFechar).not.toHaveBeenCalled();
+    await user.click(campo);
+    await user.click(screen.getByRole('option', { name: 'Tecidos' }));
+    expect(campo).toHaveTextContent('Tecidos');
+    expect(onFechar).not.toHaveBeenCalled();
   });
 
   it('celular: sheet (Dialogo modal)', () => {

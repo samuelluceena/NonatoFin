@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils/cn';
 import { adicionarDias, adicionarMesesNaChave, ehChaveMesValida, ehDataISOValida } from '@/lib/domain/datas';
 import { sanitizarBusca, type Periodo } from '@/lib/domain/filtros';
 import { Entrada, classeControle } from './campo';
+import { Seletor } from './seletor';
 import { Spinner } from './spinner';
 
 interface PropsPesquisa {
@@ -208,31 +209,14 @@ interface PropsSeletorFiltro {
   className?: string;
 }
 
-/** Filtro compacto em forma de "chip" (select nativo: teclado e leitores de tela de graça). */
+/** Filtro compacto em forma de "chip" (Seletor customizado, variante `filtro`). */
 export function SeletorFiltro({ id, rotulo, valor, aoMudar, opcoes, icone, ativo, className }: PropsSeletorFiltro) {
   return (
     <div className={cn('relative shrink-0', className)}>
       <label htmlFor={id} className="sr-only">
         {rotulo}
       </label>
-      {icone && (
-        <span className={cn('pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 [&_svg]:size-4', ativo ? 'text-primary-text' : 'text-fg-3')} aria-hidden="true">
-          {icone}
-        </span>
-      )}
-      <select
-        id={id}
-        title={rotulo}
-        value={valor}
-        onChange={(e) => aoMudar(e.target.value)}
-        className={classeControle(cn('w-auto h-11 pr-8 font-medium lg:h-10', Boolean(icone) && 'pl-9'), ativo)}
-      >
-        {opcoes.map((o) => (
-          <option key={o.valor} value={o.valor}>
-            {o.rotulo}
-          </option>
-        ))}
-      </select>
+      <Seletor id={id} title={rotulo} variante="filtro" icone={icone} ativo={ativo} value={valor} onChange={(e) => aoMudar(e.target.value)} opcoes={opcoes} />
     </div>
   );
 }
@@ -259,14 +243,13 @@ export function CampoFiltro({
       <label htmlFor={id} className="text-sm font-medium text-fg-2">
         {rotulo}
       </label>
-      <select id={id} value={valor} onChange={(e) => aoMudar(e.target.value)} className={classeControle('h-11 pr-8 lg:h-10', Boolean(valor))}>
-        <option value="">{todos}</option>
-        {opcoes.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.rotulo}
-          </option>
-        ))}
-      </select>
+      <Seletor
+        id={id}
+        value={valor}
+        onChange={(e) => aoMudar(e.target.value)}
+        ativo={Boolean(valor)}
+        opcoes={[{ valor: '', rotulo: todos }, ...opcoes.map((o) => ({ valor: o.id, rotulo: o.rotulo }))]}
+      />
     </div>
   );
 }

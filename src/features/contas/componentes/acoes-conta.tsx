@@ -195,14 +195,13 @@ function FormularioEntrada({
         </Campo>
         {contaFixaId === undefined && (
           <Campo id="entrada-conta" rotulo="Conta" erro={erros.contaId}>
-            <Seletor {...ariaCampo('entrada-conta', erros.contaId)} value={contaId} onChange={(e) => setContaId(e.target.value)}>
-              <option value="">Selecione a conta</option>
-              {contas.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {variasEmpresas ? `${rotuloConta(c)} — ${c.empresa.apelido}` : rotuloConta(c)}
-                </option>
-              ))}
-            </Seletor>
+            <Seletor
+              {...ariaCampo('entrada-conta', erros.contaId)}
+              value={contaId}
+              onChange={(e) => setContaId(e.target.value)}
+              placeholder="Selecione a conta"
+              opcoes={contas.map((c) => ({ valor: c.id, rotulo: variasEmpresas ? `${rotuloConta(c)} — ${c.empresa.apelido}` : rotuloConta(c) }))}
+            />
           </Campo>
         )}
       </div>
@@ -290,26 +289,22 @@ export function BotaoTransferir({
           }}
         >
           <Campo id="transf-origem" rotulo="De" erro={d.erros.origemId}>
-            <Seletor {...ariaCampo('transf-origem', d.erros.origemId)} value={origem} onChange={(e) => setOrigem(e.target.value)}>
-              <option value="">Selecione a conta</option>
-              {ativas.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {rotulo(c)}
-                </option>
-              ))}
-            </Seletor>
+            <Seletor
+              {...ariaCampo('transf-origem', d.erros.origemId)}
+              value={origem}
+              onChange={(e) => setOrigem(e.target.value)}
+              placeholder="Selecione a conta"
+              opcoes={ativas.map((c) => ({ valor: c.id, rotulo: rotulo(c) }))}
+            />
           </Campo>
           <Campo id="transf-destino" rotulo="Para" erro={d.erros.destinoId}>
-            <Seletor {...ariaCampo('transf-destino', d.erros.destinoId)} value={destino} onChange={(e) => setDestino(e.target.value)}>
-              <option value="">Selecione a conta</option>
-              {ativas
-                .filter((c) => c.id !== origem)
-                .map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {rotulo(c)}
-                  </option>
-                ))}
-            </Seletor>
+            <Seletor
+              {...ariaCampo('transf-destino', d.erros.destinoId)}
+              value={destino}
+              onChange={(e) => setDestino(e.target.value)}
+              placeholder="Selecione a conta"
+              opcoes={ativas.filter((c) => c.id !== origem).map((c) => ({ valor: c.id, rotulo: rotulo(c) }))}
+            />
           </Campo>
           <div className="grid grid-cols-2 gap-3">
             <Campo id="transf-valor" rotulo="Valor" erro={d.erros.valorCentavos}>

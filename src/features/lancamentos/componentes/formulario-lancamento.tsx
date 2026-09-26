@@ -202,9 +202,7 @@ export function FormularioLancamento({ fornecedores, empresas, categorias, conta
                   />
                 </Campo>
                 <Campo id="frequencia" rotulo="Frequência">
-                  <Seletor id="frequencia" {...register('frequencia')}>
-                    <option value="mensal">Mensal</option>
-                  </Seletor>
+                  <Seletor id="frequencia" {...register('frequencia')} opcoes={[{ valor: 'mensal', rotulo: 'Mensal' }]} />
                 </Campo>
               </div>
               <PreviaSerie vencimento={vencimento} quantidade={quantidade} valorCentavos={valorCentavos} />
@@ -263,24 +261,17 @@ export function FormularioLancamento({ fornecedores, empresas, categorias, conta
                   // Trocou a empresa: a conta passa a ser a padrão da nova empresa.
                   onChange: (e) => setValue('contaId', contaPadraoDaEmpresa(contas, e.target.value)),
                 })}
-              >
-                <option value="">Selecione a empresa</option>
-                {empresas.map((e) => (
-                  <option key={e.id} value={e.id}>
-                    {e.apelido}
-                  </option>
-                ))}
-              </Seletor>
+                placeholder="Selecione a empresa"
+                opcoes={empresas.map((e) => ({ valor: e.id, rotulo: e.apelido }))}
+              />
             </Campo>
             <Campo id="categoriaId" rotulo="Categoria" erro={errors.categoriaId?.message}>
-              <Seletor {...ariaCampo('categoriaId', errors.categoriaId?.message)} {...register('categoriaId')}>
-                <option value="">Selecione a categoria</option>
-                {categorias.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nome}
-                  </option>
-                ))}
-              </Seletor>
+              <Seletor
+                {...ariaCampo('categoriaId', errors.categoriaId?.message)}
+                {...register('categoriaId')}
+                placeholder="Selecione a categoria"
+                opcoes={categorias.map((c) => ({ valor: c.id, rotulo: c.nome }))}
+              />
             </Campo>
           </div>
 
@@ -298,10 +289,14 @@ export function FormularioLancamento({ fornecedores, empresas, categorias, conta
         <Secao titulo={modoEdicao ? 'Status e detalhes' : 'Mais detalhes'} opcional={!modoEdicao} secundaria>
           {modoEdicao && (
             <Campo id="status" rotulo="Status" dica="Atrasado é calculado automaticamente para pendentes vencidos.">
-              <Seletor {...ariaCampo('status', undefined, true)} {...register('status')}>
-                <option value="pendente">Pendente</option>
-                <option value="pago">Pago</option>
-              </Seletor>
+              <Seletor
+                {...ariaCampo('status', undefined, true)}
+                {...register('status')}
+                opcoes={[
+                  { valor: 'pendente', rotulo: 'Pendente' },
+                  { valor: 'pago', rotulo: 'Pago' },
+                ]}
+              />
             </Campo>
           )}
 
