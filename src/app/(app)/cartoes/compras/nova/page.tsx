@@ -26,7 +26,7 @@ export default async function PaginaNovaCompra({ searchParams }: PageProps<'/car
   const hoje = hojeISO();
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-xl">
       <CabecalhoPagina
         voltar={<LinkVoltar href={cartao ? `/cartoes/${cartao.id}` : '/cartoes'}>{cartao ? cartao.nome : 'Cartões'}</LinkVoltar>}
         titulo="Nova compra no cartão"

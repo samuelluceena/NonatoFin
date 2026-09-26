@@ -23,7 +23,7 @@ export default async function PaginaEditarCompra({ params }: PageProps<'/cartoes
   const cartao = cartoes.find((c) => c.id === compra.cartaoId);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-xl">
       <CabecalhoPagina
         voltar={<LinkVoltar href={`/cartoes/${compra.cartaoId}`}>{cartao?.nome ?? 'Cartão'}</LinkVoltar>}
         titulo="Editar compra"
@@ -45,7 +45,8 @@ export default async function PaginaEditarCompra({ params }: PageProps<'/cartoes
           }}
         />
       </>
-      <div className="mt-6 flex justify-end">
+      {/* Ação destrutiva fora do formulário, separada de Salvar/Cancelar. */}
+      <div className="mt-10 flex justify-end border-t border-border-subtle pt-6">
         <BotaoConfirmar
           rotulo="Excluir"
           icone={<Trash2 className="size-4.5 text-danger" aria-hidden="true" />}
