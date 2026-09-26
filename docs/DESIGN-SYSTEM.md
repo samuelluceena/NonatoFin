@@ -66,10 +66,10 @@ Geist Sans (arquivos locais) e Geist Mono (código de barras). Hierarquia por **
 
 ## Espaçamento
 Escala de 4px do Tailwind. Padrões:
-- **Página:** `px-4` (celular) · `px-6` (≥ 640px) · `px-10` (≥ 1024px); topo `pt-5`/`pt-8`; largura máxima `max-w-6xl` (formulários e detalhes usam `max-w-2xl`/`max-w-3xl`).
+- **Página:** `px-4` (celular) · `px-6` (≥ 640px) · `px-10` (≥ 1024px); topo `pt-5`/`pt-8`; largura máxima `max-w-6xl`. Formulários `max-w-xl` (Conta, Boleto/Despesa, Compra no cartão; Cartão ainda `max-w-2xl`); detalhes `max-w-2xl`/`max-w-3xl`; Detalhe da conta `max-w-5xl`.
 - **Entre seções:** `gap-6`/`gap-8`; cabeçalho da página `mb-6`.
 - **Cards/painéis:** `p-4` (`p-5` em destaque); listas com linhas `px-4 py-3` e `divide-y`.
-- **Formulários:** `gap-4` entre campos; rótulo → campo `gap-1.5`.
+- **Formulários:** `gap-10` entre seções, `gap-5` do título da seção aos campos, `gap-4` entre campos; rótulo → campo `gap-1.5`.
 - **Tabelas:** células `py-2.5`, `pl-3`; cabeçalho `bg-bg-subtle`.
 - Medidas do shell: `--altura-barra-inferior` (56px), `--largura-sidebar` (240px), `--largura-sidebar-compacta` (68px).
 
@@ -95,7 +95,7 @@ Curto e discreto (150–220ms, curva `--ease-suave`): `animate-surgir` (menus, F
 | `Botao` / `LinkBotao` | `primario` (uma por tela), `secundario`, `fantasma`, `perigo`, `suave`; `sm` 36px, `md` 44px no celular / 40px no desktop, `lg` 48px; `carregando` + `textoCarregando` |
 | `BotaoIcone` | Botão só com ícone (nome acessível obrigatório): 36px ou 44/40px |
 | `BotaoFiltros` | "Filtros" com contador (Boletos, Transações) |
-| `Campo`, `Entrada`, `AreaTexto`, `CampoMoeda`, `CampoSaldo` | Fundo `input`, borda forte, foco com anel azul, erro com `role="alert"`; 44px (40px no desktop) |
+| `Campo`, `Entrada`, `AreaTexto`, `CampoMoeda`, `CampoSaldo` | Fundo `input`, borda forte, foco com anel azul, erro com `role="alert"`; 44px (40px no desktop). `CampoMoeda tamanho="destaque"`: 64px e número grande, para o valor principal do formulário |
 | `Seletor` | Select customizado único do app (**nenhum `<select>` nativo**): combobox WAI-ARIA, lista na top layer (Popover API) acima de diálogos e fora de áreas com overflow; variantes `campo`, `filtro` (chip) e `compacto` (empresa global). Ver "Seletor" abaixo |
 | `Cartao`, `TituloSecao` | Superfície com borda; título de seção em sentence case |
 | `CabecalhoPagina` | PageHeader: voltar (opcional), título, descrição curta, ações |
@@ -113,7 +113,7 @@ Curto e discreto (150–220ms, curva `--ease-suave`): `animate-surgir` (menus, F
 | `CabecalhoSecao` | SectionHeader: título + detalhe/link/ação |
 | `PainelFiltros` | "Mais filtros": popover ancorado (≥ 640px) ou sheet (celular); Esc, clique fora, foco |
 | `BarraFiltros`, `SeletorFiltro`, `CampoFiltro` | Barra de filtros (pesquisa + controles compactos que se destacam quando aplicados) e campos do painel |
-| `PainelFormulario`, `SecaoFormulario`, `CampoMarcacao`, `Aviso` | Formulários em seções; checkbox estilizado (input real); aviso informativo/atenção |
+| `PainelFormulario`, `SecaoFormulario`, `CampoMarcacao`, `Aviso` | Seções em caixa (padrão antigo, hoje só no formulário de Cartão); checkbox estilizado (input real); aviso informativo/atenção |
 | `EstadoVazio`, `ListaDetalhes`, `LinkVoltar`, `Valor`, `Spinner`, `BarraAcoesFormulario`, `BotaoConfirmar` | Utilitários |
 
 Estados: hover (cor/borda), foco visível (contorno azul 2px), ativo (`scale-[0.98]`), carregando (spinner + texto), desabilitado (50%, sem clique).
@@ -125,8 +125,17 @@ Estados: hover (cor/borda), foco visível (contorno azul 2px), ativo (`scale-[0.
 - **Seletor** (`components/ui/seletor.tsx`, reexportado por `campo.tsx`): toda escolha de lista usa ele — não use `<select>` nativo.
   - API: `opcoes={[{ valor, rotulo, desabilitada? }]}`, `placeholder` (opção de valor `''` em tom neutro), `value`/`onChange` (controlado) ou `{...register('campo')}` do React Hook Form; `ariaCampo()` e `<Campo>` continuam dando rótulo, dica e erro. `onChange`/`onBlur` recebem `{ target: { name, value } }`; o valor é sempre string (converta no `Controller` quando o esquema pede número, como em Parcelas).
   - Visual: gatilho igual aos campos (cantos `md`, borda, chevron que gira ao abrir); lista em `surface-elevated` com uma sombra, opções ≥ 44px no celular, hover/ativa em `surface-2`, selecionada com ✓ discreto. Sem animação além de um `surgir` de 160ms.
-  - Teclado: Enter/Espaço/setas abrem; setas, Home/End e PageUp/PageDown navegam (pulam opções desabilitadas); letras saltam para a opção; Enter/Espaço escolhem; Esc fecha só a lista (não o diálogo/painel); Tab fecha. Clique fora, rolagem e redimensionar fecham; o foco volta ao gatilho.
+  - Teclado: Enter/Espaço/setas abrem; setas, Home/End e PageUp/PageDown navegam (pulam opções desabilitadas); letras saltam para a opção; Enter/Espaço escolhem; Esc fecha só a lista (não o diálogo/painel); Tab fecha. Clique fora fecha; rolagem e redimensionar (ex.: teclado do celular fechando) reposicionam a lista, que só fecha se o gatilho sair da tela; o foco volta ao gatilho.
   - Testes E2E: `escolherOpcao(seletor, rótulo)`, `valorSeletor()` (lê `data-valor`) e `opcoesSeletor()` em `tests/e2e/auxiliares.ts`.
+
+## Formulários
+Padrão de Nova/Editar conta, Boleto (Despesa), Entrada e Compra no cartão:
+- **Valor primeiro**, com `CampoMoeda tamanho="destaque"` (a data ou as parcelas ao lado a partir de 640px).
+- **Seções sem caixa** (título `text-body font-semibold` + descrição curta opcional); complementos numa última seção secundária ("Mais detalhes", título `text-sm text-fg-2`, "(opcional)").
+- Campos relacionados lado a lado só a partir de 640px; no celular, uma coluna.
+- **Ações:** `BarraAcoesFormulario` (Cancelar · Salvar). No celular fica presa acima da barra inferior (envolvida em `contents sm:flex sm:justify-end sm:border-t sm:pt-6`); no desktop, à direita após uma divisória.
+- **Exclusão** fora do formulário, numa seção própria no fim da tela de edição (título "Excluir …", explicação do impacto/impedimento e `BotaoConfirmar` perigo).
+- Validação `onTouched`; ao salvar com erro, o foco vai ao primeiro campo inválido (inclusive `Seletor`).
 
 ## Ações rápidas (FAB)
 - Celular: o **+** central da barra inferior abre um *speed dial* acima dele (fundo escurecido): **Despesa** (vermelho, seta para cima → Conta a pagar / Compra no cartão, com "Voltar") e **Entrada** (verde, seta para baixo → diálogo de entrada). O + vira × no mesmo lugar.

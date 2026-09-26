@@ -45,10 +45,16 @@ export default async function PaginaEditarCompra({ params }: PageProps<'/cartoes
           }}
         />
       </>
-      {/* Ação destrutiva fora do formulário, separada de Salvar/Cancelar. */}
-      <div className="mt-10 flex justify-end border-t border-border-subtle pt-6">
+      {/* Ação destrutiva longe do Salvar, numa seção própria (mesmo padrão de Editar conta). */}
+      <section aria-labelledby="titulo-excluir-compra" className="mt-12 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+        <div className="min-w-0">
+          <h2 id="titulo-excluir-compra" className="text-body font-semibold text-fg">
+            Excluir compra
+          </h2>
+          <p className="mt-1 text-meta text-fg-3">Exclui todas as parcelas. Não é possível se alguma parcela estiver em fatura já paga.</p>
+        </div>
         <BotaoConfirmar
-          rotulo="Excluir"
+          rotulo="Excluir compra"
           icone={<Trash2 className="size-4.5 text-danger" aria-hidden="true" />}
           titulo="Excluir compra?"
           descricao={`“${compra.descricao}” e todas as suas parcelas serão excluídas e as faturas em aberto serão recalculadas. Esta ação não pode ser desfeita.`}
@@ -58,7 +64,7 @@ export default async function PaginaEditarCompra({ params }: PageProps<'/cartoes
           perigo
           testId="excluir-compra"
         />
-      </div>
+      </section>
     </div>
   );
 }

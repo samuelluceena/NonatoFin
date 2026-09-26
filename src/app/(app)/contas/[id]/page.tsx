@@ -146,7 +146,7 @@ export default async function PaginaConta({ params }: PageProps<'/contas/[id]'>)
         {/* 3. O que pede ação, o que está previsto e o histórico */}
         {aConfirmar.length > 0 && <EntradasAConfirmar entradas={aConfirmar} />}
         <PrevisaoConta linhas={previsao.linhas} dias={LIMITES.diasPrevisaoSaldo} />
-        <ExtratoConta linhas={extrato} verTodas={{ href: `/transacoes?conta=${conta.id}&periodo=todos`, rotulo: 'Ver no Transações' }} />
+        <ExtratoConta linhas={extrato} verTodas={{ href: `/transacoes?conta=${conta.id}&periodo=todos`, rotulo: 'Ver em Transações' }} />
       </div>
     </div>
   );

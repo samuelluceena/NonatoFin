@@ -8,7 +8,7 @@
  *   por `aria-activedescendant`.
  * - Teclado: Enter/Espaço/setas abrem; setas, Home/End e PageUp/PageDown
  *   navegam; letras saltam para a opção; Enter/Espaço escolhem; Esc e Tab
- *   fecham. Clique fora, rolagem ou redimensionar também fecham.
+ *   fecham. Clique fora fecha; rolagem e redimensionar reposicionam a lista.
  * - A lista usa a Popover API (top layer): fica acima de <dialog> modal e não
  *   é cortada por áreas com overflow. Posição `fixed`, sempre dentro da tela.
  * - Compatível com React Hook Form: `{...register()}` (a ref expõe `value` e
@@ -108,6 +108,24 @@ function classesGatilho(variante: 'campo' | 'filtro' | 'compacto', comIcone: boo
 
 /** Popover API (top layer). Sem ela (ex.: jsdom), a lista fica `fixed` com z-index. */
 const suportaPopover = () => typeof HTMLElement !== 'undefined' && 'showPopover' in HTMLElement.prototype;
+
+/** Posição `fixed` da lista junto ao gatilho: abre para cima se faltar espaço e nunca sai da tela. */
+function posicaoDaLista(r: DOMRect, el: HTMLElement): CSSProperties {
+  const larguraTela = document.documentElement.clientWidth;
+  const alturaTela = window.innerHeight;
+  const abaixo = alturaTela - r.bottom - MARGEM - 4;
+  const acima = r.top - MARGEM - 4;
+  const alturaConteudo = Math.min(el.scrollHeight, ALTURA_MAX);
+  const paraCima = abaixo < alturaConteudo && acima > abaixo;
+  const largura = Math.min(Math.max(el.offsetWidth, r.width), larguraTela - MARGEM * 2);
+  return {
+    minWidth: Math.min(r.width, larguraTela - MARGEM * 2),
+    maxWidth: larguraTela - MARGEM * 2,
+    maxHeight: Math.max(120, Math.min(ALTURA_MAX, paraCima ? acima : abaixo)),
+    left: Math.max(MARGEM, Math.min(r.left, larguraTela - largura - MARGEM)),
+    ...(paraCima ? { bottom: alturaTela - r.top + 4, top: 'auto' } : { top: r.bottom + 4, bottom: 'auto' }),
+  };
+}
 
 /** Compara sem acento e sem caixa (busca ao digitar). */
 const normalizar = (texto: string) =>
@@ -215,20 +233,7 @@ export function Seletor({
     const r = gatilho.current?.getBoundingClientRect();
     if (!aberto || !el || !r) return;
     if (typeof el.showPopover === 'function' && !el.matches(':popover-open')) el.showPopover();
-    const larguraTela = document.documentElement.clientWidth;
-    const alturaTela = window.innerHeight;
-    const abaixo = alturaTela - r.bottom - MARGEM - 4;
-    const acima = r.top - MARGEM - 4;
-    const alturaConteudo = Math.min(el.scrollHeight, ALTURA_MAX);
-    const paraCima = abaixo < alturaConteudo && acima > abaixo;
-    const largura = Math.min(Math.max(el.offsetWidth, r.width), larguraTela - MARGEM * 2);
-    setEstilo({
-      minWidth: Math.min(r.width, larguraTela - MARGEM * 2),
-      maxWidth: larguraTela - MARGEM * 2,
-      maxHeight: Math.max(120, Math.min(ALTURA_MAX, paraCima ? acima : abaixo)),
-      left: Math.max(MARGEM, Math.min(r.left, larguraTela - largura - MARGEM)),
-      ...(paraCima ? { bottom: alturaTela - r.top + 4, top: 'auto' } : { top: r.bottom + 4, bottom: 'auto' }),
-    });
+    setEstilo(posicaoDaLista(r, el));
   }, [aberto]);
 
   // Mantém a opção ativa visível (sem rolar a página).
@@ -241,17 +246,30 @@ export function Seletor({
     else if (item.offsetTop + item.offsetHeight > el.scrollTop + el.clientHeight) el.scrollTop = item.offsetTop + item.offsetHeight - el.clientHeight + 4;
   }, [aberto, ativa, estilo]);
 
-  // Clique fora, rolagem fora da lista e redimensionar fecham.
+  // Clique fora fecha. Rolagem (fora da lista) e redimensionar reposicionam —
+  // no celular, fechar o teclado ao tocar no Seletor redimensiona/rola a tela
+  // e não pode fechar a lista recém-aberta. Só fecha se o gatilho sair da tela.
   useEffect(() => {
     if (!aberto) return;
     const fora = (e: PointerEvent) => {
       const alvo = e.target as Node;
       if (!lista.current?.contains(alvo) && !gatilho.current?.contains(alvo)) fechar(false);
     };
-    const rolagem = (e: Event) => {
-      if (!lista.current?.contains(e.target as Node)) fechar(false);
+    let quadro = 0;
+    const reposicionar = () => {
+      cancelAnimationFrame(quadro);
+      quadro = requestAnimationFrame(() => {
+        const el = lista.current;
+        const r = gatilho.current?.getBoundingClientRect();
+        if (!el || !r) return;
+        if (r.bottom < 0 || r.top > window.innerHeight) fechar(false);
+        else setEstilo(posicaoDaLista(r, el));
+      });
     };
-    const redimensionar = () => fechar(false);
+    const rolagem = (e: Event) => {
+      if (!lista.current?.contains(e.target as Node)) reposicionar();
+    };
+    const redimensionar = reposicionar;
     // Esc dentro de um <dialog> modal fecha só a lista, não o diálogo.
     const dialogo = gatilho.current?.closest('dialog');
     const cancelar = (e: Event) => e.preventDefault();
@@ -260,6 +278,7 @@ export function Seletor({
     window.addEventListener('resize', redimensionar);
     dialogo?.addEventListener('cancel', cancelar);
     return () => {
+      cancelAnimationFrame(quadro);
       document.removeEventListener('pointerdown', fora);
       window.removeEventListener('scroll', rolagem, true);
       window.removeEventListener('resize', redimensionar);

@@ -143,7 +143,7 @@ export default async function PaginaContas() {
             <p className="-mt-4 flex items-start gap-2 px-1 text-meta text-fg-3" data-testid="saidas-sem-conta">
               <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
               <span>
-                Sem conta definida: {saidas.semContaQuantidade} {saidas.semContaQuantidade === 1 ? 'conta' : 'contas'} até o fim do mês (
+                Sem conta definida: {saidas.semContaQuantidade} {saidas.semContaQuantidade === 1 ? 'lançamento' : 'lançamentos'} até o fim do mês (
                 <Valor centavos={saidas.semContaCentavos} />) não entram no saldo de nenhuma conta.
               </span>
             </p>

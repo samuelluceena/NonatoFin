@@ -63,11 +63,14 @@ export function GraficoMensal({ meses, mesAtual }: { meses: ResumoMes[]; mesAtua
 
           {selecionado && (
             <div
-              className="pointer-events-none absolute z-10 w-52 animate-esmaecer rounded-md border border-border bg-surface-elevated px-3 py-2 text-meta shadow-md"
+              className="pointer-events-none absolute z-10 w-52 max-w-full animate-esmaecer rounded-md border border-border bg-surface-elevated px-3 py-2 text-meta shadow-md"
               style={(() => {
-                // Ao lado da coluna ativa (nunca por cima dela).
+                // Ao lado da coluna ativa; em telas estreitas, preso dentro do gráfico (nunca cortado).
                 const centro = ((indiceAtivo + 0.5) / meses.length) * 100;
-                return centro < 50 ? { top: 8, left: `calc(${centro}% + 1.25rem)` } : { top: 8, right: `calc(${100 - centro}% + 1.25rem)` };
+                const limite = 'max(0px, calc(100% - 13rem))';
+                return centro < 50
+                  ? { top: 8, left: `min(calc(${centro}% + 1.25rem), ${limite})` }
+                  : { top: 8, right: `min(calc(${100 - centro}% + 1.25rem), ${limite})` };
               })()}
               aria-hidden="true"
             >

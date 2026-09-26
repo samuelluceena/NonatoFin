@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { CheckCircle2, Clock, Trash2 } from 'lucide-react';
 import { BotaoConfirmar } from '@/components/ui/botao-confirmar';
 import { formatarData, type DataISO } from '@/lib/domain/datas';
-import { formatarMoeda, formatarMoedaComSinal, type Centavos } from '@/lib/domain/dinheiro';
+import { formatarMoeda, formatarMoedaComSinal, formatarMoedaSaldo, type Centavos } from '@/lib/domain/dinheiro';
 import { rotuloMovimento } from '@/lib/domain/saldos';
 import type { MovimentoConta } from '@/lib/domain/tipos';
 import { cn } from '@/lib/utils/cn';
@@ -34,7 +34,7 @@ export function montarExtrato(movimentos: MovimentoConta[], pagamentos: Pagament
       titulo: rotuloMovimento(m, m.id === primeiraConferencia),
       detalhe:
         m.tipo === 'conferencia'
-          ? `Saldo no banco: ${formatarMoeda(m.saldoInformado ?? 0)}`
+          ? `Saldo no banco: ${formatarMoedaSaldo(m.saldoInformado ?? 0)}`
           : m.descricao,
       valorCentavos: m.valorCentavos,
       movimento: m,

@@ -16,6 +16,16 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 - **Dashboard** em níveis (situação atual, compromissos, resumo, tendência, composição, distribuição), sem cálculos novos.
 - **Listas, filtros e formulários:** tabelas/listas de painel, filtros compactos com popover/sheet e filtros ativos removíveis, formulários em seções, confirmações destrutivas explicando o impacto.
 - **Textos:** sentence case e mensagens de retorno padronizadas ("Pagamento registrado.", "Transferência concluída.").
+- **Contas e Detalhe da conta:** saldo atual em destaque, previsão e cobertura com menos peso, alerta de saldo negativo, próximos dias e extrato em lista de painel.
+- **Formulários** (conta, boleto/despesa, entrada, compra no cartão): valor primeiro e em destaque (`CampoMoeda tamanho="destaque"`), seções sem caixa, largura única, ações fixas no celular e exclusão numa seção própria no fim da edição.
+- **Compra no cartão:** valor e parcelas primeiro, prévia das parcelas neutra e alinhada, cartão e data antes da fatura.
+- **Seletor customizado** substitui todos os `<select>` nativos (formulários, filtros, empresa global, diálogos): mesmo visual em todos os sistemas, teclado completo, lista acima de diálogos e sem cortes em áreas com rolagem. Valores enviados não mudam.
+
+### Corrigido
+- Totais de Transações não cortam mais dígitos em telas estreitas.
+- "Saldo no banco" negativo no extrato usa o sinal "−" como no resto do app.
+- Dica do gráfico mensal não é mais cortada no celular.
+- Foco volta ao botão "Filtros" ao aplicar/fechar o painel no celular, e ao seletor de empresa após a troca.
 
 ## [1.2.0] — 2026-09-24
 

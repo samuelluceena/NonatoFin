@@ -55,7 +55,7 @@ export function ResumoDasTransacoes({ resumo }: { resumo: ResumoTransacoes }) {
             )}
           >
             <dt className="text-meta font-medium text-fg-3">{m.rotulo}</dt>
-            <dd className={cn('numeros truncate text-lg font-semibold tracking-tight', m.classe)}>{m.valor}</dd>
+            <dd className={cn('numeros text-base font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-lg', m.classe)}>{m.valor}</dd>
             <dd className="text-xs text-fg-3">{m.nota}</dd>
           </div>
         ))}

@@ -41,15 +41,31 @@ export function PainelFiltros({ aberto, onFechar, ancora, titulo = 'Mais filtros
   if (!aberto) return null;
   if (!desktop) {
     return (
-      <Dialogo aberto onFechar={onFechar} titulo={titulo} descricao={descricao} rodape={rodape}>
+      <Sheet onFechar={onFechar} ancora={ancora} titulo={titulo} descricao={descricao} rodape={rodape}>
         {children}
-      </Dialogo>
+      </Sheet>
     );
   }
   return (
     <Popover onFechar={onFechar} ancora={ancora} titulo={titulo} descricao={descricao} rodape={rodape}>
       {children}
     </Popover>
+  );
+}
+
+/**
+ * Sheet do celular. O painel sai da página ao aplicar/fechar (sem `close()`
+ * do <dialog>), então o navegador não devolve o foco: devolvemos ao botão.
+ */
+function Sheet({ onFechar, ancora, titulo, descricao, children, rodape }: Omit<Props, 'aberto' | 'titulo'> & { titulo: string }) {
+  useEffect(() => {
+    const botao = ancora.current;
+    return () => botao?.focus();
+  }, [ancora]);
+  return (
+    <Dialogo aberto onFechar={onFechar} titulo={titulo} descricao={descricao} rodape={rodape}>
+      {children}
+    </Dialogo>
   );
 }
 
