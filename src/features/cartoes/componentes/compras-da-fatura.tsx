@@ -3,7 +3,7 @@ import { CreditCard } from 'lucide-react';
 import { Cartao, TituloSecao } from '@/components/ui/cartao';
 import { Valor } from '@/components/ui/valor';
 import { formatarData, type DataISO } from '@/lib/domain/datas';
-import { formatarMoeda, type Centavos } from '@/lib/domain/dinheiro';
+import { formatarMoeda, formatarMoedaComSinal, type Centavos } from '@/lib/domain/dinheiro';
 import type { ParcelaCartao } from '@/lib/domain/tipos';
 
 interface Props {
@@ -34,13 +34,13 @@ export function ComprasDaFatura({ parcelas, somaParcelas, ajusteCentavos, totalC
           >
             <CreditCard className="size-4 shrink-0 text-fg-3" aria-hidden="true" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-[15px] text-fg">{p.compraDescricao}</span>
-              <span className="numeros block text-[13px] text-fg-3">
+              <span className="block truncate text-body text-fg">{p.compraDescricao}</span>
+              <span className="numeros block text-meta text-fg-3">
                 {p.dataCompra && formatarData(p.dataCompra)}
                 {p.total > 1 ? ` · Parcela ${p.numero}/${p.total}` : ' · À vista'}
               </span>
             </span>
-            <Valor centavos={p.valorCentavos} className="shrink-0 text-[15px] font-medium" />
+            <Valor centavos={p.valorCentavos} className="shrink-0 text-body font-medium" />
           </Link>
         ))}
         <dl className="numeros grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 px-4 py-3 text-sm" data-testid="totais-fatura">
@@ -49,7 +49,7 @@ export function ComprasDaFatura({ parcelas, somaParcelas, ajusteCentavos, totalC
           {ajusteCentavos !== 0 && (
             <>
               <dt className="text-fg-2">Ajuste</dt>
-              <dd className="text-right">{ajusteCentavos < 0 ? `− ${formatarMoeda(-ajusteCentavos)}` : `+ ${formatarMoeda(ajusteCentavos)}`}</dd>
+              <dd className="text-right">{formatarMoedaComSinal(ajusteCentavos)}</dd>
             </>
           )}
           <dt className="font-medium text-fg">Total da fatura</dt>

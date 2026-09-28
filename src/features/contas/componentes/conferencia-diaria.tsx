@@ -61,7 +61,7 @@ export function ConferenciaDiaria({ contas }: Props) {
     >
       {porEmpresa.map((empresa) => (
         <section key={empresa} aria-label={empresa}>
-          <h2 className="mb-2 px-1 text-[13px] font-semibold tracking-wide text-fg-3 uppercase">{empresa}</h2>
+          <h2 className="mb-2 px-1 text-sm font-medium text-fg-2">{empresa}</h2>
           <Cartao className="divide-y divide-border">
             {contas
               .filter((c) => c.conta.empresa.apelido === empresa)
@@ -74,10 +74,10 @@ export function ConferenciaDiaria({ contas }: Props) {
                       <label htmlFor={id} className="min-w-0 truncate font-medium text-fg">
                         {rotuloConta(conta)}
                       </label>
-                      <span className="numeros shrink-0 text-[13px] text-fg-3">sistema: {formatarMoeda(saldoCentavos)}</span>
+                      <span className="numeros shrink-0 text-meta text-fg-3">sistema: {formatarMoeda(saldoCentavos)}</span>
                     </div>
                     <CampoSaldo id={id} valor={valores[conta.id] ?? 0} onChange={(v) => setValores((atual) => ({ ...atual, [conta.id]: v }))} />
-                    <p className={ajuste === 0 ? 'text-[13px] text-success' : 'text-[13px] text-fg-2'}>
+                    <p className={ajuste === 0 ? 'text-meta text-success' : 'text-meta text-fg-2'}>
                       {ajuste === 0 ? 'Igual ao sistema' : `Ajuste de ${ajuste > 0 ? '+' : '−'} ${formatarMoeda(Math.abs(ajuste))}`}
                     </p>
                   </div>

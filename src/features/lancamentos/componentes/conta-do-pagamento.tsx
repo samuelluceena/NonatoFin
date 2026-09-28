@@ -113,9 +113,9 @@ function Conteudo({ pedido }: { pedido: Pedido }) {
               value={o.valor}
               checked={contaId === o.valor}
               onChange={() => setContaId(o.valor)}
-              className="size-4.5 accent-[var(--primary)]"
+              className="size-4.5 accent-primary"
             />
-            <span className="text-[15px] text-fg">{o.rotulo}</span>
+            <span className="text-body text-fg">{o.rotulo}</span>
           </label>
         ))}
       </div>

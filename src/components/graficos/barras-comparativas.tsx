@@ -57,39 +57,31 @@ export function BarrasComparativas({
 
   return (
     <div>
-      <Segmentado
-        nome={nome}
-        rotulo={rotulo}
-        ocultarRotulo
-        opcoes={METRICAS}
-        valor={metrica}
-        onChange={setMetrica}
-        className="mb-4"
-      />
+      <Segmentado nome={nome} rotulo={rotulo} ocultarRotulo opcoes={METRICAS} valor={metrica} onChange={setMetrica} className="mb-4" />
       {linhas.length === 0 ? (
-        <p className="py-6 text-center text-sm text-fg-3">Nenhum valor nesta categoria.</p>
+        <p className="py-8 text-center text-sm text-fg-3">Nenhum valor nesta métrica.</p>
       ) : (
-        <ol className="flex flex-col gap-3">
+        <ol className="flex flex-col gap-3.5">
           {linhas.map((r, i) => {
             const valor = valorDaMetrica(r.resumo, metrica);
             const conteudo = (
               <>
-                <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
-                  <span className="min-w-0 truncate text-fg group-hover:text-primary-text">
-                    <span className="numeros mr-1.5 text-fg-3">{i + 1}.</span>
+                <div className="mb-1.5 flex items-baseline justify-between gap-3 text-sm">
+                  <span className="min-w-0 truncate text-fg transition-colors group-hover:text-primary-text">
+                    <span className="numeros mr-2 inline-block w-4 text-right text-caption text-fg-3">{i + 1}</span>
                     {r.nome}
                   </span>
                   <span className="numeros shrink-0 font-medium text-fg">{formatarMoeda(valor)}</span>
                 </div>
-                <div className="h-2 w-full rounded-[4px] bg-chart-track">
-                  <div className={`h-2 rounded-[4px] ${cor}`} style={{ width: `${Math.max(1.5, (valor / maximo) * 100)}%` }} />
+                <div className="ml-6 h-1.5 rounded-[4px] bg-chart-track">
+                  <div className={`h-1.5 rounded-[4px] ${cor}`} style={{ width: `${Math.max(1.5, (valor / maximo) * 100)}%` }} />
                 </div>
               </>
             );
             return (
               <li key={r.id}>
                 {r.href ? (
-                  <Link href={r.href} prefetch={false} className="group block rounded-sm focus-visible:outline-2">
+                  <Link href={r.href} prefetch={false} className="group -m-1 block rounded-sm p-1 focus-visible:outline-2">
                     {conteudo}
                   </Link>
                 ) : (

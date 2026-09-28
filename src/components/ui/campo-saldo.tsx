@@ -25,15 +25,15 @@ export function CampoSaldo({ id, valor, onChange, ...aria }: Props) {
       </div>
       <label
         className={cn(
-          'flex h-12 shrink-0 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm font-medium',
-          negativo ? 'border-danger bg-danger-soft text-danger' : 'border-border-strong text-fg-2',
+          'flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-md border px-3 text-sm font-medium transition-colors lg:h-10',
+          negativo ? 'border-danger-border bg-danger-soft text-danger' : 'border-border-strong bg-input text-fg-2 hover:bg-surface-2',
         )}
       >
         <input
           type="checkbox"
           checked={negativo}
           onChange={(e) => onChange(e.target.checked ? -Math.abs(valor) : Math.abs(valor))}
-          className="size-4.5 accent-[var(--danger)]"
+          className="size-4 accent-danger"
         />
         Negativo
       </label>

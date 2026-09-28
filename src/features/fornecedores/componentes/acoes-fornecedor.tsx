@@ -50,7 +50,7 @@ export function AcoesFornecedor({ id, nome, quantidadeLancamentos }: { id: strin
   return (
     <>
       <Botao variante="secundario" onClick={() => { setNovoNome(nome); setErro(undefined); setEditando(true); }} icone={<Pencil className="size-4.5" aria-hidden="true" />}>
-        Renomear
+        Editar
       </Botao>
       <Botao variante="secundario" onClick={() => setExcluindo(true)} icone={<Trash2 className="size-4.5 text-danger" aria-hidden="true" />}>
         Excluir
@@ -59,7 +59,7 @@ export function AcoesFornecedor({ id, nome, quantidadeLancamentos }: { id: strin
       <Dialogo
         aberto={editando}
         onFechar={() => setEditando(false)}
-        titulo="Renomear fornecedor"
+        titulo="Editar fornecedor"
         rodape={
           <>
             <Botao variante="secundario" onClick={() => setEditando(false)} disabled={pendente}>Cancelar</Botao>
@@ -78,6 +78,7 @@ export function AcoesFornecedor({ id, nome, quantidadeLancamentos }: { id: strin
         aberto={excluindo}
         onFechar={() => setExcluindo(false)}
         titulo="Excluir fornecedor?"
+        alerta="perigo"
         descricao={
           quantidadeLancamentos > 0
             ? `“${nome}” possui ${quantidadeLancamentos} boleto(s). Exclua os boletos antes de excluir o fornecedor.`

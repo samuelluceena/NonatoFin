@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { CreditCard, Plus, ShoppingBag } from 'lucide-react';
+import { ChevronRight, CreditCard, Plus, ShoppingBag } from 'lucide-react';
 import { LinkBotao } from '@/components/ui/botao';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
+import { IconeLista } from '@/components/ui/lista-painel';
+import { Selo } from '@/components/ui/selo';
 import { EstadoVazio } from '@/components/ui/estado-vazio';
 import { Valor } from '@/components/ui/valor';
 import { listarCartoes, resumirFaturasPendentes } from '@/features/cartoes/consultas';
@@ -70,53 +71,61 @@ export default async function PaginaCartoes() {
           acao={<LinkBotao href="/cartoes/novo">Cadastrar cartão</LinkBotao>}
         />
       ) : (
-        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <ul className="divide-y divide-border-subtle overflow-hidden rounded-lg border border-border bg-surface">
           {cartoes.map((c) => {
             const r = resumos.get(c.id);
             return (
               <li key={c.id} className="min-w-0">
-                <Link href={`/cartoes/${c.id}`} className="block rounded-lg focus-visible:outline-2" data-testid="item-cartao">
-                  <Cartao className={cn('flex h-full flex-col gap-3 p-4 transition-colors hover:border-primary/40', !c.ativo && 'opacity-60')}>
-                    <div className="flex items-start gap-3">
-                      <span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary-soft text-primary-soft-fg">
-                        <CreditCard className="size-5" aria-hidden="true" />
+                <Link
+                  href={`/cartoes/${c.id}`}
+                  className={cn('group flex min-h-16 items-center gap-3 px-4 py-3 transition-colors duration-150 hover:bg-surface-2/60 focus-visible:-outline-offset-2', !c.ativo && 'opacity-70')}
+                  data-testid="item-cartao"
+                >
+                  <IconeLista>
+                    <CreditCard />
+                  </IconeLista>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span className="truncate text-body font-medium text-fg group-hover:text-primary-text">
+                        {c.nome}
+                        {c.final && <span className="numeros ml-1.5 font-normal text-fg-3">•••• {c.final}</span>}
                       </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold text-fg">
-                          {c.nome}
-                          {c.final && <span className="numeros ml-1.5 font-normal text-fg-3">•••• {c.final}</span>}
-                        </p>
-                        <p className="truncate text-[13px] text-fg-2">
-                          {c.empresa.apelido} · {c.emissor.nome}
-                        </p>
-                        <p className="text-[13px] text-fg-3">
-                          Fecha dia {c.diaFechamento} · vence dia {c.diaVencimento}
-                          {!c.ativo && ' · Inativo'}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-auto grid grid-cols-2 gap-3 border-t border-border pt-3 text-sm">
-                      <div className="min-w-0">
-                        <p className="text-[13px] text-fg-3">Próxima fatura</p>
-                        {r?.proxima ? (
-                          <>
-                            <Valor centavos={r.proxima.valorCentavos} className="block font-semibold" />
-                            <p className="truncate text-[13px] text-fg-2">{formatarMes(r.proxima.mes)}</p>
-                            <p className="numeros text-[13px] text-fg-3">vence {formatarData(r.proxima.vencimento)}</p>
-                          </>
-                        ) : (
-                          <p className="text-fg-2">Nada em aberto</p>
-                        )}
-                      </div>
-                      <div className="min-w-0 text-right">
-                        <p className="text-[13px] text-fg-3">Total em aberto</p>
-                        <Valor centavos={r?.pendenteCentavos ?? 0} className="block font-semibold" />
-                        <p className="text-[13px] text-fg-2">
-                          {r?.faturasPendentes ?? 0} {r?.faturasPendentes === 1 ? 'fatura' : 'faturas'}
-                        </p>
-                      </div>
-                    </div>
-                  </Cartao>
+                      {!c.ativo && <Selo className="shrink-0">Inativo</Selo>}
+                    </span>
+                    <span className="mt-0.5 block truncate text-meta text-fg-3">
+                      {c.empresa.apelido} · {c.emissor.nome} · fecha dia {c.diaFechamento}, vence dia {c.diaVencimento}
+                    </span>
+                    <span className="mt-0.5 block truncate text-meta text-fg-2 sm:hidden">
+                      {r?.proxima ? (
+                        <>
+                          Próxima: <Valor centavos={r.proxima.valorCentavos} className="font-medium text-fg" /> · vence {formatarData(r.proxima.vencimento)}
+                        </>
+                      ) : (
+                        'Nada em aberto'
+                      )}
+                    </span>
+                  </span>
+                  <span className="hidden w-44 shrink-0 text-right sm:block">
+                    <span className="block text-caption text-fg-3">Próxima fatura</span>
+                    {r?.proxima ? (
+                      <>
+                        <Valor centavos={r.proxima.valorCentavos} className="block text-sm font-medium text-fg" />
+                        <span className="block truncate text-caption text-fg-3">
+                          {formatarMes(r.proxima.mes)} · vence {formatarData(r.proxima.vencimento)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="block text-sm text-fg-3">Nada em aberto</span>
+                    )}
+                  </span>
+                  <span className="w-28 shrink-0 text-right">
+                    <span className="block text-caption text-fg-3">Em aberto</span>
+                    <Valor centavos={r?.pendenteCentavos ?? 0} className="block text-body font-semibold text-fg" />
+                    <span className="block text-caption text-fg-3">
+                      {r?.faturasPendentes ?? 0} {r?.faturasPendentes === 1 ? 'fatura' : 'faturas'}
+                    </span>
+                  </span>
+                  <ChevronRight className="size-4 shrink-0 text-fg-3" aria-hidden="true" />
                 </Link>
               </li>
             );

@@ -1,117 +1,188 @@
 # Design system do NonatoFin
 
-Identidade: **preto/grafite + azul**. Profissional, financeira, limpa e minimalista. Os temas claro e escuro usam **os mesmos tokens** (só os valores mudam), então parecem o mesmo produto.
+Identidade: **grafite + azul**. Sóbrio, preciso e denso, como um produto financeiro SaaS. A hierarquia vem de **fundo, borda, espaço e tipografia**, não de sombras, gradientes ou cartões grandes. Os temas claro e escuro usam **os mesmos tokens** (só os valores mudam).
 
-> **Regra de ouro:** componentes usam somente tokens (classes como `bg-surface`, `text-fg-2`, `border-border`, `bg-primary`). **Nunca** escreva cores hexadecimais em componentes. Tudo está em `src/app/globals.css`.
+> **Regra de ouro:** componentes usam somente tokens (`bg-surface`, `text-fg-2`, `border-border`, `bg-primary`, `text-meta`, `rounded-md`...). **Nunca** escreva cores hexadecimais nem tamanhos arbitrários (`text-[13px]`) em componentes. Tudo está em `src/app/globals.css`. Exceções conscientes: o símbolo do logo (SVG da marca), `themeColor`/`manifest` e as marcas dos gráficos.
+
+## Profundidade (do fundo para a frente)
+
+```
+bg  →  sidebar  →  surface (cards, listas, tabelas)  →  surface-elevated (menus, popovers, modais, toasts)
+                                    input (campos)       overlay (fundo dos modais)
+```
+No escuro, cada camada é um pouco mais clara que a de trás (nada de preto puro em tudo); no claro, a página é cinza-claro e as superfícies são brancas.
 
 ## Cores (tokens)
 
-| Token (CSS) | Classe Tailwind | Claro | Escuro | Uso |
-|---|---|---|---|---|
-| `--bg` | `bg-bg` | `#F5F7FA` | `#0B0F14` | Fundo da página |
-| `--surface` | `bg-surface` | `#FFFFFF` | `#111827` | Cards, modais, menus |
-| `--surface-2` | `bg-surface-2` | `#F1F4F8` | `#172033` | Superfície elevada, hover, trilhas |
-| `--surface-3` | `bg-surface-3` | `#E8EDF3` | `#1E293D` | Skeleton, item ativo no segmentado (escuro) |
-| `--border` | `border-border` | `#E2E7EE` | `#1F2A3C` | Bordas discretas |
-| `--border-strong` | `border-border-strong` | `#CBD3DE` | `#2D3A52` | Inputs, botões secundários |
-| `--fg` | `text-fg` | `#0F172A` | `#E8ECF2` | Texto principal |
-| `--fg-2` | `text-fg-2` | `#475569` | `#AAB3C1` | Texto secundário |
-| `--fg-3` | `text-fg-3` | `#5F6B7D` | `#8A95A6` | Texto terciário (legendas) |
-| `--primary` | `bg-primary` | `#2563EB` | `#2563EB` | Botão principal, chip ativo |
-| `--primary-hover` | `bg-primary-hover` | `#1D4ED8` | `#3B82F6` | Hover do principal |
-| `--primary-fg` | `text-primary-fg` | `#FFFFFF` | `#FFFFFF` | Texto sobre o azul |
-| `--primary-text` | `text-primary-text` | `#1D4ED8` | `#60A5FA` | Links e textos azuis |
-| `--primary-soft` | `bg-primary-soft` | `#EFF6FF` | azul 16% | Destaques suaves, item de menu ativo |
-| `--ring` | `outline-ring` | `#2563EB` | `#3B82F6` | Foco visível |
-| `--success` (+ `-soft`, `-border`) | `text-success` | `#15803D` | `#4ADE80` | Pago |
-| `--warning` (+ `-soft`, `-border`) | `text-warning` | `#B45309` | `#FBBF24` | Aviso |
-| `--danger` (+ `-strong`, `-soft`, `-border`) | `text-danger` | `#B91C1C` | `#F87171` | Atrasado, erro, excluir |
-| `--chart-1` | `bg-chart-1` | `#2563EB` | `#3B82F6` | Gráficos: em aberto / série única |
-| `--chart-2` | `bg-chart-2` | `#1BAF7A` | `#199E70` | Gráficos: pago |
-| `--chart-3` | `bg-chart-3` | `#DC2626` | `#EF4444` | Gráficos: atrasado (sempre com ícone+rótulo) |
-| `--chart-track` | `bg-chart-track` | `#EDF1F6` | `#1A2436` | Trilha das barras |
-
-Escala da marca (Blue): `--blue-50/100/300/400/500/600/700`.
+| Papel | Token / classe | Claro | Escuro |
+|---|---|---|---|
+| Fundo principal | `--bg` · `bg-bg` | `#F6F7F9` | `#0A0C10` |
+| Fundo secundário (faixas, cabeçalho de tabela) | `--bg-subtle` · `bg-bg-subtle` | `#EEF0F3` | `#0E1116` |
+| Sidebar | `--sidebar` · `bg-sidebar` | `#F1F2F5` | `#0D1016` |
+| Surface (cards, listas) | `--surface` · `bg-surface` | `#FFFFFF` | `#11151C` |
+| Surface 2 (hover, preenchimento) | `--surface-2` | `#F2F4F7` | `#171C25` |
+| Surface 3 (esqueleto, ativo em segmentado) | `--surface-3` | `#E9ECF1` | `#1E2430` |
+| Surface elevada (menus, modais, toasts) | `--surface-elevated` | `#FFFFFF` | `#161B23` |
+| Campo | `--input` · `bg-input` | `#FFFFFF` | `#0F131A` |
+| Borda discreta | `--border-subtle` | `#ECEEF2` | `#181D26` |
+| Borda | `--border` | `#E3E6EB` | `#20262F` |
+| Borda forte (campos, botão secundário) | `--border-strong` | `#CFD4DC` | `#2D3542` |
+| Texto principal | `--fg` · `text-fg` | `#0B1220` | `#E7EAF0` |
+| Texto secundário | `--fg-2` | `#475467` | `#A4ACB9` |
+| Texto discreto (legendas) | `--fg-3` | `#5B6474` | `#8189A0` |
+| Primária | `--primary` (+ `-hover`, `-fg`) | `#2563EB` | `#2563EB` |
+| Texto/link azul | `--primary-text` | `#1D4ED8` | `#6EA8FE` |
+| Destaque suave | `--primary-soft` (+ `-fg`) | `#EFF5FF` | azul 14% |
+| Informação | `--info` (+ `-soft`, `-border`) | `#1D4ED8` | `#6EA8FE` |
+| Sucesso | `--success` (+ `-soft`, `-border`) | `#067647` | `#47CD89` |
+| Aviso | `--warning` (+ `-soft`, `-border`) | `#B54708` | `#FDB022` |
+| Perigo | `--danger` (+ `-strong`, `-soft`, `-border`) | `#B42318` | `#F97066` |
+| Foco | `--ring` · `outline-ring` | `#2563EB` | `#3B82F6` |
+| Gráficos | `--chart-1/2/3`, `--chart-track` | azul · verde-água · vermelho | idem |
 
 ### Contraste (WCAG AA)
-Verificado automaticamente no teste E2E `tema.spec.ts` nos dois temas: `fg`, `fg-2`, `fg-3`, `primary-text`, `danger`, `success` sobre `surface`/`bg` e texto branco sobre o azul — todos **≥ 4,5:1**. O tema escuro evita preto absoluto em grandes áreas e branco puro no texto.
+Verificado no E2E `tema.spec.ts` nos dois temas: `fg`, `fg-2`, `fg-3`, `primary-text`, `info`, `warning`, `danger` e `success` sobre `bg`, `sidebar`, `surface`, `surface-2`, `surface-elevated` e `bg-subtle` (conforme o par), e branco sobre o azul — todos **≥ 4,5:1**.
 
 ### Cores de status
-Usadas só quando têm significado. **Sempre com ícone + texto** (`SeloStatus`): ✓ Pago (verde) · ◷ Pendente (azul) · ⚠ Atrasado (vermelho).
-
-## Temas
-- **Claro, Escuro e Sistema** (`next-themes`, `attribute="class"`, classe `.dark` no `<html>`).
-- Preferência salva no `localStorage` (`nonatofin-tema`) — persiste ao fechar/abrir.
-- **Sem flash:** o next-themes injeta um script bloqueante que aplica a classe antes da primeira pintura (testado).
-- "Sistema" segue `prefers-color-scheme` e muda em tempo real.
-- A `<meta name="theme-color">` (barra do navegador/PWA) acompanha o tema efetivo.
-- Onde trocar: Configurações → Aparência, ou o botão de tema no cabeçalho (alterna Claro → Escuro → Sistema).
+Só quando têm significado, **sempre com ícone + texto** (`Selo`, `SeloStatus`): ✓ Pago (verde) · ◷ Pendente (azul) · ⚠ Atrasado (vermelho) · Previsto (âmbar) · Confirmado/Na fatura (neutro).
 
 ## Tipografia
-- **Geist Sans** (pacote `geist`, arquivos locais — sem Google Fonts). Fallbacks: `Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif`. Mono: **Geist Mono** (código de barras).
-- Hierarquia:
+Geist Sans (arquivos locais) e Geist Mono (código de barras). Hierarquia por **tamanho, peso e contraste**; `font-semibold` só em títulos e valores, `font-medium` em rótulos e navegação.
 
-| Uso | Tamanho / peso |
-|---|---|
-| Título da página (h1) | 24px (28px ≥ 640px), 600 |
-| Valor destaque (tela Hoje) | 32px, 600 |
-| Valor no card | 20–26px, 600, `numeros` (tabular) |
-| Nome do fornecedor | 16–17px, 600 |
-| Texto | 15–16px, 400 |
-| Secundário/legendas | 13–14px |
-| Rótulos de seção | 12–13px, 600, caixa alta |
-| Botões | 15px (md) / 16px (lg), 500 |
+| Classe | Tamanho / altura | Uso |
+|---|---|---|
+| `text-title` | 24/32, 600, −1,5% | Título da página (`CabecalhoPagina`) |
+| `text-display` | 32/36, 600, −2% | Valor em destaque (Hoje, saldo) |
+| `text-2xl`/`text-xl` | 24 / 20, 600 | Valores em cards e indicadores |
+| `text-lead` | 17/24 | Destaque em card, título de modal, campo de moeda |
+| `text-body` | 15/22 | Texto de listas e cards |
+| `text-sm` | 14/20 | Botões no desktop, navegação, rótulos de campo, títulos de seção |
+| `text-meta` | 13/18 | Texto secundário, metadados |
+| `text-caption` | 12/16 | Legendas, grupos da sidebar, barra inferior, selos |
 
-- Valores monetários usam a classe utilitária `numeros` (algarismos tabulares).
-- Inputs têm **16px** no celular (evita zoom automático do Safari iOS).
+- Valores monetários: classe `numeros` (algarismos tabulares) — alinham em colunas.
+- Títulos de seção em **sentence case** (`TituloSecao`: 14px, `font-medium`, `text-fg-2`) — sem caixa alta via CSS.
+- Campos com **16px** em qualquer tela (evita o zoom automático do Safari iOS).
 
-## Espaçamento, raios e sombras
-- Escala de espaçamento do Tailwind (4px). Padrões: página `px-4` (celular) / `px-6`–`px-10`; cards `p-4`/`p-5`; gap entre cards `gap-3`; entre seções `gap-6`/`gap-8`.
-- Raios: `rounded-sm` 8px (chips/badges), `rounded-md` 12px (botões/inputs), `rounded-lg` 16px (cards), `rounded-xl` 20px (modais).
-- Sombras: `shadow-sm` (cards), `shadow-md` (botão principal, toasts), `shadow-lg` (modais). No escuro as sombras são mais discretas.
+## Espaçamento
+Escala de 4px do Tailwind. Padrões:
+- **Página:** `px-4` (celular) · `px-6` (≥ 640px) · `px-10` (≥ 1024px); topo `pt-5`/`pt-8`; largura máxima `max-w-6xl`. Formulários `max-w-xl` (Conta, Boleto/Despesa, Compra no cartão; Cartão ainda `max-w-2xl`); detalhes `max-w-2xl`/`max-w-3xl`; Detalhe da conta `max-w-5xl`.
+- **Entre seções:** `gap-6`/`gap-8`; cabeçalho da página `mb-6`.
+- **Cards/painéis:** `p-4` (`p-5` em destaque); listas com linhas `px-4 py-3` e `divide-y`.
+- **Formulários:** `gap-10` entre seções, `gap-5` do título da seção aos campos, `gap-4` entre campos; rótulo → campo `gap-1.5`.
+- **Tabelas:** células `py-2.5`, `pl-3`; cabeçalho `bg-bg-subtle`.
+- Medidas do shell: `--altura-barra-inferior` (56px), `--largura-sidebar` (240px), `--largura-sidebar-compacta` (68px).
+
+## Raios e sombras
+| Raio | Valor | Uso |
+|---|---|---|
+| `rounded-sm` | 6px | Selos, itens de menu, chips pequenos |
+| `rounded-md` | 8px | Botões, campos, itens de navegação |
+| `rounded-lg` | 12px | Cards, listas, tabelas, popovers |
+| `rounded-xl` | 16px | Modais e sheets |
+
+Sombras discretas: `shadow-xs` (botões, campos), `shadow-sm` (item ativo), `shadow-md` (FAB, dicas), `shadow-lg` (menus, modais, toasts). **Cards não têm sombra** — só borda.
+
+## Ícones
+Lucide React. Tamanhos: 16px em botões pequenos e selos (14px), **18px** em botões/navegação desktop, 20px na barra inferior e no FAB. Traço padrão; 2.1 no item ativo da navegação. Ícone sempre com função (e `aria-hidden` quando o texto já diz o que é).
+
+## Movimento
+Curto e discreto (150–220ms, curva `--ease-suave`): `animate-surgir` (menus, FAB), `animate-subir` (sheet no celular), `animate-esmaecer` (fundos), transições de cor em hover/ativo, largura da sidebar. `prefers-reduced-motion` desliga tudo.
 
 ## Componentes (`src/components/ui`)
 | Componente | Notas |
 |---|---|
-| `Botao` / `LinkBotao` | Variantes `primario`, `secundario`, `fantasma`, `perigo`, `suave`; tamanhos `sm` (36px), `md` (44px), `lg` (52px); `carregando` + `textoCarregando` ("Salvando...") e desabilitado durante a ação |
-| `Campo`, `Entrada`, `AreaTexto`, `Seletor` | Label ligada, dica, erro com `role="alert"` e `aria-invalid`; altura 48px |
-| `CampoMoeda` | Máscara de banco, teclado numérico |
-| `Cartao`, `TituloSecao` | Card padrão |
-| `SeloStatus` | Ícone + texto |
-| `Dialogo` | `<dialog>` nativo: foco preso, Esc fecha; *bottom sheet* no celular, centralizado ≥ 640px |
-| `Segmentado` | Grupo de rádios (tema, tipo, métrica) |
-| `ChipsFiltro`, `FiltroPeriodo` | Filtros roláveis e período por formulário GET |
-| `Indicador` | Card de KPI (clicável) |
-| `EstadoVazio`, `CabecalhoPagina`, `Valor`, `Spinner` | Utilitários de layout |
+| `Botao` / `LinkBotao` | `primario` (uma por tela), `secundario`, `fantasma`, `perigo`, `suave`; `sm` 36px, `md` 44px no celular / 40px no desktop, `lg` 48px; `carregando` + `textoCarregando` |
+| `BotaoIcone` | Botão só com ícone (nome acessível obrigatório): 36px ou 44/40px |
+| `BotaoFiltros` | "Filtros" com contador (Boletos, Transações) |
+| `Campo`, `Entrada`, `AreaTexto`, `CampoMoeda`, `CampoSaldo` | Fundo `input`, borda forte, foco com anel azul, erro com `role="alert"`; 44px (40px no desktop). `CampoMoeda tamanho="destaque"`: 64px e número grande, para o valor principal do formulário |
+| `Seletor` | Select customizado único do app (**nenhum `<select>` nativo**): combobox WAI-ARIA, lista na top layer (Popover API) acima de diálogos e fora de áreas com overflow; variantes `campo`, `filtro` (chip) e `compacto` (empresa global). Ver "Seletor" abaixo |
+| `Cartao`, `TituloSecao` | Superfície com borda; título de seção em sentence case |
+| `CabecalhoPagina` | PageHeader: voltar (opcional), título, descrição curta, ações |
+| `Selo`, `SeloStatus` | Badge com tons `neutro`/`info`/`sucesso`/`aviso`/`perigo`; status com ícone + texto |
+| `Dialogo` | `<dialog>` nativo: foco preso, Esc e clique fora fecham; *bottom sheet* com alça no celular, centralizado ≥ 640px; `tamanho` sm/md/lg; `alerta` perigo/aviso = AlertDialog (`role="alertdialog"`, ícone) para exclusões e impedimentos |
+| `MenuAcoes` | Menu de três pontos (WAI-ARIA *menu button*): setas, Home/End, Esc devolve o foco; posição fixa |
+| `Dica` | Tooltip em CSS (hover e foco) — usado na sidebar recolhida |
+| `Esqueleto` | Skeleton de carregamento |
+| `Segmentado` | Grupo de rádios com visual de abas (tema, tipo, métrica) |
+| `ChipsFiltro`, `CampoPesquisa`, `DetalhePeriodo`, `FiltrosAtivos`, `FiltroPeriodo` | Filtros de listas |
+| `PainelMetricas`, `Metrica` | Métricas (MetricCard) em painel dividido; níveis `destaque`, `padrao`, `compacta`; `tom` perigo/saldo; `testId` no valor |
+| `Valor` | MoneyDisplay: `sinal` saldo (padrão, "− R$" nos negativos) / sempre ("+ R$", "− R$") / nunca; `tom` semântico; algarismos tabulares |
+| `Tabela`, `CabecalhoTabela`, `CorpoTabela`, `LinhaTabela`, `Th`, `Td` | Tabela financeira densa (desktop): cabeçalho em `bg-subtle`, divisórias sutis, números à direita |
+| `ListaPainel`, `LinhaLista`, `IconeLista` | Lista em painel (celular e listas simples): ícone · título/descrição · valor, linhas ≥ 56px |
+| `CabecalhoSecao` | SectionHeader: título + detalhe/link/ação |
+| `PainelFiltros` | "Mais filtros": popover ancorado (≥ 640px) ou sheet (celular); Esc, clique fora, foco |
+| `BarraFiltros`, `SeletorFiltro`, `CampoFiltro` | Barra de filtros (pesquisa + controles compactos que se destacam quando aplicados) e campos do painel |
+| `PainelFormulario`, `SecaoFormulario`, `CampoMarcacao`, `Aviso` | Seções em caixa (padrão antigo, hoje só no formulário de Cartão); checkbox estilizado (input real); aviso informativo/atenção |
+| `EstadoVazio`, `ListaDetalhes`, `LinkVoltar`, `Valor`, `Spinner`, `BarraAcoesFormulario`, `BotaoConfirmar` | Utilitários |
 
-Estados: hover (`hover:`), foco visível (contorno azul 2px), toque (`active:scale-[0.98]`), carregando (spinner + texto), desabilitado (opacidade 55%, sem clique).
+Estados: hover (cor/borda), foco visível (contorno azul 2px), ativo (`scale-[0.98]`), carregando (spinner + texto), desabilitado (50%, sem clique).
+
+## Botões e campos
+- **Hierarquia:** uma ação `primario` por tela (ou por diálogo); demais ações `secundario`; ações discretas `fantasma`; exclusão `perigo`. Botões só com ícone usam `BotaoIcone` (nome acessível obrigatório).
+- **Estados:** hover (cor/borda), foco (contorno azul 2px), ativo (`scale-[0.98]`), carregando (spinner + texto, desabilitado — impede duplo clique), desabilitado (50%).
+- **Campos:** rótulo sempre visível (placeholder não substitui rótulo), dica abaixo quando ajuda, erro abaixo com `role="alert"` ligado por `aria-describedby` e borda vermelha. 44px no celular, 40px no desktop, texto 16px. Datas com o seletor nativo; valores com `CampoMoeda` (máscara de banco, centavos).
+- **Seletor** (`components/ui/seletor.tsx`, reexportado por `campo.tsx`): toda escolha de lista usa ele — não use `<select>` nativo.
+  - API: `opcoes={[{ valor, rotulo, desabilitada? }]}`, `placeholder` (opção de valor `''` em tom neutro), `value`/`onChange` (controlado) ou `{...register('campo')}` do React Hook Form; `ariaCampo()` e `<Campo>` continuam dando rótulo, dica e erro. `onChange`/`onBlur` recebem `{ target: { name, value } }`; o valor é sempre string (converta no `Controller` quando o esquema pede número, como em Parcelas).
+  - Visual: gatilho igual aos campos (cantos `md`, borda, chevron que gira ao abrir); lista em `surface-elevated` com uma sombra, opções ≥ 44px no celular, hover/ativa em `surface-2`, selecionada com ✓ discreto. Sem animação além de um `surgir` de 160ms.
+  - Teclado: Enter/Espaço/setas abrem; setas, Home/End e PageUp/PageDown navegam (pulam opções desabilitadas); letras saltam para a opção; Enter/Espaço escolhem; Esc fecha só a lista (não o diálogo/painel); Tab fecha. Clique fora fecha; rolagem e redimensionar (ex.: teclado do celular fechando) reposicionam a lista, que só fecha se o gatilho sair da tela; o foco volta ao gatilho.
+  - Testes E2E: `escolherOpcao(seletor, rótulo)`, `valorSeletor()` (lê `data-valor`) e `opcoesSeletor()` em `tests/e2e/auxiliares.ts`.
+
+## Formulários
+Padrão de Nova/Editar conta, Boleto (Despesa), Entrada e Compra no cartão:
+- **Valor primeiro**, com `CampoMoeda tamanho="destaque"` (a data ou as parcelas ao lado a partir de 640px).
+- **Seções sem caixa** (título `text-body font-semibold` + descrição curta opcional); complementos numa última seção secundária ("Mais detalhes", título `text-sm text-fg-2`, "(opcional)").
+- Campos relacionados lado a lado só a partir de 640px; no celular, uma coluna.
+- **Ações:** `BarraAcoesFormulario` (Cancelar · Salvar). No celular fica presa acima da barra inferior (envolvida em `contents sm:flex sm:justify-end sm:border-t sm:pt-6`); no desktop, à direita após uma divisória.
+- **Exclusão** fora do formulário, numa seção própria no fim da tela de edição (título "Excluir …", explicação do impacto/impedimento e `BotaoConfirmar` perigo).
+- Validação `onTouched`; ao salvar com erro, o foco vai ao primeiro campo inválido (inclusive `Seletor`).
+
+## Ações rápidas (FAB)
+- Celular: o **+** central da barra inferior abre um *speed dial* acima dele (fundo escurecido): **Despesa** (vermelho, seta para cima → Conta a pagar / Compra no cartão, com "Voltar") e **Entrada** (verde, seta para baixo → diálogo de entrada). O + vira × no mesmo lugar.
+- Desktop: botão "Novo lançamento" no topo da sidebar abre as mesmas opções em menu suspenso (ao lado do botão quando a sidebar está recolhida).
+- Esc, clique fora e o × fecham; o foco vai para a primeira opção; animação curta (desligada com movimento reduzido).
+
+## Padrões de UX
+- **Obrigação × caixa:** verde/vermelho só para dinheiro que já entrou/saiu; o que ainda é obrigação ou previsão aparece neutro e com status em texto.
+- **Filtros:** pesquisa + controles compactos; filtros extras no painel (popover no desktop, sheet no celular); tudo na URL; filtros ativos como etiquetas removíveis + "Limpar filtros"; estado vazio diz se a lista está vazia por causa dos filtros.
+- **Confirmações:** só para ações destrutivas ou irreversíveis, explicando o impacto ("… será excluído permanentemente"); impedimentos (ex.: categoria em uso) explicam o motivo antes da tentativa.
+- **Retorno:** toast curto no passado ("Pagamento registrado."); erros humanos, sem detalhes internos; carregamento com skeleton da tela ou spinner no próprio botão.
+- **Tarefas do dia a dia** sempre a um toque: Hoje (copiar código, marcar como pago), + (despesa/entrada), Transações, Fechar o dia.
+
+## Navegação (shell)
+- **Desktop (≥ 1024px): sidebar** (`components/layout/menu-lateral.tsx`), sem topbar. Topo: marca e recolher; empresa (seletor global); **Novo lançamento** (ações rápidas). Áreas em grupos — **Principal** (Hoje, Transações, Boletos, Contas, Fechar o dia), **Gestão** (Dashboard, Cartões, Meses, Fornecedores, Histórico), **Sistema** (Configurações). Rodapé: conta, tema, sair. Item ativo: fundo de superfície, texto forte, ícone azul e indicador lateral; `aria-current="page"`.
+- **Sidebar recolhível:** só ícones, com `Dica` no hover/foco; nomes continuam acessíveis. O estado fica no cookie `nonatofin-sidebar`, lido no servidor (abre já no estado certo, sem piscar).
+- **Celular/tablet (< 1024px):** cabeçalho (marca, empresa, tema) e **barra inferior**: Hoje · Transações · **+** (ações rápidas: Despesa/Entrada) · Dashboard · Mais. Item ativo com pílula atrás do ícone e texto mais forte. Respeita `env(safe-area-inset-*)`.
+- **Menu "Mais":** sheet com os mesmos grupos da sidebar (sem o que já está na barra), itens de 48px, conta e Sair no fim.
+- Estrutura em `components/layout/navegacao.ts` (`ITENS_NAVEGACAO`, `GRUPOS_NAVEGACAO`, `GRUPOS_MAIS`).
+
+## Dinheiro, datas e status
+- **Dinheiro:** sempre pelo `Valor` (ou `formatarMoeda`/`formatarMoedaComSinal`/`formatarMoedaSaldo`). Saldos: negativo com "−" e, quando importa, em vermelho (`tom="negativo-perigo"`). Movimentos: "+ R$" / "− R$". Verde/vermelho só para dinheiro que efetivamente entrou/saiu.
+- **Datas:** `DD/MM/AAAA` (`formatarData`); agrupamentos por dia com "Hoje — …", "Amanhã — …", "Qui, 24/09/2026" (`rotuloDia`); meses "Outubro/2026"; instantes "24/09/2026 14:30".
+- **Status:** `Selo` com ícone + texto, mesmos tons em todo o app: Pago (sucesso), Pendente (info), Atrasado (perigo), Previsto (aviso), Confirmado / Na fatura / Inativo / Em uso (neutro).
+- **Feedback (toasts):** frases no passado, com ponto: "Pagamento registrado.", "Entrada adicionada.", "Transferência concluída.", "Categoria atualizada.", "Boleto excluído.".
 
 ## Tabelas e listas
-No celular, **cards em vez de tabelas**. Listas longas usam linhas com `divide-y`. A única tabela (dados do gráfico mensal) fica dentro de "Ver tabela" com rolagem própria.
+No celular, **listas em vez de tabelas**. Transações usa lista agrupada por dia até 1279px e tabela densa a partir de 1280px (`xl`), com ações no `MenuAcoes`. A tabela do gráfico mensal fica em "Ver tabela" com rolagem própria.
 
 ## Gráficos
-- Leves, feitos com HTML/CSS (sem biblioteca). Respeitam os temas via tokens `chart-*`.
-- Paleta categórica **validada para daltonismo** (azul + verde-água; ΔE > 20). Marcas finas, cantos de 4px na ponta, 2px de espaço entre segmentos empilhados.
-- Legenda sempre visível para 2+ séries; valores sempre disponíveis em texto (tooltip no hover/foco, rótulos diretos, "Ver tabela").
-- Gráficos: valores por mês (em aberto x pago), comparativo de fornecedores (métrica selecionável), pago x pendente x atrasado.
+Leves, em HTML/CSS (sem biblioteca), com tokens `chart-*`. Paleta categórica validada para daltonismo; legenda para 2+ séries; valores sempre disponíveis em texto.
 
-## Breakpoints e comportamento mobile
+## Breakpoints
 | Largura | Layout |
 |---|---|
 | < 640px (`sm`) | 1 coluna, barra inferior, botões largura total, modais *bottom sheet* |
-| 640–1023px | 1–2 colunas, barra inferior, modais centralizados |
-| ≥ 768px (`md`) | Cards em 2 colunas |
-| ≥ 1024px (`lg`) | Menu lateral fixo, sem barra inferior |
+| 640–1023px | Barra inferior, modais centralizados |
+| ≥ 1024px (`lg`) | Sidebar (recolhível), controles de 40px |
+| ≥ 1280px (`xl`) | Tabela de Transações |
 
-- Barra inferior: Hoje · Boletos · **+** (novo) · Dashboard · Mais (Meses, Fornecedores, Histórico, Configurações, Sair).
-- Respeita *safe areas* do iPhone (`env(safe-area-inset-*)`), `viewport-fit=cover`.
-- Nada depende de hover. Alvos de toque ≥ 44px. Sem rolagem horizontal (testado em 375, 390, 430, 768 e 1440px).
+Nada depende de hover. Alvos de toque ≥ 44px no celular. Sem rolagem horizontal (testado em 375, 390, 430, 768 e 1440px).
 
 ## Acessibilidade
-Labels em todos os campos, `aria-describedby` para dicas/erros, foco visível, navegação por teclado, `aria-current` na navegação, landmarks (`nav`, `main`, `aside`), status com texto, contraste AA, `prefers-reduced-motion` respeitado, `lang="pt-BR"`.
+Labels em todos os campos, `aria-describedby` para dicas/erros, foco visível, teclado em menus e diálogos, `aria-current` e `aria-expanded` na navegação, landmarks (`nav`, `main`, `aside`), status com texto, contraste AA, `prefers-reduced-motion`, `lang="pt-BR"`.
 
 ## Como alterar a identidade
-- **Cor principal:** troque `--primary`, `--primary-hover`, `--primary-text`, `--primary-soft(-fg)`, `--ring` e `--chart-1` nos dois temas em `globals.css`. Rode `npm run test:e2e -- tema` (contraste).
-- **Fundo escuro:** `--bg`, `--surface`, `--surface-2/3`, `--border(-strong)` em `.dark`.
+- **Cor principal:** `--primary`, `--primary-hover`, `--primary-text`, `--primary-soft(-fg)`, `--ring`, `--info` e `--chart-1` nos dois temas (`globals.css`). Rode `npm run test:e2e -- tema` (contraste).
+- **Fundos:** `--bg`, `--bg-subtle`, `--sidebar`, `--surface*`, `--input`, `--border*`. Atualize também `COR_BARRA` (`provedores.tsx`), `themeColor` (`app/layout.tsx`) e `manifest.ts` se mudar `--bg`.
 - **Fonte:** veja [MANUTENCAO.md](MANUTENCAO.md#alterar-a-tipografia).
 - **Logo/ícones:** `components/layout/logo.tsx` e `scripts/gerar-icones.mjs` (`npm run icones`).

@@ -5,7 +5,7 @@ import { AlertTriangle, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-reac
 import { classesBotao } from '@/components/ui/botao';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
 import { EstadoVazio } from '@/components/ui/estado-vazio';
-import { Indicador } from '@/components/ui/indicador';
+import { Metrica, PainelMetricas } from '@/components/ui/metrica';
 import { listarLancamentosDoMes } from '@/features/lancamentos/consultas';
 import { ListaLancamentos } from '@/features/lancamentos/componentes/lista-lancamentos';
 import { exigirUsuario } from '@/lib/auth/sessao';
@@ -49,11 +49,11 @@ export default async function PaginaMes({ params }: PageProps<'/meses/[mes]'>) {
           </>
         }
       />
-      <section aria-label="Totais do mês" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Indicador rotulo="Total" valor={resumo.totalCentavos} detalhe={`${resumo.quantidadeTotal} boletos`} testId="mes-total" />
-        <Indicador rotulo="Pendente" valor={resumo.pendenteCentavos} detalhe={`${resumo.quantidadePendente} boletos`} testId="mes-pendente" />
-        <Indicador rotulo="Pago" valor={resumo.pagoCentavos} detalhe={`${resumo.quantidadePaga} boletos`} testId="mes-pago" />
-        <Indicador
+      <PainelMetricas rotulo="Totais do mês" className="grid-cols-2 lg:grid-cols-4">
+        <Metrica rotulo="Total" valor={resumo.totalCentavos} detalhe={`${resumo.quantidadeTotal} boletos`} testId="mes-total" />
+        <Metrica rotulo="Pendente" valor={resumo.pendenteCentavos} detalhe={`${resumo.quantidadePendente} boletos`} testId="mes-pendente" />
+        <Metrica rotulo="Pago" valor={resumo.pagoCentavos} detalhe={`${resumo.quantidadePaga} boletos`} testId="mes-pago" />
+        <Metrica
           rotulo="Atrasado"
           valor={resumo.atrasadoCentavos}
           detalhe={`${resumo.quantidadeAtrasada} boletos`}
@@ -61,7 +61,7 @@ export default async function PaginaMes({ params }: PageProps<'/meses/[mes]'>) {
           icone={<AlertTriangle className="size-3.5" aria-hidden="true" />}
           testId="mes-atrasado"
         />
-      </section>
+      </PainelMetricas>
       <div className="mt-8">
         {lancamentos.length === 0 ? <EstadoVazio titulo="Nenhum boleto neste mês" /> : <ListaLancamentos lancamentos={lancamentos} hoje={hoje} />}
       </div>

@@ -55,11 +55,11 @@ export function OpcoesEscopo({
             value={o.valor}
             checked={valor === o.valor}
             onChange={() => onChange(o.valor)}
-            className="mt-0.5 size-5 accent-[var(--primary)]"
+            className="mt-0.5 size-5 accent-primary"
           />
           <span>
-            <span className="block text-[15px] font-medium text-fg">{o.titulo}</span>
-            <span className="block text-[13px] text-fg-2">{o.detalhe}</span>
+            <span className="block text-body font-medium text-fg">{o.titulo}</span>
+            <span className="block text-meta text-fg-2">{o.detalhe}</span>
           </span>
         </label>
       ))}

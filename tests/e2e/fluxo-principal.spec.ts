@@ -32,7 +32,7 @@ test.describe('fluxo principal do boleto', () => {
       valorDigitos: '299500',
       codigo: '00190.00009 01234.567890 12345.678901 2 34567890123456',
     });
-    await expect(page.getByText('Boleto salvo!')).toBeVisible();
+    await expect(page.getByText('Boleto salvo.')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Compra coleção agosto' })).toBeVisible();
     await expect(page.getByText('R$ 2.995,00').first()).toBeVisible();
 
@@ -48,12 +48,12 @@ test.describe('fluxo principal do boleto', () => {
     await semRolagemHorizontal(page);
 
     // 4. Copiar código (somente dígitos)
-    const copiar = cartao.getByRole('button', { name: 'COPIAR CÓDIGO' });
+    const copiar = cartao.getByRole('button', { name: 'Copiar código' });
     const caixa = await copiar.boundingBox();
-    expect(caixa!.height, 'botão COPIAR CÓDIGO confortável ao toque').toBeGreaterThanOrEqual(44);
+    expect(caixa!.height, 'botão Copiar código confortável ao toque').toBeGreaterThanOrEqual(44);
     await copiar.click();
-    await expect(page.getByText('Código copiado!').first()).toBeVisible();
-    await expect(cartao.getByRole('button', { name: 'CÓDIGO COPIADO!' })).toBeVisible();
+    await expect(page.getByText('Código copiado').first()).toBeVisible();
+    await expect(cartao.getByRole('button', { name: 'Código copiado' })).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(CODIGO_47);
 
     // 5. Editar
@@ -66,14 +66,14 @@ test.describe('fluxo principal do boleto', () => {
     await valor.pressSequentially('310000');
     await page.getByLabel('Observação (opcional)').fill('Desconto negociado');
     await page.getByRole('button', { name: 'Salvar alterações' }).click();
-    await expect(page.getByText('Boleto atualizado!')).toBeVisible();
+    await expect(page.getByText('Boleto atualizado.')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Compra coleção agosto (revisada)' })).toBeVisible();
     await expect(page.getByText('R$ 3.100,00').first()).toBeVisible();
     await expect(page.getByText('Desconto negociado')).toBeVisible();
 
     // 6. Marcar como pago
-    await page.getByRole('button', { name: 'MARCAR COMO PAGO' }).click();
-    await expect(page.getByText('Boleto marcado como pago!')).toBeVisible();
+    await page.getByRole('button', { name: 'Marcar como pago' }).click();
+    await expect(page.getByText('Pagamento registrado.')).toBeVisible();
     await expect(page.getByText('Pago em').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Desfazer pagamento' })).toBeVisible();
     const urlBoleto = page.url();
@@ -86,19 +86,19 @@ test.describe('fluxo principal do boleto', () => {
     const item = page.getByTestId('lista-historico').getByRole('link').filter({ hasText: fornecedor });
     await expect(item).toBeVisible();
     await expect(item).toContainText('R$ 3.100,00');
-    await expect(item).toContainText(`Venc. ${br(hoje)}`);
+    await expect(item).toContainText(`Vencimento ${br(hoje)}`);
     await expect(item).toContainText('Pago em');
 
     // 8. Desfazer pagamento
     await page.goto(urlBoleto);
     await page.getByRole('button', { name: 'Desfazer pagamento' }).click();
     await expect(page.getByText('Pagamento desfeito.')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'MARCAR COMO PAGO' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Marcar como pago' })).toBeVisible();
     await expect(page.getByText('Pendente').first()).toBeVisible();
 
     // 9. Excluir (com confirmação)
     await page.getByTestId('excluir-boleto').click();
-    await expect(page.getByRole('dialog', { name: 'Excluir boleto?' })).toBeVisible();
+    await expect(page.getByRole('alertdialog', { name: 'Excluir boleto?' })).toBeVisible();
     await page.getByTestId('confirmar-exclusao').click();
     await expect(page.getByText('Boleto excluído.')).toBeVisible();
     await expect(page).toHaveURL(/\/boletos$/);
@@ -107,20 +107,20 @@ test.describe('fluxo principal do boleto', () => {
   });
 });
 
-test('boleto sem código mostra ADICIONAR CÓDIGO e salva o código', async ({ page }) => {
+test('boleto sem código mostra Adicionar código e salva o código', async ({ page }) => {
   const fornecedor = unico('Sem Código');
   await cadastrarBoleto(page, { fornecedor, descricao: 'Pedido sem código', vencimento: dataRelativa(0), valorDigitos: '10000' });
   await page.goto('/');
   const cartao = page.getByTestId('cartao-boleto').filter({ hasText: fornecedor });
-  await cartao.getByRole('button', { name: 'ADICIONAR CÓDIGO' }).click();
+  await cartao.getByRole('button', { name: 'Adicionar código' }).click();
   const dialogo = page.getByRole('dialog', { name: 'Adicionar código' });
   await dialogo.getByLabel(/linha digitável/).fill('123');
   await dialogo.getByRole('button', { name: 'Salvar código' }).click();
   await expect(dialogo.getByText('O código deve ter 44, 47 ou 48 dígitos.')).toBeVisible();
   await dialogo.getByLabel(/linha digitável/).fill(CODIGO_47);
   await dialogo.getByRole('button', { name: 'Salvar código' }).click();
-  await expect(page.getByText('Código salvo!')).toBeVisible();
-  await expect(cartao.getByRole('button', { name: 'COPIAR CÓDIGO' })).toBeVisible();
+  await expect(page.getByText('Código salvo.')).toBeVisible();
+  await expect(cartao.getByRole('button', { name: 'Copiar código' })).toBeVisible();
 });
 
 test('validação do formulário e proteção contra duplo toque', async ({ page }) => {
@@ -145,6 +145,7 @@ test('validação do formulário e proteção contra duplo toque', async ({ page
 });
 
 test('pesquisa inclui contas futuras e filtros funcionam', async ({ page }) => {
+  test.setTimeout(120_000); // ~20 navegações (períodos × status, dia, intervalo)
   const fornecedor = unico('Futuro Distante');
   await cadastrarBoleto(page, { fornecedor, descricao: 'Parcela do ano que vem', vencimento: dataRelativa(300), valorDigitos: '12345' });
 
@@ -157,7 +158,7 @@ test('pesquisa inclui contas futuras e filtros funcionam', async ({ page }) => {
   await page.goto('/boletos?periodo=todos');
   await page.getByTestId('mais-filtros').click();
   const dialogo = page.getByRole('dialog', { name: 'Mais filtros' });
-  await dialogo.getByLabel('Fornecedor', { exact: true }).selectOption({ label: fornecedor });
+  await escolherOpcao(dialogo.getByRole('combobox', { name: 'Fornecedor', exact: true }), fornecedor);
   await dialogo.getByRole('button', { name: 'Aplicar' }).click();
   await expect(page).toHaveURL(/fornecedor=/);
   await expect(page.getByTestId('cartao-boleto')).toHaveCount(1);

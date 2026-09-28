@@ -31,7 +31,7 @@ async function idsFornecedoresPorNome(supabase: ClienteSupabase, texto: string):
 }
 
 /** Monta o filtro "or" da busca: fornecedor, nome/descrição ou observação. */
-async function filtroBusca(supabase: ClienteSupabase, buscaBruta: string | undefined): Promise<string | null> {
+export async function filtroBusca(supabase: ClienteSupabase, buscaBruta: string | undefined): Promise<string | null> {
   const busca = sanitizarBusca(buscaBruta);
   if (!busca) return null;
   const ids = await idsFornecedoresPorNome(supabase, busca);
@@ -74,7 +74,7 @@ export interface ResultadoListagem {
  * Um só lugar monta os filtros: a lista e a exportação dão sempre o mesmo resultado.
  * `buscaOr` = resultado de `filtroBusca` (resolvido antes, uma vez só).
  */
-function consultaFiltrada(supabase: ClienteSupabase, opcoes: OpcoesListagem, buscaOr: string | null) {
+export function consultaFiltrada(supabase: ClienteSupabase, opcoes: OpcoesListagem, buscaOr: string | null) {
   let consulta = supabase.from('lancamentos').select(COLUNAS_LANCAMENTO);
   const { criterio } = opcoes;
   if (criterio.status) consulta = consulta.eq('status', criterio.status);

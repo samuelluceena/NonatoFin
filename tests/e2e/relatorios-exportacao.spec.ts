@@ -17,17 +17,17 @@ test('fornecedor: cadastro, totais por status e detalhe', async ({ page }) => {
   const fornecedor = unico('Fornecedor Totais');
   await cadastrarBoleto(page, { fornecedor, descricao: 'Atrasado', vencimento: dataRelativa(-5), valorDigitos: '10000' });
   await cadastrarBoleto(page, { fornecedor, descricao: 'Pago', vencimento: dataRelativa(2), valorDigitos: '20000' });
-  await page.getByRole('button', { name: 'MARCAR COMO PAGO' }).click();
-  await expect(page.getByText('Boleto marcado como pago!')).toBeVisible();
+  await page.getByRole('button', { name: 'Marcar como pago' }).click();
+  await expect(page.getByText('Pagamento registrado.')).toBeVisible();
   await cadastrarBoleto(page, { fornecedor: fornecedor.toUpperCase(), descricao: 'Futuro', vencimento: dataRelativa(40), valorDigitos: '30000' });
 
   await navegarPara(page, 'Fornecedores');
   const cartao = page.getByTestId('cartao-fornecedor').filter({ hasText: fornecedor.toUpperCase() });
   await expect(cartao).toHaveCount(1); // maiúsculas não duplicam o fornecedor
   await expect(cartao).toContainText('3 boletos');
-  await expect(cartao).toContainText('Pendentes: 1');
-  await expect(cartao).toContainText('Pagos: 1');
-  await expect(cartao).toContainText('Atrasados: 1');
+  await expect(cartao).toContainText('1 pendente');
+  await expect(cartao).toContainText('1 pago');
+  await expect(cartao).toContainText('1 atrasado');
 
   await cartao.click();
   await expect(page.getByTestId('forn-total')).toHaveText('R$ 600,00');
@@ -115,7 +115,7 @@ test('exportação CSV e Excel', async ({ page }) => {
   await navegarPara(page, 'Configurações');
 
   const [csv] = await Promise.all([page.waitForEvent('download'), page.getByTestId('exportar-csv').click()]);
-  await expect(page.getByText('Exportação concluída!')).toBeVisible();
+  await expect(page.getByText('Exportação concluída.')).toBeVisible();
   expect(csv.suggestedFilename()).toMatch(/^nonatofin-boletos-\d{4}-\d{2}-\d{2}\.csv$/);
   const conteudo = await readFile((await csv.path())!, 'utf8');
   expect(conteudo.charCodeAt(0)).toBe(0xfeff);

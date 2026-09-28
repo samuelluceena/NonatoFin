@@ -24,16 +24,52 @@ export const EMPRESAS_E2E = [
 ] as const;
 
 /**
- * Escolhe uma opção de <select> e confirma que ela "pegou". Se a escolha for
- * feita antes de o React terminar de hidratar a página, ele volta ao valor
- * inicial — então repete até a opção permanecer selecionada.
+ * Restringe o locator ao gatilho do Seletor (role="combobox"). A lista aberta
+ * (role="listbox") tem o mesmo nome acessível, então um locator por rótulo
+ * pegaria os dois elementos.
  */
-export async function escolherOpcao(select: Locator, rotulo: string) {
+function gatilhoSeletor(seletor: Locator): Locator {
+  return seletor.and(seletor.page().getByRole('combobox'));
+}
+
+/** Lista (role="listbox") aberta pelo Seletor customizado. */
+async function abrirSeletor(seletor: Locator): Promise<Locator> {
+  seletor = gatilhoSeletor(seletor);
+  if ((await seletor.getAttribute('aria-expanded')) !== 'true') await seletor.click();
+  const idLista = await seletor.getAttribute('aria-controls', { timeout: 1_000 });
+  if (!idLista) throw new Error('A lista do seletor não abriu.');
+  return seletor.page().locator(`[id="${idLista}"]`);
+}
+
+/**
+ * Escolhe uma opção do Seletor (combobox customizado, sem <select> nativo) e
+ * confirma que ela "pegou". Antes de o React hidratar, o clique não abre a
+ * lista (ou a escolha se perde) — então repete até a opção permanecer.
+ */
+export async function escolherOpcao(seletor: Locator, rotulo: string) {
+  seletor = gatilhoSeletor(seletor);
   await expect(async () => {
-    await select.selectOption({ label: rotulo });
-    await select.page().waitForTimeout(250);
-    await expect(select.locator('option:checked')).toHaveText(rotulo, { timeout: 100 });
+    const lista = await abrirSeletor(seletor);
+    await lista.getByRole('option', { name: rotulo, exact: true }).click({ timeout: 2_000 });
+    await seletor.page().waitForTimeout(250);
+    await expect(seletor).toHaveText(rotulo, { timeout: 100 });
   }).toPass({ timeout: 10_000 });
+}
+
+/** Valor atual do Seletor (o mesmo enviado pelo formulário). */
+export async function valorSeletor(seletor: Locator): Promise<string> {
+  return (await gatilhoSeletor(seletor).getAttribute('data-valor')) ?? '';
+}
+
+/** Rótulos das opções do Seletor (abre a lista e fecha com Esc). */
+export async function opcoesSeletor(seletor: Locator): Promise<string[]> {
+  let rotulos: string[] = [];
+  await expect(async () => {
+    const lista = await abrirSeletor(seletor);
+    rotulos = (await lista.getByRole('option').allTextContents()).map((t) => t.trim());
+  }).toPass({ timeout: 10_000 });
+  await gatilhoSeletor(seletor).press('Escape');
+  return rotulos;
 }
 
 export interface DadosBoleto {
@@ -54,7 +90,7 @@ export interface DadosBoleto {
 export async function cadastrarBoleto(page: Page, dados: DadosBoleto) {
   await page.goto('/boletos/novo');
   const empresa = page.locator('#empresaId').filter({ visible: true });
-  if ((await empresa.inputValue()) === '' || dados.empresa) await escolherOpcao(empresa, dados.empresa ?? EMPRESAS_E2E[0].apelido);
+  if ((await valorSeletor(empresa)) === '' || dados.empresa) await escolherOpcao(empresa, dados.empresa ?? EMPRESAS_E2E[0].apelido);
   if (dados.categoria) await escolherOpcao(page.locator('#categoriaId').filter({ visible: true }), dados.categoria);
   await page.getByLabel('Fornecedor').fill(dados.fornecedor);
   await page.getByLabel('Nome / descrição').fill(dados.descricao);

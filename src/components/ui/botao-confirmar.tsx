@@ -53,7 +53,7 @@ export function BotaoConfirmar({
         toast.error(r.erro);
         return;
       }
-      toast.success(r.mensagem ?? 'Pronto!');
+      toast.success(r.mensagem ?? 'Concluído.');
       setAberto(false);
       if (destino) router.push(destino);
       else router.refresh();
@@ -74,6 +74,7 @@ export function BotaoConfirmar({
         aberto={aberto}
         onFechar={() => setAberto(false)}
         titulo={titulo}
+        alerta={perigo ? 'perigo' : undefined}
         descricao={descricao}
         rodape={
           <>

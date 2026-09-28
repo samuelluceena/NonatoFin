@@ -217,11 +217,13 @@ export function quantidadeFiltrosExtras(f: FiltrosLista): number {
 
 // ---------------------------------------------------------------------- URL --
 
-type ParametrosUrl = Record<string, string | string[] | undefined>;
+export type ParametrosUrl = Record<string, string | string[] | undefined>;
 
 const REGEX_UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const texto = (v: string | string[] | undefined) => (typeof v === 'string' ? v : '');
-const idOuVazio = (v: string | string[] | undefined) => (REGEX_UUID.test(texto(v)) ? texto(v) : '');
+/** Parâmetro de URL como texto ('' se ausente ou repetido). */
+export const texto = (v: string | string[] | undefined) => (typeof v === 'string' ? v : '');
+/** UUID válido ou ''. */
+export const idOuVazio = (v: string | string[] | undefined) => (REGEX_UUID.test(texto(v)) ? texto(v) : '');
 const dataOuVazio = (v: string | string[] | undefined) => (ehDataISOValida(texto(v)) ? texto(v) : '');
 
 /** Links antigos (`?filtro=atrasados`, dos favoritos) continuam funcionando. */
@@ -234,7 +236,8 @@ function doFiltroAntigo(antigo: string): Pick<FiltrosLista, 'periodo' | 'status'
   return null;
 }
 
-function lerPeriodo(p: ParametrosUrl, hoje: DataISO): Periodo | null {
+/** Período escolhido na URL (`periodo`, `mes`, `dia`, `de`, `ate`), ou null se não houver. */
+export function lerPeriodo(p: ParametrosUrl, hoje: DataISO): Periodo | null {
   const tipo = texto(p.periodo);
   switch (tipo) {
     case 'mes-escolhido': {
@@ -286,19 +289,25 @@ export function lerFiltros(p: ParametrosUrl, hoje: DataISO): FiltrosLista {
  * difere do padrão; o período é omitido quando é o implícito.
  */
 export function parametrosDosFiltros(f: FiltrosLista): Record<string, string> {
-  const r: Record<string, string> = {};
-  if (f.periodo.tipo !== periodoImplicito(f.busca).tipo) r.periodo = f.periodo.tipo;
-  if (f.periodo.tipo === 'mes-escolhido') r.mes = f.periodo.mes;
-  if (f.periodo.tipo === 'dia') r.dia = f.periodo.data;
-  if (f.periodo.tipo === 'intervalo') {
-    if (f.periodo.de) r.de = f.periodo.de;
-    if (f.periodo.ate) r.ate = f.periodo.ate;
-  }
+  const r = parametrosDoPeriodo(f.periodo, f.busca);
   if (f.status !== 'todos') r.status = f.status;
   if (f.fornecedorId) r.fornecedor = f.fornecedorId;
   if (f.categoriaId) r.categoria = f.categoriaId;
   if (f.contaId) r.conta = f.contaId;
   if (f.busca) r.q = f.busca;
+  return r;
+}
+
+/** Parâmetros do período (inverso de `lerPeriodo`); omite o período implícito. */
+export function parametrosDoPeriodo(periodo: Periodo, busca: string): Record<string, string> {
+  const r: Record<string, string> = {};
+  if (periodo.tipo !== periodoImplicito(busca).tipo) r.periodo = periodo.tipo;
+  if (periodo.tipo === 'mes-escolhido') r.mes = periodo.mes;
+  if (periodo.tipo === 'dia') r.dia = periodo.data;
+  if (periodo.tipo === 'intervalo') {
+    if (periodo.de) r.de = periodo.de;
+    if (periodo.ate) r.ate = periodo.ate;
+  }
   return r;
 }
 

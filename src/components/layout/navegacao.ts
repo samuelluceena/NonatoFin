@@ -1,5 +1,5 @@
 import {
-  Building2,
+  ArrowLeftRight,
   CalendarCheck2,
   CalendarRange,
   ClipboardCheck,
@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   ReceiptText,
   Settings,
+  Store,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -18,26 +19,51 @@ export interface ItemNavegacao {
   icone: LucideIcon;
 }
 
-/** Ordem da navegação lateral (desktop). */
+/** Todas as áreas do app (a ordem é a da navegação). */
 export const ITENS_NAVEGACAO: ItemNavegacao[] = [
   { href: '/', rotulo: 'Hoje', icone: CalendarCheck2 },
-  { href: '/dashboard', rotulo: 'Dashboard', icone: LayoutDashboard },
+  { href: '/transacoes', rotulo: 'Transações', icone: ArrowLeftRight },
   { href: '/boletos', rotulo: 'Boletos', icone: ReceiptText },
   { href: '/contas', rotulo: 'Contas', icone: Landmark },
   { href: '/fechar-dia', rotulo: 'Fechar o dia', icone: ClipboardCheck },
+  { href: '/dashboard', rotulo: 'Dashboard', icone: LayoutDashboard },
   { href: '/cartoes', rotulo: 'Cartões', icone: CreditCard },
   { href: '/meses', rotulo: 'Meses', icone: CalendarRange },
-  { href: '/fornecedores', rotulo: 'Fornecedores', icone: Building2 },
+  { href: '/fornecedores', rotulo: 'Fornecedores', icone: Store },
   { href: '/historico', rotulo: 'Histórico', icone: History },
   { href: '/configuracoes', rotulo: 'Configurações', icone: Settings },
 ];
 
-/** Barra inferior (celular): itens principais. O "+" fica no centro. */
-export const NAV_INFERIOR_ESQUERDA = ['/', '/boletos'];
+export interface GrupoNavegacao {
+  titulo: string;
+  itens: string[];
+}
+
+/**
+ * Agrupamento da sidebar (desktop) e do menu "Mais" (celular):
+ * o dia a dia do dinheiro, a gestão/relatórios e o sistema.
+ */
+export const GRUPOS_NAVEGACAO: GrupoNavegacao[] = [
+  { titulo: 'Principal', itens: ['/', '/transacoes', '/boletos', '/contas', '/fechar-dia'] },
+  { titulo: 'Gestão', itens: ['/dashboard', '/cartoes', '/meses', '/fornecedores', '/historico'] },
+  { titulo: 'Sistema', itens: ['/configuracoes'] },
+];
+
+/** Barra inferior (celular): itens principais. O "+" (ações rápidas) fica no centro. */
+export const NAV_INFERIOR_ESQUERDA = ['/', '/transacoes'];
 export const NAV_INFERIOR_DIREITA = ['/dashboard'];
 
-/** Itens do menu "Mais" (celular). */
-export const NAV_MAIS = ['/contas', '/fechar-dia', '/cartoes', '/meses', '/fornecedores', '/historico', '/configuracoes'];
+/** Menu "Mais" (celular): os grupos, sem o que já está na barra inferior. */
+export const GRUPOS_MAIS: GrupoNavegacao[] = GRUPOS_NAVEGACAO.map((g) => ({
+  titulo: g.titulo,
+  itens: g.itens.filter((href) => !NAV_INFERIOR_ESQUERDA.includes(href) && !NAV_INFERIOR_DIREITA.includes(href)),
+})).filter((g) => g.itens.length > 0);
+
+export const NAV_MAIS = GRUPOS_MAIS.flatMap((g) => g.itens);
+
+/** Cookie com o estado da sidebar (lido no servidor: abre já no estado certo, sem piscar). */
+export const COOKIE_SIDEBAR = 'nonatofin-sidebar';
+export const SIDEBAR_COMPACTA = 'compacta';
 
 export function itemPorHref(href: string): ItemNavegacao {
   const item = ITENS_NAVEGACAO.find((i) => i.href === href);

@@ -20,7 +20,7 @@ async function criarConta(page: Page, apelido: string, saldoDigitos: string, opc
   if (saldoDigitos) await page.locator('#saldoInicialCentavos').fill(saldoDigitos);
   if (opcoes.padrao) await page.getByLabel('Conta padrão da empresa').check();
   await page.getByRole('button', { name: 'Salvar conta' }).click();
-  await expect(page.getByText('Conta cadastrada!')).toBeVisible();
+  await expect(page.getByText('Conta cadastrada.')).toBeVisible();
   await expect(page).toHaveURL(/\/contas\/[0-9a-f-]{36}$/);
   return page.url();
 }
@@ -52,7 +52,7 @@ test('conta: saldo inicial, pagamento, entrada, conferência e transferência', 
   await page.getByLabel('Descrição').fill('Vendas do dia');
   await page.locator('#entrada-valor').pressSequentially('10000');
   await page.getByTestId('salvar-entrada').click();
-  await expect(page.getByText('Entrada registrada!')).toBeVisible();
+  await expect(page.getByText('Entrada adicionada.')).toBeVisible();
   await expect(page.getByTestId('saldo-conta')).toHaveText(reais('850,00'));
 
   // 5. Conferência: o banco mostra R$ 840,00 → ajuste de −R$ 10,00
@@ -70,7 +70,7 @@ test('conta: saldo inicial, pagamento, entrada, conferência e transferência', 
   await escolherOpcao(page.locator('#transf-destino'), `${reserva} — ${EMPRESA}`);
   await page.locator('#transf-valor').pressSequentially('4000');
   await page.getByTestId('salvar-transferencia').click();
-  await expect(page.getByText('Transferência registrada!')).toBeVisible();
+  await expect(page.getByText('Transferência concluída.')).toBeVisible();
   await expect(page.getByTestId('saldo-conta')).toHaveText(reais('800,00'));
   await page.goto(urlReserva);
   await expect(page.getByTestId('saldo-conta')).toHaveText(reais('40,00'));

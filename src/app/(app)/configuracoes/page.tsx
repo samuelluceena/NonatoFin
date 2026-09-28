@@ -32,7 +32,7 @@ export default async function PaginaConfiguracoes() {
             <Building className="size-5 text-primary-text" aria-hidden="true" />
             <span className="min-w-0 flex-1">
               <span className="block font-medium text-fg">Empresas</span>
-              <span className="block truncate text-[13px] text-fg-2">
+              <span className="block truncate text-meta text-fg-2">
                 {empresas.length === 0 ? 'Nenhuma cadastrada' : empresas.map((e) => e.apelido).join(' · ')}
               </span>
             </span>
@@ -42,7 +42,7 @@ export default async function PaginaConfiguracoes() {
             <Landmark className="size-5 text-primary-text" aria-hidden="true" />
             <span className="min-w-0 flex-1">
               <span className="block font-medium text-fg">Contas bancárias</span>
-              <span className="block truncate text-[13px] text-fg-2">
+              <span className="block truncate text-meta text-fg-2">
                 {contas.length === 0 ? 'Nenhuma cadastrada' : contas.filter((c) => c.ativa).map((c) => c.apelido).join(' · ')}
               </span>
             </span>
@@ -52,7 +52,7 @@ export default async function PaginaConfiguracoes() {
             <Tags className="size-5 text-primary-text" aria-hidden="true" />
             <span className="min-w-0 flex-1">
               <span className="block font-medium text-fg">Categorias</span>
-              <span className="block truncate text-[13px] text-fg-2">{categorias.length} categorias</span>
+              <span className="block truncate text-meta text-fg-2">{categorias.length} categorias</span>
             </span>
             <ChevronRight className="size-4 text-fg-3" aria-hidden="true" />
           </Link>
@@ -65,8 +65,8 @@ export default async function PaginaConfiguracoes() {
         </TituloSecao>
         <Cartao className="p-4 sm:p-5">
           <SeletorTema />
-          <p className="mt-2 text-[13px] text-fg-3">
-            “Sistema” acompanha automaticamente o tema do seu celular ou computador. A escolha fica salva neste navegador.
+          <p className="mt-2 text-meta text-fg-3">
+            A escolha fica salva neste navegador. O botão de sol/lua no topo também alterna o tema.
           </p>
         </Cartao>
       </section>
@@ -110,7 +110,7 @@ export default async function PaginaConfiguracoes() {
           <div>
             <p className="font-semibold text-fg">{APP.nome}</p>
             <p className="text-sm text-fg-2">{APP.descricao}</p>
-            <p className="mt-1 text-[13px] text-fg-3" data-testid="versao">
+            <p className="mt-1 text-meta text-fg-3" data-testid="versao">
               Versão {APP.versao}
             </p>
           </div>

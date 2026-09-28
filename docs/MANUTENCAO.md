@@ -65,7 +65,7 @@ Exemplo: `numero_documento`.
 ### Adicionar um indicador ao dashboard
 1. Campo em `IndicadoresDashboard` (`lib/domain/tipos.ts`).
 2. Cálculo em `calcularIndicadores()` (`lib/domain/indicadores.ts`) + teste em `tests/unit/indicadores.test.ts` com o cenário conhecido.
-3. Exiba com `<Indicador …/>` em `app/(app)/dashboard/page.tsx` (use `testId`).
+3. Exiba com `<Metrica …/>` (dentro do `PainelMetricas` do nível certo) em `app/(app)/dashboard/page.tsx` (use `testId`).
 
 ### Adicionar um filtro (lista de Boletos)
 Tudo passa por `FiltrosLista` (`lib/domain/filtros.ts`); a URL é lida por `lerFiltros()` e escrita por `parametrosDosFiltros()`.
@@ -117,7 +117,9 @@ Tudo em `montarTextoFechamento()` (`lib/domain/fechamento.ts`). O teste `tests/u
   e copie `tipos.ts` para `src/lib/supabase/database.types.ts`, mantendo o cabeçalho "ARQUIVO GERADO".
 
 ## Alterar o design
-Tudo em `src/app/globals.css` (tokens) — veja [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md). Componentes nunca recebem hexadecimais. Antes de criar um componente visual, veja se já existe em `components/ui/` (Botao, Campo, CampoMoeda, Cartao, Dialogo, Segmentado, BarraAcoesFormulario, ListaDetalhes, LinkVoltar, EstadoVazio…).
+Tudo em `src/app/globals.css` (tokens) — veja [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md). Componentes nunca recebem hexadecimais nem tamanhos soltos. Antes de criar um componente visual, veja se já existe em `components/ui/`.
+
+**Montando uma tela nova no padrão:** `CabecalhoPagina` (título, descrição, ações) → `BarraFiltros` + `PainelFiltros` (se houver filtros) → `CabecalhoSecao` por seção → conteúdo com `PainelMetricas`/`Metrica` (números), `ListaPainel`/`LinhaLista` (listas; padrão no celular) ou `Tabela` (desktop, a partir de 1280px) → `EstadoVazio` com ação. Formulários: `PainelFormulario` + `SecaoFormulario` + `Campo` + `BarraAcoesFormulario`. Dinheiro sempre com `Valor`; status com `Selo`/`SeloStatus`; exclusões com `Dialogo alerta="perigo"` (ou `BotaoConfirmar perigo`). Mensagens de retorno no passado, com ponto.
 
 ### Alterar a cor principal
 Em `:root` e `.dark`: `--primary`, `--primary-hover`, `--primary-text`, `--primary-soft`, `--primary-soft-fg`, `--ring`, `--chart-1`. Atualize também `COR_BARRA`/`themeColor` se mudar o fundo. Rode `npm run test:e2e -- tema` para verificar o contraste.

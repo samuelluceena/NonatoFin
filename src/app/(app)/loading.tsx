@@ -1,13 +1,16 @@
+import { Esqueleto } from '@/components/ui/esqueleto';
+
 /** Esqueleto exibido enquanto a página carrega dados do servidor. */
 export default function Carregando() {
   return (
-    <div className="animate-pulse" role="status" aria-live="polite">
+    <div role="status" aria-live="polite">
       <span className="sr-only">Carregando...</span>
-      <div className="mb-5 h-8 w-48 rounded-md bg-surface-3" />
-      <div className="mb-6 h-36 rounded-lg bg-surface-2" />
+      <Esqueleto className="mb-2 h-8 w-44" />
+      <Esqueleto className="mb-6 h-4 w-64 max-w-full" />
+      <Esqueleto className="mb-6 h-28 rounded-lg" />
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-44 rounded-lg bg-surface-2" />
+          <Esqueleto key={i} className="h-36 rounded-lg" />
         ))}
       </div>
     </div>

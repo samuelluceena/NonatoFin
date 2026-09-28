@@ -7,7 +7,8 @@ import { Toaster } from 'sonner';
 /** Chave do localStorage onde a preferência de tema fica salva. */
 export const CHAVE_TEMA = 'nonatofin-tema';
 
-const COR_BARRA = { light: '#f5f7fa', dark: '#0b0f14' } as const;
+/** Igual a --bg de cada tema (globals.css). */
+const COR_BARRA = { light: '#f6f7f9', dark: '#0a0c10' } as const;
 
 /**
  * Mantém a <meta name="theme-color"> (barra do navegador/PWA) igual ao tema
@@ -25,6 +26,19 @@ function SincronizarCorDaBarra() {
   return null;
 }
 
+/**
+ * Quem tinha "Sistema" salvo (opção removida) passa a ter, fixo, o tema que
+ * o aparelho usa agora. Roda uma única vez: depois disso o valor é light/dark.
+ */
+function MigrarTemaAntigo() {
+  const { theme, setTheme } = useTheme();
+  useEffect(() => {
+    if (theme === undefined || theme === 'light' || theme === 'dark') return;
+    setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }, [theme, setTheme]);
+  return null;
+}
+
 function Notificacoes() {
   const { resolvedTheme } = useTheme();
   return (
@@ -37,8 +51,9 @@ function Notificacoes() {
       mobileOffset={{ top: 'calc(env(safe-area-inset-top) + 12px)' }}
       toastOptions={{
         classNames: {
-          toast: '!bg-surface !text-fg !border-border !shadow-md !rounded-lg !font-sans',
+          toast: '!bg-surface-elevated !text-fg !border-border !shadow-lg !rounded-lg !font-sans !text-sm',
           description: '!text-fg-2',
+          closeButton: '!bg-surface-elevated !border-border !text-fg-3 hover:!text-fg',
           success: '[&_[data-icon]]:!text-success',
           error: '[&_[data-icon]]:!text-danger',
           actionButton: '!bg-primary !text-primary-fg !font-medium',
@@ -52,12 +67,13 @@ export function Provedores({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="system"
-      enableSystem
+      defaultTheme="light"
+      enableSystem={false}
       disableTransitionOnChange
       storageKey={CHAVE_TEMA}
       themes={['light', 'dark']}
     >
+      <MigrarTemaAntigo />
       <SincronizarCorDaBarra />
       {children}
       <Notificacoes />

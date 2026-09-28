@@ -21,11 +21,11 @@ export function FiltroPeriodo({ acao, de, ate, manter = {}, rotuloDe = 'De', rot
   return (
     <form action={acao} method="get" className="grid grid-cols-2 items-end gap-2 sm:flex sm:flex-wrap">
       {Object.entries(manter).map(([chave, valor]) => (valor ? <input key={chave} type="hidden" name={chave} value={valor} /> : null))}
-      <label className="flex flex-col gap-1 text-[13px] font-medium text-fg-2">
+      <label className="flex flex-col gap-1 text-meta font-medium text-fg-2">
         {rotuloDe}
         <Entrada type="date" name="de" defaultValue={de} className="h-11" />
       </label>
-      <label className="flex flex-col gap-1 text-[13px] font-medium text-fg-2">
+      <label className="flex flex-col gap-1 text-meta font-medium text-fg-2">
         {rotuloAte}
         <Entrada type="date" name="ate" defaultValue={ate} className="h-11" />
       </label>

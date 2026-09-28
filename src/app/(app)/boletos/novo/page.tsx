@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
+import { ArrowUpRight } from 'lucide-react';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
+import { Selo } from '@/components/ui/selo';
 import { FormularioLancamento } from '@/features/lancamentos/componentes/formulario-lancamento';
 import { AvisoSemEmpresa } from '@/features/empresas/componentes/aviso-sem-empresa';
 import { listarTodasAsContas } from '@/features/contas/consultas';
@@ -27,12 +28,20 @@ export default async function PaginaNovoBoleto({ searchParams }: PageProps<'/bol
   const vencimento = typeof params.vencimento === 'string' && ehDataISOValida(params.vencimento) ? params.vencimento : '';
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <CabecalhoPagina titulo="Novo boleto" subtitulo="Cadastre um lançamento único ou uma série mensal." />
+    <div className="mx-auto max-w-xl">
+      <CabecalhoPagina
+        voltar={
+          <Selo tom="perigo" className="ml-1">
+            <ArrowUpRight aria-hidden="true" /> Despesa · Conta a pagar
+          </Selo>
+        }
+        titulo="Novo boleto"
+        subtitulo="Cadastre um lançamento único ou uma série mensal."
+      />
       {empresas.length === 0 ? (
         <AvisoSemEmpresa />
       ) : (
-        <Cartao className="p-4 sm:p-6">
+        <>
           <FormularioLancamento
             fornecedores={fornecedores}
             empresas={empresas}
@@ -46,7 +55,7 @@ export default async function PaginaNovoBoleto({ searchParams }: PageProps<'/bol
               vencimento,
             }}
           />
-        </Cartao>
+        </>
       )}
     </div>
   );

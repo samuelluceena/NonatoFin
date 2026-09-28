@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
 import { listarSerie, obterLancamento } from '@/features/lancamentos/consultas';
 import { FormularioLancamento } from '@/features/lancamentos/componentes/formulario-lancamento';
 import { infoSerie } from '@/features/lancamentos/serie';
@@ -30,7 +29,7 @@ export default async function PaginaEditarBoleto({ params }: PageProps<'/boletos
   const serie = lancamento.recorrencia ? await listarSerie(supabase, lancamento.recorrencia.serieId) : [];
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-xl">
       <CabecalhoPagina
         titulo="Editar boleto"
         subtitulo={
@@ -39,7 +38,7 @@ export default async function PaginaEditarBoleto({ params }: PageProps<'/boletos
             : lancamento.fornecedor.nome
         }
       />
-      <Cartao className="p-4 sm:p-6">
+      <>
         <FormularioLancamento
           fornecedores={fornecedores}
           empresas={empresas}
@@ -59,7 +58,7 @@ export default async function PaginaEditarBoleto({ params }: PageProps<'/boletos
             status: lancamento.status,
           }}
         />
-      </Cartao>
+      </>
     </div>
   );
 }

@@ -20,14 +20,14 @@ export function PreviaSerie({ vencimento, quantidade, valorCentavos }: { vencime
   const visiveis = datas.length <= 8 ? datas.map((d, i) => ({ d, i })) : [...datas.slice(0, 5).map((d, i) => ({ d, i })), ...datas.slice(-2).map((d, i) => ({ d, i: datas.length - 2 + i }))];
 
   return (
-    <div className="rounded-md border border-primary/30 bg-primary-soft p-3.5" data-testid="previa-serie">
+    <div className="rounded-md border border-info-border bg-info-soft p-3.5" data-testid="previa-serie">
       {valorCentavos > 0 && (
-        <p className="mb-2 flex gap-2 text-sm font-medium text-primary-soft-fg" role="status">
+        <p className="mb-2 flex gap-2 text-sm font-medium text-info" role="status">
           <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {mensagemResumoSerie(valorCentavos, quantidade)}
         </p>
       )}
-      <ol className="numeros grid grid-cols-2 gap-x-4 gap-y-1 text-[13px] text-fg-2 sm:grid-cols-3">
+      <ol className="numeros grid grid-cols-2 gap-x-4 gap-y-1 text-meta text-fg-2 sm:grid-cols-3">
         {visiveis.map(({ d, i }, pos) => (
           <li key={d} className="flex items-center gap-1.5">
             {pos === 5 && datas.length > 8 && <span className="sr-only">...</span>}
@@ -36,7 +36,7 @@ export function PreviaSerie({ vencimento, quantidade, valorCentavos }: { vencime
           </li>
         ))}
       </ol>
-      {datas.length > 8 && <p className="mt-1 text-[13px] text-fg-3">… e mais {datas.length - 7} datas intermediárias.</p>}
+      {datas.length > 8 && <p className="mt-1 text-meta text-fg-3">… e mais {datas.length - 7} datas intermediárias.</p>}
     </div>
   );
 }

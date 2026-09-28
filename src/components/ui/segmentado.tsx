@@ -31,17 +31,17 @@ export function Segmentado<T extends string>({
 }: PropsSegmentado<T>) {
   return (
     <fieldset className={cn('min-w-0', className)}>
-      <legend className={cn('mb-1.5 text-sm font-medium text-fg', ocultarRotulo && 'sr-only')}>{rotulo}</legend>
-      <div className="grid auto-cols-fr grid-flow-col gap-1 rounded-md border border-border bg-surface-2 p-1">
+      <legend className={cn('mb-1.5 text-sm font-medium text-fg-2', ocultarRotulo && 'sr-only')}>{rotulo}</legend>
+      <div className="grid auto-cols-fr grid-flow-col gap-0.5 rounded-md border border-border bg-surface-2 p-0.5">
         {opcoes.map((opcao) => {
           const ativo = opcao.valor === valor;
           return (
             <label
               key={opcao.valor}
               className={cn(
-                'relative flex min-h-10 cursor-pointer items-center justify-center gap-1.5 rounded-[0.55rem] px-2 text-sm font-medium transition-colors',
+                'relative flex min-h-10 cursor-pointer items-center justify-center gap-1.5 rounded-sm px-2 text-sm font-medium transition-[background-color,color,box-shadow] duration-150 lg:min-h-9 [&_svg]:size-4',
                 'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ring',
-                ativo ? 'bg-surface text-fg shadow-sm dark:bg-surface-3' : 'text-fg-2 hover:text-fg',
+                ativo ? 'bg-surface text-fg shadow-sm ring-1 ring-border dark:bg-surface-3' : 'text-fg-2 hover:text-fg',
               )}
             >
               <input

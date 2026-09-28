@@ -64,6 +64,7 @@ export function BotaoExcluir({ lancamentoId, descricao, serie, destino = '/bolet
         aberto={aberto}
         onFechar={() => setAberto(false)}
         titulo={serie ? 'Excluir boleto da série' : 'Excluir boleto?'}
+        alerta="perigo"
         descricao={
           serie ? (
             <>Esta ação não pode ser desfeita. Escolha o que excluir de “{descricao}”.</>

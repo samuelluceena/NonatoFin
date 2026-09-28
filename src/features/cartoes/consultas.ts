@@ -112,11 +112,11 @@ export async function listarFaturasDoCartao(supabase: ClienteSupabase, cartaoId:
   return (data ?? []).map(paraLancamento);
 }
 
-const COLUNAS_COMPRA =
+export const COLUNAS_COMPRA =
   'id, cartao_id, descricao, data_compra, valor_total_centavos, parcelas, primeira_fatura_mes, observacao, ' +
   'categoria:categorias!compras_categoria_fk(id, nome)';
 
-interface LinhaCompraEmbutida {
+export interface LinhaCompraEmbutida {
   id: string;
   cartao_id: string;
   descricao: string;
@@ -128,7 +128,7 @@ interface LinhaCompraEmbutida {
   categoria: Embutido<{ id: string; nome: string }>;
 }
 
-function paraCompra(l: LinhaCompraEmbutida): CompraCartao {
+export function paraCompra(l: LinhaCompraEmbutida): CompraCartao {
   return {
     id: l.id,
     cartaoId: l.cartao_id,

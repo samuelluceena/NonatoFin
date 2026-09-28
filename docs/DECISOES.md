@@ -81,3 +81,19 @@ Formato: **Decisão** · Motivo · Consequência.
 ### D19 — "Fechar o dia" sem gravar nada; feriados calculados no código
 - **Motivo:** o pedido é um texto para colar no WhatsApp, sem histórico. Gravar fechamentos criaria dados a manter sem uso. Feriados nacionais seguem regras fixas (datas e Páscoa); os municipais variam por cidade e não devem ser inventados.
 - **Consequência:** a página só lê e monta o texto (`lib/domain/fechamento.ts`, testado com o texto completo). Feriados nacionais em `lib/domain/dias-uteis.ts`; os da cidade o usuário informa em `FERIADOS_LOCAIS` (`lib/config.ts`). *(2026-09-24)*
+
+### D20 — "Transações" é uma visão composta, sem tabela própria
+- **Motivo:** tudo o que a tela mostra já existe (lançamentos, movimentos de conta, compras no cartão). Uma tabela `transacoes` duplicaria dados e criaria uma segunda fonte da verdade para saldo e status.
+- **Consequência:** `features/transacoes/consultas.ts` busca cada origem já filtrada no banco (RLS), limitada e ordenada; `lib/domain/transacoes.ts` mescla, classifica e soma. Obrigação (conta a pagar) e caixa (pagamento, entrada) ficam separados; transferência é um item neutro; compra no cartão é informativa (sai pela fatura). Nenhuma regra financeira foi alterada. *(2026-09-24)*
+
+### D21 — Categorias: sem "arquivar" por enquanto
+- **Motivo:** arquivar exige uma coluna nova (`categorias.ativa boolean not null default true`) e filtrar os seletores de novos registros (lançamento, compra, cartão). A necessidade não é urgente: a exclusão de categoria em uso já é bloqueada pelo banco, e editar o nome resolve os casos comuns.
+- **Consequência:** se for implementado: migration `alter table public.categorias add column ativa boolean not null default true` (sem impacto em RLS; os dados existentes ficam ativos), `npm run db:tipos`, filtro `ativa` nos seletores de cadastro (mantendo a categoria atual ao editar) e botão Arquivar/Reativar. Rollback: `alter table public.categorias drop column ativa` (perde só a marcação). *(2026-09-24)*
+
+### D22 — Design system próprio com tokens semânticos (sem biblioteca de UI)
+- **Motivo:** o app precisa de poucos componentes, leves e acessíveis; uma biblioteca de UI traria peso e um visual que não é o do produto. Tokens semânticos (fundo, superfície, superfície elevada, texto, estados) permitem mudar a identidade e os temas num só arquivo.
+- **Consequência:** cores, tipografia, raios, sombras e movimento em `src/app/globals.css`; componentes em `src/components/ui` só usam tokens (sem hexadecimais nem tamanhos soltos) e acessibilidade nativa (`<dialog>`, `<select>`, `<input type="checkbox">`). Dinheiro sempre pelo `Valor`; confirmações destrutivas pelo `Dialogo` com `alerta`. Guia completo em [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md). *(2026-09-24)*
+
+### D23 — Tema só Claro/Escuro; estado da sidebar em cookie
+- **Motivo:** "Sistema" confundia (o tema mudava sozinho) e o pedido era um controle de um clique. O estado da sidebar recolhida precisa ser conhecido no servidor para a página abrir já no formato certo.
+- **Consequência:** next-themes com `enableSystem={false}` e padrão Claro; preferência antiga "system" migra uma vez para o tema do aparelho. Sidebar: cookie `nonatofin-sidebar` lido no layout. *(2026-09-24)*

@@ -33,6 +33,21 @@ export function formatarMoeda(centavos: Centavos): string {
   return formatadorMoeda.format(centavos / 100);
 }
 
+/**
+ * Valor com sinal explícito, para movimentos e ajustes:
+ * 1000 -> "+ R$ 10,00", -1000 -> "− R$ 10,00" (sinal de menos tipográfico), 0 -> "R$ 0,00".
+ */
+export function formatarMoedaComSinal(centavos: Centavos): string {
+  if (centavos > 0) return `+ ${formatarMoeda(centavos)}`;
+  if (centavos < 0) return `− ${formatarMoeda(-centavos)}`;
+  return formatarMoeda(0);
+}
+
+/** Negativos com o sinal de menos tipográfico ("− R$ 10,00"); positivos sem sinal. */
+export function formatarMoedaSaldo(centavos: Centavos): string {
+  return centavos < 0 ? `− ${formatarMoeda(-centavos)}` : formatarMoeda(centavos);
+}
+
 /** 123456 -> "1.234,56" */
 export function formatarNumeroMoeda(centavos: Centavos): string {
   garantirCentavos(centavos);

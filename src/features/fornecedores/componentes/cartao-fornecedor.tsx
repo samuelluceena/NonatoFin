@@ -1,62 +1,70 @@
 import Link from 'next/link';
-import { AlertTriangle, CheckCircle2, ChevronRight, Clock } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Valor } from '@/components/ui/valor';
 import { formatarData } from '@/lib/domain/datas';
 import type { ResumoFornecedor } from '@/lib/domain/tipos';
+import { cn } from '@/lib/utils/cn';
 
-/** Resumo de um fornecedor: quantidades e valores por status. */
+const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
+
+/** Colunas da lista (desktop): fornecedor · a pagar · atrasado · pago · total. */
+const COLUNAS = 'xl:grid xl:grid-cols-[minmax(0,1fr)_8.5rem_8.5rem_8.5rem_9rem_1.25rem] xl:items-center xl:gap-4';
+
+/** Cabeçalho das colunas (a partir de 1280px). */
+export function CabecalhoListaFornecedores() {
+  return (
+    <div className={cn('hidden border-b border-border bg-bg-subtle px-4 py-2.5 text-caption font-medium text-fg-3', COLUNAS)} aria-hidden="true">
+      <span>Fornecedor</span>
+      <span className="text-right">A pagar</span>
+      <span className="text-right">Atrasado</span>
+      <span className="text-right">Pago</span>
+      <span className="text-right">Total</span>
+      <span />
+    </div>
+  );
+}
+
+/**
+ * Linha de fornecedor: no celular, nome + quantidades e total; no desktop,
+ * colunas com valor e quantidade por status. Toda a linha abre o detalhe.
+ */
 export function CartaoFornecedor({ resumo }: { resumo: ResumoFornecedor }) {
   const r = resumo;
+  const meta = [plural(r.quantidadeTotal, 'boleto', 'boletos'), r.proximoVencimento && `próximo em ${formatarData(r.proximoVencimento)}`].filter(Boolean).join(' · ');
   return (
     <Link
       href={`/fornecedores/${r.fornecedor.id}`}
       data-testid="cartao-fornecedor"
-      className="group block rounded-lg border border-border bg-surface p-4 shadow-sm transition-colors hover:border-border-strong"
+      className={cn('group flex items-center gap-3 px-4 py-3 transition-colors duration-150 hover:bg-surface-2/60 focus-visible:-outline-offset-2', COLUNAS)}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="truncate text-base font-semibold uppercase tracking-wide text-fg group-hover:text-primary-text">{r.fornecedor.nome}</h3>
-          <p className="text-sm text-fg-2">
-            {r.quantidadeTotal} {r.quantidadeTotal === 1 ? 'boleto' : 'boletos'}
-            {r.proximoVencimento && <> · próximo em {formatarData(r.proximoVencimento)}</>}
-          </p>
-        </div>
-        <ChevronRight className="mt-1 size-4 shrink-0 text-fg-3" aria-hidden="true" />
-      </div>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-body font-medium text-fg group-hover:text-primary-text">{r.fornecedor.nome}</span>
+        <span className="block truncate text-meta text-fg-3">{meta}</span>
+        {/* Celular: quantidades por status (no desktop ficam nas colunas). */}
+        <span className="mt-0.5 block truncate text-meta text-fg-2 xl:hidden">
+          {plural(r.quantidadePendente, 'pendente', 'pendentes')} · {plural(r.quantidadePaga, 'pago', 'pagos')} ·{' '}
+          <span className={r.quantidadeAtrasada > 0 ? 'text-danger' : undefined}>{plural(r.quantidadeAtrasada, 'atrasado', 'atrasados')}</span>
+        </span>
+      </span>
 
-      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-fg-2">
-        <li className="inline-flex items-center gap-1">
-          <Clock className="size-3.5 text-primary-text" aria-hidden="true" />
-          Pendentes: <strong className="font-semibold text-fg">{r.quantidadePendente}</strong>
-        </li>
-        <li className="inline-flex items-center gap-1">
-          <CheckCircle2 className="size-3.5 text-success" aria-hidden="true" />
-          Pagos: <strong className="font-semibold text-fg">{r.quantidadePaga}</strong>
-        </li>
-        <li className="inline-flex items-center gap-1">
-          <AlertTriangle className="size-3.5 text-danger" aria-hidden="true" />
-          Atrasados: <strong className="font-semibold text-fg">{r.quantidadeAtrasada}</strong>
-        </li>
-      </ul>
+      <Coluna valor={r.pendenteCentavos} detalhe={plural(r.quantidadePendente, 'pendente', 'pendentes')} />
+      <Coluna valor={r.atrasadoCentavos} detalhe={plural(r.quantidadeAtrasada, 'atrasado', 'atrasados')} perigo={r.atrasadoCentavos > 0} />
+      <Coluna valor={r.pagoCentavos} detalhe={plural(r.quantidadePaga, 'pago', 'pagos')} />
 
-      <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-border pt-3 text-sm">
-        <div>
-          <dt className="text-[12px] text-fg-3">Total cadastrado</dt>
-          <dd><Valor centavos={r.totalCentavos} className="font-semibold text-fg" /></dd>
-        </div>
-        <div>
-          <dt className="text-[12px] text-fg-3">A pagar</dt>
-          <dd><Valor centavos={r.pendenteCentavos} className="font-medium text-fg" /></dd>
-        </div>
-        <div>
-          <dt className="text-[12px] text-fg-3">Pago</dt>
-          <dd><Valor centavos={r.pagoCentavos} className="font-medium text-fg" /></dd>
-        </div>
-        <div>
-          <dt className="text-[12px] text-fg-3">Atrasado</dt>
-          <dd><Valor centavos={r.atrasadoCentavos} className={r.atrasadoCentavos > 0 ? 'font-medium text-danger' : 'font-medium text-fg'} /></dd>
-        </div>
-      </dl>
+      <span className="shrink-0 text-right">
+        <Valor centavos={r.totalCentavos} className="block text-body font-semibold text-fg" />
+        <span className="block text-caption text-fg-3 xl:hidden">total</span>
+      </span>
+      <ChevronRight className="size-4 shrink-0 text-fg-3" aria-hidden="true" />
     </Link>
+  );
+}
+
+function Coluna({ valor, detalhe, perigo }: { valor: number; detalhe: string; perigo?: boolean }) {
+  return (
+    <span className="hidden text-right xl:block">
+      <Valor centavos={valor} className={cn('block text-sm font-medium', perigo ? 'text-danger' : valor > 0 ? 'text-fg' : 'text-fg-3')} />
+      <span className="block text-caption text-fg-3">{detalhe}</span>
+    </span>
   );
 }

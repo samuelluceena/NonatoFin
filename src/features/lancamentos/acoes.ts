@@ -75,7 +75,7 @@ export async function criarLancamento(entrada: unknown): Promise<ResultadoAcao<{
 
     revalidarTudo();
     const ordenados = [...(data ?? [])].sort((a, b) => (a.parcela ?? 0) - (b.parcela ?? 0));
-    const mensagem = linhas.length === 1 ? 'Boleto salvo!' : `${linhas.length} lançamentos criados!`;
+    const mensagem = linhas.length === 1 ? 'Boleto salvo.' : `${linhas.length} lançamentos criados.`;
     return sucesso({ quantidade: linhas.length, primeiroId: ordenados[0]?.id ?? '' }, mensagem);
   } catch (erro) {
     return falha(mensagemDeErro(erro, 'criar boleto'));
@@ -109,7 +109,7 @@ export async function atualizarLancamento(id: unknown, entrada: unknown): Promis
     if (error) throw error;
     revalidarTudo();
     const alterados = Number(data ?? 1);
-    return sucesso({ alterados }, alterados > 1 ? `${alterados} boletos atualizados!` : 'Boleto atualizado!');
+    return sucesso({ alterados }, alterados > 1 ? `${alterados} boletos atualizados.` : 'Boleto atualizado.');
   } catch (erro) {
     return falha(mensagemDeErro(erro, 'atualizar boleto'));
   }
@@ -131,7 +131,7 @@ export async function definirPagamento(id: unknown, pago: boolean, contaId?: unk
   });
   if (error) return falha(mensagemDeErro(error, 'definir pagamento'));
   revalidarTudo();
-  return sucesso(undefined, pago ? 'Boleto marcado como pago!' : 'Pagamento desfeito.');
+  return sucesso(undefined, pago ? 'Pagamento registrado.' : 'Pagamento desfeito.');
 }
 
 export async function definirCodigo(id: unknown, codigo: unknown): Promise<ResultadoAcao> {
@@ -148,7 +148,7 @@ export async function definirCodigo(id: unknown, codigo: unknown): Promise<Resul
   if (error) return falha(mensagemDeErro(error, 'salvar código'));
   if (!data || data.length === 0) return falha('Boleto não encontrado.');
   revalidarTudo();
-  return sucesso(undefined, 'Código salvo!');
+  return sucesso(undefined, 'Código salvo.');
 }
 
 export async function excluirLancamento(id: unknown, escopo: unknown): Promise<ResultadoAcao<{ excluidos: number }>> {

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CabecalhoPagina } from '@/components/ui/cabecalho-pagina';
-import { Cartao } from '@/components/ui/cartao';
 import { LinkVoltar } from '@/components/ui/link-voltar';
 import { Trash2 } from 'lucide-react';
 import { BotaoConfirmar } from '@/components/ui/botao-confirmar';
@@ -24,12 +23,12 @@ export default async function PaginaEditarCompra({ params }: PageProps<'/cartoes
   const cartao = cartoes.find((c) => c.id === compra.cartaoId);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-xl">
       <CabecalhoPagina
         voltar={<LinkVoltar href={`/cartoes/${compra.cartaoId}`}>{cartao?.nome ?? 'Cartão'}</LinkVoltar>}
         titulo="Editar compra"
       />
-      <Cartao className="p-4 sm:p-6">
+      <>
         <FormularioCompra
           edicaoId={compra.id}
           cartoes={opcoes}
@@ -45,10 +44,17 @@ export default async function PaginaEditarCompra({ params }: PageProps<'/cartoes
             observacao: compra.observacao ?? '',
           }}
         />
-      </Cartao>
-      <div className="mt-6 flex justify-end">
+      </>
+      {/* Ação destrutiva longe do Salvar, numa seção própria (mesmo padrão de Editar conta). */}
+      <section aria-labelledby="titulo-excluir-compra" className="mt-12 flex flex-col gap-3 border-t border-border pt-6 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+        <div className="min-w-0">
+          <h2 id="titulo-excluir-compra" className="text-body font-semibold text-fg">
+            Excluir compra
+          </h2>
+          <p className="mt-1 text-meta text-fg-3">Exclui todas as parcelas. Não é possível se alguma parcela estiver em fatura já paga.</p>
+        </div>
         <BotaoConfirmar
-          rotulo="Excluir"
+          rotulo="Excluir compra"
           icone={<Trash2 className="size-4.5 text-danger" aria-hidden="true" />}
           titulo="Excluir compra?"
           descricao={`“${compra.descricao}” e todas as suas parcelas serão excluídas e as faturas em aberto serão recalculadas. Esta ação não pode ser desfeita.`}
@@ -58,7 +64,7 @@ export default async function PaginaEditarCompra({ params }: PageProps<'/cartoes
           perigo
           testId="excluir-compra"
         />
-      </div>
+      </section>
     </div>
   );
 }

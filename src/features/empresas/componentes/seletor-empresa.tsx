@@ -2,10 +2,10 @@
 
 import { Building2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useEffect, useRef, useTransition } from 'react';
 import { toast } from 'sonner';
+import { Seletor, type ControleSeletor } from '@/components/ui/seletor';
 import type { Empresa } from '@/lib/domain/tipos';
-import { cn } from '@/lib/utils/cn';
 import { selecionarEmpresa } from '../acoes';
 import { TODAS_EMPRESAS } from '../constantes';
 
@@ -19,33 +19,37 @@ interface Props {
 export function SeletorEmpresa({ empresas, selecionadaId, className }: Props) {
   const router = useRouter();
   const [pendente, iniciar] = useTransition();
+  // Desabilitado durante a troca, o gatilho perde o foco: devolve ao terminar (teclado).
+  const controle = useRef<ControleSeletor>(null);
+  const devolverFoco = useRef(false);
+  useEffect(() => {
+    if (!pendente && devolverFoco.current) {
+      devolverFoco.current = false;
+      controle.current?.focus();
+    }
+  }, [pendente]);
   if (empresas.length < 2) return null;
 
   return (
-    <label className={cn('relative flex min-w-0 items-center', className)}>
-      <span className="sr-only">Empresa</span>
-      <Building2 className="pointer-events-none absolute left-2.5 size-4 text-fg-3" aria-hidden="true" />
-      <select
-        data-testid="seletor-empresa"
-        value={selecionadaId ?? TODAS_EMPRESAS}
-        disabled={pendente}
-        onChange={(e) => {
-          const valor = e.target.value;
-          iniciar(async () => {
-            const r = await selecionarEmpresa(valor);
-            if (!r.ok) toast.error(r.erro);
-            router.refresh();
-          });
-        }}
-        className="h-10 w-full min-w-0 truncate rounded-md border border-border-strong bg-surface pr-7 pl-8 text-base font-medium text-fg focus:border-ring focus:outline-none disabled:opacity-60"
-      >
-        <option value={TODAS_EMPRESAS}>Todas as empresas</option>
-        {empresas.map((e) => (
-          <option key={e.id} value={e.id}>
-            {e.apelido}
-          </option>
-        ))}
-      </select>
-    </label>
+    <Seletor
+      variante="compacto"
+      aria-label="Empresa"
+      data-testid="seletor-empresa"
+      ref={controle}
+      icone={<Building2 />}
+      value={selecionadaId ?? TODAS_EMPRESAS}
+      disabled={pendente}
+      onChange={(e) => {
+        const valor = e.target.value;
+        devolverFoco.current = true;
+        iniciar(async () => {
+          const r = await selecionarEmpresa(valor);
+          if (!r.ok) toast.error(r.erro);
+          router.refresh();
+        });
+      }}
+      opcoes={[{ valor: TODAS_EMPRESAS, rotulo: 'Todas as empresas' }, ...empresas.map((e) => ({ valor: e.id, rotulo: e.apelido }))]}
+      className={className}
+    />
   );
 }

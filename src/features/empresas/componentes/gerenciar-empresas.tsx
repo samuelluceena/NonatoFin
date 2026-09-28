@@ -81,7 +81,7 @@ export function GerenciarEmpresas({ empresas }: { empresas: Empresa[] }) {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold text-fg">{e.apelido}</p>
                 {e.razaoSocial && <p className="truncate text-sm text-fg-2">{e.razaoSocial}</p>}
-                <p className="numeros text-[13px] text-fg-3">{e.cnpj ? `CNPJ ${formatarCnpj(e.cnpj)}` : 'CNPJ não informado'}</p>
+                <p className="numeros text-meta text-fg-3">{e.cnpj ? `CNPJ ${formatarCnpj(e.cnpj)}` : 'CNPJ não informado'}</p>
               </div>
               <button type="button" onClick={() => abrir(e)} className="grid size-11 place-items-center rounded-md text-fg-2 hover:bg-surface-2" aria-label={`Editar ${e.apelido}`}>
                 <Pencil className="size-4.5" aria-hidden="true" />
@@ -158,6 +158,7 @@ export function GerenciarEmpresas({ empresas }: { empresas: Empresa[] }) {
         aberto={excluindo !== null}
         onFechar={() => setExcluindo(null)}
         titulo="Excluir empresa?"
+        alerta="perigo"
         descricao={excluindo ? `“${excluindo.apelido}” será excluída. Só é possível excluir empresas sem lançamentos e sem cartões.` : undefined}
         rodape={
           <>

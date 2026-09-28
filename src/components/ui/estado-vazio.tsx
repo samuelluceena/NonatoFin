@@ -11,14 +11,13 @@ interface Props {
 
 export function EstadoVazio({ icone, titulo, descricao, acao, className }: Props) {
   return (
-    <div
-      className={cn(
-        'flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border-strong px-6 py-10 text-center',
-        className,
+    <div className={cn('flex flex-col items-center justify-center gap-1.5 rounded-lg border border-border bg-surface px-6 py-10 text-center', className)}>
+      {icone && (
+        <div className="mb-2 grid size-10 place-items-center rounded-md border border-border bg-surface-2 text-fg-3 [&_svg]:size-5" aria-hidden="true">
+          {icone}
+        </div>
       )}
-    >
-      {icone && <div className="mb-1 text-fg-3 [&_svg]:size-8">{icone}</div>}
-      <p className="font-semibold text-fg">{titulo}</p>
+      <p className="text-body font-medium text-fg">{titulo}</p>
       {descricao && <p className="max-w-sm text-sm text-fg-2">{descricao}</p>}
       {acao && <div className="mt-3">{acao}</div>}
     </div>

@@ -3,6 +3,8 @@ import {
   centavosDosDigitos,
   converterTextoParaCentavos,
   formatarMoeda,
+  formatarMoedaComSinal,
+  formatarMoedaSaldo,
   formatarNumeroMoeda,
   multiplicarCentavos,
   somarCentavos,
@@ -87,5 +89,18 @@ describe('operações sem erro de ponto flutuante', () => {
 
   it('rejeita multiplicação por quantidade não inteira', () => {
     expect(() => multiplicarCentavos(100, 1.5)).toThrow();
+  });
+});
+
+describe('valores com sinal (padrão da interface)', () => {
+  it('movimentos: + e − tipográfico, zero sem sinal', () => {
+    expect(semNbsp(formatarMoedaComSinal(123456))).toBe('+ R$ 1.234,56');
+    expect(semNbsp(formatarMoedaComSinal(-1000))).toBe('− R$ 10,00');
+    expect(semNbsp(formatarMoedaComSinal(0))).toBe('R$ 0,00');
+  });
+
+  it('saldos: só o negativo leva sinal', () => {
+    expect(semNbsp(formatarMoedaSaldo(299500))).toBe('R$ 2.995,00');
+    expect(semNbsp(formatarMoedaSaldo(-19000))).toBe('− R$ 190,00');
   });
 });

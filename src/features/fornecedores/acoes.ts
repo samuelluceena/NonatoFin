@@ -34,7 +34,7 @@ export async function criarFornecedor(nome: unknown): Promise<ResultadoAcao<{ id
   if (error || !data) return falha(mensagemDeErro(error, 'criar fornecedor'));
   revalidarTudo();
   const jaExistia = (existentes?.length ?? 0) > 0;
-  return sucesso({ id: data, existente: jaExistia }, jaExistia ? 'Fornecedor já cadastrado.' : 'Fornecedor cadastrado!');
+  return sucesso({ id: data, existente: jaExistia }, jaExistia ? 'Fornecedor já cadastrado.' : 'Fornecedor cadastrado.');
 }
 
 export async function renomearFornecedor(id: unknown, nome: unknown): Promise<ResultadoAcao> {
@@ -51,7 +51,7 @@ export async function renomearFornecedor(id: unknown, nome: unknown): Promise<Re
   if (error) return falha(mensagemDeErro(error, 'renomear fornecedor'));
   if (!data?.length) return falha('Fornecedor não encontrado.');
   revalidarTudo();
-  return sucesso(undefined, 'Fornecedor atualizado!');
+  return sucesso(undefined, 'Fornecedor atualizado.');
 }
 
 export async function excluirFornecedor(id: unknown): Promise<ResultadoAcao> {
