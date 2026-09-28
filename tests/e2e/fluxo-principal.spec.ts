@@ -158,7 +158,7 @@ test('pesquisa inclui contas futuras e filtros funcionam', async ({ page }) => {
   await page.goto('/boletos?periodo=todos');
   await page.getByTestId('mais-filtros').click();
   const dialogo = page.getByRole('dialog', { name: 'Mais filtros' });
-  await escolherOpcao(dialogo.getByLabel('Fornecedor', { exact: true }), fornecedor);
+  await escolherOpcao(dialogo.getByRole('combobox', { name: 'Fornecedor', exact: true }), fornecedor);
   await dialogo.getByRole('button', { name: 'Aplicar' }).click();
   await expect(page).toHaveURL(/fornecedor=/);
   await expect(page.getByTestId('cartao-boleto')).toHaveCount(1);

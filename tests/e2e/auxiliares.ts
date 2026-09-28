@@ -23,8 +23,18 @@ export const EMPRESAS_E2E = [
   { apelido: 'Confecção Norte', cnpj: '98765432000198' },
 ] as const;
 
+/**
+ * Restringe o locator ao gatilho do Seletor (role="combobox"). A lista aberta
+ * (role="listbox") tem o mesmo nome acessível, então um locator por rótulo
+ * pegaria os dois elementos.
+ */
+function gatilhoSeletor(seletor: Locator): Locator {
+  return seletor.and(seletor.page().getByRole('combobox'));
+}
+
 /** Lista (role="listbox") aberta pelo Seletor customizado. */
 async function abrirSeletor(seletor: Locator): Promise<Locator> {
+  seletor = gatilhoSeletor(seletor);
   if ((await seletor.getAttribute('aria-expanded')) !== 'true') await seletor.click();
   const idLista = await seletor.getAttribute('aria-controls', { timeout: 1_000 });
   if (!idLista) throw new Error('A lista do seletor não abriu.');
@@ -37,6 +47,7 @@ async function abrirSeletor(seletor: Locator): Promise<Locator> {
  * lista (ou a escolha se perde) — então repete até a opção permanecer.
  */
 export async function escolherOpcao(seletor: Locator, rotulo: string) {
+  seletor = gatilhoSeletor(seletor);
   await expect(async () => {
     const lista = await abrirSeletor(seletor);
     await lista.getByRole('option', { name: rotulo, exact: true }).click({ timeout: 2_000 });
@@ -47,7 +58,7 @@ export async function escolherOpcao(seletor: Locator, rotulo: string) {
 
 /** Valor atual do Seletor (o mesmo enviado pelo formulário). */
 export async function valorSeletor(seletor: Locator): Promise<string> {
-  return (await seletor.getAttribute('data-valor')) ?? '';
+  return (await gatilhoSeletor(seletor).getAttribute('data-valor')) ?? '';
 }
 
 /** Rótulos das opções do Seletor (abre a lista e fecha com Esc). */
@@ -57,7 +68,7 @@ export async function opcoesSeletor(seletor: Locator): Promise<string[]> {
     const lista = await abrirSeletor(seletor);
     rotulos = (await lista.getByRole('option').allTextContents()).map((t) => t.trim());
   }).toPass({ timeout: 10_000 });
-  await seletor.press('Escape');
+  await gatilhoSeletor(seletor).press('Escape');
   return rotulos;
 }
 
