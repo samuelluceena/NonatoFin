@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Building, ChevronRight, Landmark, LogOut, Tags } from 'lucide-react';
+import { Building, ChevronRight, DatabaseBackup, Landmark, LogOut, Tags } from 'lucide-react';
 import { SeletorTema } from '@/components/layout/seletor-tema';
 import { SimboloLogo } from '@/components/layout/logo';
 import { Botao } from '@/components/ui/botao';
@@ -73,14 +73,24 @@ export default async function PaginaConfiguracoes() {
 
       <section aria-labelledby="titulo-dados">
         <TituloSecao id="titulo-dados" className="mb-2 px-1">
-          Exportar dados
+          Dados
         </TituloSecao>
-        <Cartao className="p-4 sm:p-5">
-          <p className="mb-3 text-sm text-fg-2">
-            Baixe os lançamentos {selecionada ? <>da empresa <strong>{selecionada.apelido}</strong></> : 'de todas as empresas'} (empresa, CNPJ,
-            categoria, conta, fornecedor, nome, valor, vencimento, código, status, parcela, observação e pagamento).
-          </p>
-          <BotoesExportar />
+        <Cartao className="divide-y divide-border">
+          <div className="p-4 sm:p-5">
+            <p className="mb-3 text-sm text-fg-2">
+              Baixe os lançamentos {selecionada ? <>da empresa <strong>{selecionada.apelido}</strong></> : 'de todas as empresas'} (empresa, CNPJ,
+              categoria, conta, fornecedor, nome, valor, vencimento, código, status, parcela, observação e pagamento).
+            </p>
+            <BotoesExportar />
+          </div>
+          <Link href="/configuracoes/dados" className="flex min-h-16 items-center gap-3 px-4 py-3 hover:bg-surface-2" data-testid="link-gerenciar-dados">
+            <DatabaseBackup className="size-5 text-primary-text" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium text-fg">Backup, limpeza e restauração</span>
+              <span className="block truncate text-meta text-fg-2">Backup completo, backups automáticos e zona de perigo</span>
+            </span>
+            <ChevronRight className="size-4 text-fg-3" aria-hidden="true" />
+          </Link>
         </Cartao>
       </section>
 

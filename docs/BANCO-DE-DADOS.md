@@ -108,6 +108,12 @@ Por que "atrasado" não é gravado: depende da data atual; gravado, ficaria desa
 
 Pagamentos **não** viram movimento: o saldo desconta os `lancamentos` com `status = 'pago'` e `conta_id` da conta.
 
+### `backups_dados`
+Cópia de **todas** as 9 tabelas do usuário (`conteudo` jsonb, uma lista por tabela), criada automaticamente antes de cada limpeza ou restauração. Colunas: `nivel` (`financeiro` \| `completo`), `motivo` (`limpeza` \| `antes_da_restauracao`), `versao_formato`, `assinatura_esquema` (md5 das colunas das 9 tabelas), `contagens`, `sha256` (do `conteudo::text`), `criado_em`, `expira_em` (+30 dias), `restaurado_em`. Retenção: 30 dias e no máximo 10 por usuário. O usuário só **lê** (policy de select); gravação só pelas funções internas. Ao excluir a conta (`auth.users`), os backups saem em cascata.
+
+### Schema `nonatofin_interno`
+Não exposto pela API. Guarda `restauracoes_ativas (user_id, xid)`, a marca de "restauração em andamento" válida só para a transação que a criou e sem permissão para os papéis da API, e as funções internas do gerenciamento de dados (veja abaixo).
+
 ## Índices
 - `lancamentos (user_id, vencimento)` — listas e filtros por período
 - `lancamentos (user_id, status, vencimento)` — pendentes/atrasados/pagos
@@ -151,6 +157,15 @@ Todas `security invoker` (rodam com as permissões do usuário, RLS aplicada), `
 | `contas_a_conferir_hoje()` | Contas ativas sem conferência com a data de hoje (usado para exigir a conferência diária) |
 | `definir_pagamento(p_id, p_pago, p_conta_id?)` | Agora aceita a conta que pagou |
 | `conta_em_exclusao(user_id)` | `security definer`; true quando a conta está sendo apagada — deixa a exclusão da conta passar pela trava de fatura paga |
+
+| `resumo_dados()` | Quantidade de registros do usuário em cada uma das 9 tabelas |
+| `exportar_dados()` | Backup completo dos dados atuais (todas as tabelas, com hash e assinatura do esquema) |
+| `limpar_dados(p_nivel, p_frase)` | `financeiro`: apaga lançamentos, compras, parcelas e movimentos. `completo`: também cartões, contas, categorias, fornecedores e empresas. Exige a frase, senha recente (claim `amr` ≤ 120 s) e cria o backup na mesma transação |
+| `restaurar_backup(p_backup_id, p_frase)` | Guarda o estado atual num novo backup, apaga o escopo e reinsere o backup (mesmos ids); confere hash, esquema, quantidades e integridade das faturas |
+
+**Ordem de exclusão** (validada em testes): faturas (`lancamentos` com cartão) → **todas** as parcelas num único comando → compras → demais lançamentos → movimentos → (completo) cartões → contas → categorias → fornecedores → empresas. Apagar as faturas antes desliga a trava de fatura paga sem alterar o gatilho; apagar as parcelas de uma vez faz a sincronização encontrar soma 0 e nenhuma fatura.
+
+**Funções internas** (`nonatofin_interno`, não expostas): `validar_operacao` (autorizado + senha recente + marca da transação), `iniciar_operacao` (marca + trava contra duplicidade), `apagar_dados`, `montar_snapshot`, `verificar_integridade`, e as únicas `security definer` do recurso: `criar_backup`, `iniciar_restauracao`, `concluir_restauracao` (escrevem nas tabelas internas) e `restauracao_em_andamento` (leitura da marca, usada pelos gatilhos das parcelas para aceitar a reinserção de parcelas de faturas pagas **somente** durante a restauração).
 
 A criação de séries é um único `INSERT` com várias linhas (atômico).
 

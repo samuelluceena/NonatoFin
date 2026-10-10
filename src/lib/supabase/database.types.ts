@@ -16,6 +16,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      backups_dados: {
+        Row: {
+          assinatura_esquema: string
+          contagens: Json
+          conteudo: Json
+          criado_em: string
+          expira_em: string
+          id: string
+          motivo: string
+          nivel: string
+          restaurado_em: string | null
+          sha256: string
+          user_id: string
+          versao_formato: number
+        }
+        Insert: {
+          assinatura_esquema: string
+          contagens: Json
+          conteudo: Json
+          criado_em?: string
+          expira_em: string
+          id?: string
+          motivo: string
+          nivel: string
+          restaurado_em?: string | null
+          sha256: string
+          user_id: string
+          versao_formato: number
+        }
+        Update: {
+          assinatura_esquema?: string
+          contagens?: Json
+          conteudo?: Json
+          criado_em?: string
+          expira_em?: string
+          id?: string
+          motivo?: string
+          nivel?: string
+          restaurado_em?: string | null
+          sha256?: string
+          user_id?: string
+          versao_formato?: number
+        }
+        Relationships: []
+      }
       cartoes: {
         Row: {
           ativo: boolean
@@ -620,6 +665,7 @@ export type Database = {
         Args: { p_transferencia_id: string }
         Returns: undefined
       }
+      exportar_dados: { Args: Record<PropertyKey, never>; Returns: Json }
       fatura_esta_paga: {
         Args: { p_cartao_id: string; p_mes: string }
         Returns: boolean
@@ -641,6 +687,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: undefined
       }
+      limpar_dados: { Args: { p_frase: string; p_nivel: string }; Returns: Json }
       normalizar_nome: { Args: { p_nome: string }; Returns: string }
       obter_ou_criar_fornecedor: { Args: { p_nome: string }; Returns: string }
       registrar_compra_cartao: {
@@ -656,6 +703,11 @@ export type Database = {
         }
         Returns: string
       }
+      restaurar_backup: {
+        Args: { p_backup_id: string; p_frase: string }
+        Returns: Json
+      }
+      resumo_dados: { Args: Record<PropertyKey, never>; Returns: Json }
       rotulo_competencia: { Args: { p_mes: string }; Returns: string }
       saldos_contas: {
         Args: Record<PropertyKey, never>

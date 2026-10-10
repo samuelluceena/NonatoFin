@@ -103,6 +103,8 @@ Tudo em `montarTextoFechamento()` (`lib/domain/fechamento.ts`). O teste `tests/u
 4. Funções: `security invoker`, `set search_path = ''`, `revoke … from public, anon`, `grant execute … to authenticated`. Funções chamadas por gatilhos também precisam de `grant` (o gatilho roda com as permissões de quem disparou).
 5. `npm run supabase:local -- --reset` (ou `npx supabase db reset`) → `npm run db:tipos` → `npm run typecheck` → `npm run test:integracao`.
 6. Produção: `npx supabase db push` **antes** de publicar o código que depende da mudança.
+7. **Gerenciamento de dados:** se a migration mudar colunas de alguma das 9 tabelas do usuário, os backups antigos passam a ser recusados na restauração (a assinatura do esquema muda), mas continuam baixáveis em `.json`. Tabela nova do usuário precisa entrar em `nonatofin_interno.tabelas_backup()` (e, se for financeira, em `tabelas_financeiras()`) e em `apagar_dados`, na ordem certa das FKs.
+8. No Windows, se `npm run db:tipos` falhar ao chamar o `npx`, rode o gerador direto: `npx supabase gen types typescript --local --schema public` e mantenha o formato e o cabeçalho do arquivo atual.
 
 ## Gerar os tipos do banco
 - Com Docker (`npx supabase start`): `npm run db:tipos`.
@@ -130,6 +132,8 @@ Em `:root` e `.dark`: `--primary`, `--primary-hover`, `--primary-text`, `--prima
 
 ## Fazer deploy
 Veja [DEPLOY.md](DEPLOY.md). Resumo: migrations (`npx supabase db push`) → `git push` (a Vercel publica sozinha).
+
+Antes de publicar uma migration, baixe o backup `.json` e faça o dump do banco — veja [RECUPERACAO.md](RECUPERACAO.md).
 
 ## Investigar um erro
 1. A tela mostra uma mensagem amigável e, às vezes, um **código do erro** (digest).
