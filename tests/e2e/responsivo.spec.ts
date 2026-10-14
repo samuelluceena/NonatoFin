@@ -18,6 +18,7 @@ const PAGINAS = [
   '/configuracoes',
   '/configuracoes/empresas',
   '/configuracoes/categorias',
+  '/configuracoes/dados',
   '/contas',
   '/fechar-dia',
   '/contas/nova',

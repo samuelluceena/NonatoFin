@@ -5,6 +5,11 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ## [Não publicado] — redesign premium
 
 ### Adicionado
+- **Gerenciamento de dados** (Configurações → Dados): **limpar dados financeiros** e **restaurar o NonatoFin do zero**, com senha, frase de confirmação, backup automático obrigatório (30 dias, até 10), **restauração de backups** e **backup completo em JSON** de todos os dados. Migration `20261010090000_gerenciamento_dados.sql`.
+- **Recuperação de backup `.json`:** script administrativo `supabase/snippets/importar-backup-json.sql` e guia [RECUPERACAO.md](RECUPERACAO.md) (cópias externas, importação, arquivo de outra versão do banco, dump).
+
+### Corrigido (ambiente local)
+- `supabase/config.toml`: cadastro público **desligado** no Supabase local (`[auth] enable_signup = false`), como em produção; o login por e-mail continua ligado. O teste "cadastro público está desativado" volta a passar.
 - **Transações:** visão cronológica de contas a pagar, pagamentos, entradas, transferências, ajustes e compras no cartão, composta dos dados existentes (sem tabela nova). Filtros, pesquisa, totais que separam caixa de obrigação, lista por dia no celular e tabela no desktop.
 - **Ações rápidas ("+"):** Despesa (conta a pagar ou compra no cartão) e Entrada (com escolha da conta), no celular e no desktop.
 - **Categorias:** quantos registros usam cada uma, selo "Em uso" e acesso direto por Transações.

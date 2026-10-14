@@ -208,6 +208,13 @@ Visão cronológica e centralizada da movimentação (menu **Transações**). **
 - Ordem: data mais recente primeiro. Cada origem traz no máximo 500 itens; se alguma passar disso, a lista é cortada numa data segura e a tela pede um período menor. A tela mostra 50 itens por vez ("Mostrar mais").
 - Tocar num item abre a tela que já existe: lançamento → detalhe do boleto; entrada, ajuste e transferência → extrato da conta; compra → edição da compra.
 
+## Gerenciamento de dados (Configurações → Dados)
+- **Limpar dados financeiros** (frase `LIMPAR DADOS FINANCEIROS`): apaga todos os lançamentos (boletos, séries, faturas, pagos ou não), compras no cartão, parcelas e movimentações (entradas, transferências, conferências e saldos iniciais). Mantém empresas, contas, cartões, fornecedores, categorias, login e autorização. Como o saldo é calculado, todas as contas ficam com saldo 0 e o app pede a **conferência** de cada conta ativa: o saldo informado vira o novo ponto de partida.
+- **Restaurar NonatoFin do zero** (frase `REINICIAR NONATOFIN`): apaga também empresas, contas, cartões, fornecedores e categorias. Só o login e a autorização continuam. O app volta ao primeiro acesso ("Cadastre suas empresas primeiro"); as 5 categorias padrão são recriadas automaticamente na primeira vez que forem usadas.
+- As duas opções pedem a **senha** e a frase exata, mostram o que será apagado e mantido (com quantidades) e criam um **backup automático** antes de apagar. Sem backup, nada é apagado.
+- **Backups automáticos:** guardam todos os dados (as 9 tabelas), ficam disponíveis por **30 dias** (no máximo 10) e podem ser baixados em `.json`. **Restaurar** (frase `RESTAURAR BACKUP` + senha) substitui os dados atuais do escopo do backup pelos dados dele, com os mesmos ids, status, pagamentos e datas. Antes, o estado atual vira um novo backup, então a restauração também pode ser desfeita. Um backup financeiro só restaura as tabelas financeiras; se algum cadastro que ele usa tiver sido apagado, a restauração é recusada sem alterar nada.
+- **Backup completo (.json)** a qualquer momento, com todos os dados atuais.
+
 ## Histórico
 Lista boletos pagos, do pagamento mais recente para o mais antigo; filtros por fornecedor, período (data do pagamento) e pesquisa.
 

@@ -9,6 +9,10 @@ import { EMPRESAS_E2E } from './auxiliares';
 
 export default async function globalSetup(config: FullConfig) {
   const url = process.env.SUPABASE_URL!;
+  // Este setup APAGA dados: nunca roda fora do Supabase local.
+  if (!['127.0.0.1', 'localhost'].includes(new URL(url).hostname)) {
+    throw new Error('SUPABASE_URL não aponta para o Supabase local (127.0.0.1). E2E abortado.');
+  }
   const admin = createClient(url, process.env.SUPABASE_SECRET_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });

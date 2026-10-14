@@ -108,5 +108,6 @@ Para **alterar** o app, comece pelo [Guia de manutenção e alterações](docs/M
 - [Manutenção e alterações](docs/MANUTENCAO.md) — receitas e checklist
 - [Decisões de arquitetura](docs/DECISOES.md) — o porquê de cada escolha
 - [Deploy](docs/DEPLOY.md)
+- [Backup externo e recuperação](docs/RECUPERACAO.md)
 - [Testes](docs/TESTES.md)
 - [Changelog](docs/CHANGELOG.md)

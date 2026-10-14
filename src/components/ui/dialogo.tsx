@@ -19,6 +19,8 @@ interface PropsDialogo {
    * `aviso` para impedimentos. Usa role="alertdialog" e um ícone no título.
    */
   alerta?: 'perigo' | 'aviso';
+  /** Impede fechar (Esc, clique fora, X) — ex.: enquanto uma operação está em andamento. */
+  bloqueado?: boolean;
   className?: string;
 }
 
@@ -29,10 +31,15 @@ const LARGURAS = { sm: 'sm:max-w-sm', md: 'sm:max-w-md', lg: 'sm:max-w-lg' } as 
  * fora fecha). No celular é um "bottom sheet" (com alça e entrada de baixo);
  * a partir de 640px, centralizado. Superfície elevada do tema.
  */
-export function Dialogo({ aberto, onFechar, titulo, descricao, children, rodape, tamanho = 'md', alerta, className }: PropsDialogo) {
+export function Dialogo({ aberto, onFechar, titulo, descricao, children, rodape, tamanho = 'md', alerta, bloqueado = false, className }: PropsDialogo) {
   const ref = useRef<HTMLDialogElement>(null);
+  const bloqueadoRef = useRef(bloqueado);
   const idTitulo = useId();
   const idDescricao = useId();
+
+  useEffect(() => {
+    bloqueadoRef.current = bloqueado;
+  }, [bloqueado]);
 
   useEffect(() => {
     const dialogo = ref.current;
@@ -44,9 +51,20 @@ export function Dialogo({ aberto, onFechar, titulo, descricao, children, rodape,
   useEffect(() => {
     const dialogo = ref.current;
     if (!dialogo) return;
-    const aoFechar = () => onFechar();
+    const aoCancelar = (e: Event) => {
+      if (bloqueadoRef.current) e.preventDefault();
+    };
+    const aoFechar = () => {
+      // Alguns navegadores fecham mesmo com o Esc cancelado: reabre enquanto bloqueado.
+      if (bloqueadoRef.current) dialogo.showModal();
+      else onFechar();
+    };
+    dialogo.addEventListener('cancel', aoCancelar);
     dialogo.addEventListener('close', aoFechar);
-    return () => dialogo.removeEventListener('close', aoFechar);
+    return () => {
+      dialogo.removeEventListener('cancel', aoCancelar);
+      dialogo.removeEventListener('close', aoFechar);
+    };
   }, [onFechar]);
 
   return (
@@ -57,7 +75,7 @@ export function Dialogo({ aberto, onFechar, titulo, descricao, children, rodape,
       aria-describedby={descricao ? idDescricao : undefined}
       onClick={(e) => {
         // Clique no fundo (fora do conteúdo) fecha.
-        if (e.target === e.currentTarget) onFechar();
+        if (e.target === e.currentTarget && !bloqueado) onFechar();
       }}
       className={cn(
         'fixed inset-x-0 top-auto bottom-0 m-0 w-full max-w-full rounded-t-xl border border-b-0 border-border bg-surface-elevated p-0 text-fg shadow-lg',
@@ -94,7 +112,7 @@ export function Dialogo({ aberto, onFechar, titulo, descricao, children, rodape,
                 )}
               </div>
             </div>
-            <BotaoIcone rotulo="Fechar" onClick={onFechar} className="-mt-2 -mr-2.5 text-fg-3">
+            <BotaoIcone rotulo="Fechar" onClick={onFechar} disabled={bloqueado} className="-mt-2 -mr-2.5 text-fg-3">
               <X aria-hidden="true" />
             </BotaoIcone>
           </div>

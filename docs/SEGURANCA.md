@@ -16,6 +16,22 @@
 12. **Exportação** — `/api/exportar` exige sessão, usa RLS e responde com `Cache-Control: no-store`.
 13. **CSV injection** — campos que começam com `= + - @` são neutralizados na exportação.
 
+## Gerenciamento de dados (limpeza, backup e restauração)
+Configurações → Dados permite **limpar dados financeiros**, **restaurar o NonatoFin do zero** e **restaurar um backup**. São as únicas operações destrutivas em massa do app.
+
+- **Senha recente validada no banco.** A Server Action confirma a senha abrindo uma sessão nova e temporária (`lib/supabase/reautenticacao.ts`, sem tocar nos cookies), chama a RPC com o token dessa sessão e a encerra em seguida. As funções do banco exigem no JWT o claim `amr` com `password` dos **últimos 120 s**. O Supabase Auth grava esse horário no login, e renovar o token não o atualiza (testado contra o Auth real). Uma sessão comum, mesmo válida, é recusada (`28000`). Assim, chamar a RPC direto pela API sem saber a senha não funciona.
+- **Frase exata** conferida no navegador, na Server Action e no banco (`LIMPAR DADOS FINANCEIROS`, `REINICIAR NONATOFIN`, `RESTAURAR BACKUP`).
+- **Só os dados do próprio usuário.** Exclusões e inserções rodam como o usuário (`SECURITY INVOKER`): a RLS vale e cada comando ainda filtra `user_id = auth.uid()`. `auth.users` e `usuarios_autorizados` nunca são tocados. Não há `TRUNCATE` nem RLS desligada.
+- **Backup obrigatório, na mesma transação.** Se o backup falhar, nada é apagado; qualquer erro desfaz tudo (rollback).
+- **`/api/backup`:** 401 sem sessão, **403** para usuário logado fora de `usuarios_autorizados`, 400 para id inválido, 404 para backup inexistente ou de outro usuário (RLS); `Cache-Control: no-store`.
+- **Importação de `.json`** (`supabase/snippets/importar-backup-json.sql`, [RECUPERACAO.md](RECUPERACAO.md)): só manual, no SQL Editor (papel `postgres`), com a frase `IMPORTAR BACKUP JSON`. Sem SQL dinâmico; confere formato, 9 tabelas, hash, contagens, versão do banco, usuário autorizado e conta única, num único bloco — nada é gravado se algo falhar. Apenas registra um backup; a restauração continua exigindo senha e frase no app.
+- **Cadastro público no Supabase local:** `supabase/config.toml` usa `[auth] enable_signup = false` (como produção) e `[auth.email] enable_signup = true` (no CLI esta opção liga/desliga o provedor de e-mail inteiro, inclusive o login). O arquivo vale só para o ambiente local; **não rode `supabase config push`**.
+- **Backups somente leitura para o usuário.** `backups_dados` só tem `SELECT` (RLS). Gravar, restaurar e marcar "restauração em andamento" são feitos por três funções `SECURITY DEFINER` (`criar_backup`, `iniciar_restauracao`, `concluir_restauracao`) no schema `nonatofin_interno`, que **não é exposto pela API** (PostgREST expõe `public`/`graphql_public`; o GraphQL também não as mostra, o que é testado). Cada uma exige usuário autorizado, senha recente e a marca de operação da transação atual, que só `limpar_dados`/`restaurar_backup` gravam.
+- **Desvio dos gatilhos só na restauração autorizada.** A trava de fatura paga e a sincronização das faturas são suspensas apenas para **inserções** feitas na transação de uma restauração do próprio usuário (marca em `nonatofin_interno.restauracoes_ativas`, sem permissão para os papéis da API). Ao final, a integridade financeira é conferida (fatura = soma das parcelas + ajuste; nenhuma parcela sem fatura) e, se algo não bater, tudo é desfeito.
+- **Integridade do backup:** hash SHA-256 do conteúdo e assinatura do esquema (colunas das 9 tabelas) conferidos antes de restaurar.
+- **Execução duplicada:** trava por usuário (`pg_try_advisory_xact_lock`), botão desabilitado durante a operação e diálogo que não fecha enquanto processa.
+- **Privilégio extra concedido:** `service_role` pode apenas **ler** a marca de restauração (necessário porque os gatilhos das parcelas também rodam em scripts administrativos). Nenhuma credencial nova na Vercel.
+
 ## Consultas compostas (Transações)
 A tela Transações só lê: compõe lançamentos, movimentos de conta e compras no cartão com o cliente do usuário (RLS em todas as consultas), sem tabela nova e sem chave de serviço. O teste de integração `transacoes.test.ts` confere que outro usuário não vê nada com nenhum filtro (inclusive passando ids de conta, empresa ou fornecedor do dono). A contagem de uso das categorias também passa pela RLS.
 
