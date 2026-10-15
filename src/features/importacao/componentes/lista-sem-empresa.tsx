@@ -179,7 +179,7 @@ export function ListaSemEmpresa({ lancamentos, quantidade, totalCentavos, filtro
           <label className={cn('flex min-h-11 items-center gap-2.5 text-sm lg:max-w-64', empresa && !empresa.contaPadrao ? 'text-fg-3' : 'text-fg-2')}>
             <input
               type="checkbox"
-              checked={usarContaPadrao && Boolean(empresa?.contaPadrao ?? true)}
+              checked={usarContaPadrao && (empresa ? Boolean(empresa.contaPadrao) : true)}
               disabled={Boolean(empresa && !empresa.contaPadrao)}
               onChange={(e) => setUsarContaPadrao(e.target.checked)}
               className="size-4.5 shrink-0 accent-primary"
