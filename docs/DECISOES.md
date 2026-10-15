@@ -97,3 +97,7 @@ Formato: **Decisão** · Motivo · Consequência.
 ### D23 — Tema só Claro/Escuro; estado da sidebar em cookie
 - **Motivo:** "Sistema" confundia (o tema mudava sozinho) e o pedido era um controle de um clique. O estado da sidebar recolhida precisa ser conhecido no servidor para a página abrir já no formato certo.
 - **Consequência:** next-themes com `enableSystem={false}` e padrão Claro; preferência antiga "system" migra uma vez para o tema do aparelho. Sidebar: cookie `nonatofin-sidebar` lido no layout. *(2026-09-24)*
+
+### D24 — Importação: empresa opcional e metadados fora do backup
+- **Motivo:** a planilha não diz a qual CNPJ cada conta pertence; inventar a empresa seria um erro silencioso. Os backups conferem a assinatura das colunas das 9 tabelas: uma coluna nova em `lancamentos` tornaria os backups existentes irrestauráveis.
+- **Consequência:** `lancamentos.empresa_id` aceita null (só lançamentos; faturas e cartões continuam com empresa) e a regra "conta só com empresa" fecha a brecha da FK composta MATCH SIMPLE. Lote, chave de cada linha, conta original e "valor estimado" ficam em `importacoes`/`importacao_itens` (fora do backup). O item sai junto com o lançamento: depois de limpar/restaurar, a proteção contra duplicidade continua pela coincidência de vencimento + valor, que exige decisão na prévia. *(2026-10-14)*

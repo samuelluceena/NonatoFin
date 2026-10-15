@@ -11,6 +11,8 @@ import { FiltrosLancamentos } from '@/features/lancamentos/componentes/filtros-l
 import { ListaLancamentos } from '@/features/lancamentos/componentes/lista-lancamentos';
 import { listarCategorias, obterContextoEmpresas } from '@/features/empresas/consultas';
 import { listarFornecedores } from '@/features/fornecedores/consultas';
+import { AvisoLancamentosSemEmpresa } from '@/features/importacao/componentes/aviso-lancamentos-sem-empresa';
+import { contarSemEmpresa } from '@/features/importacao/consultas';
 import { exigirUsuario } from '@/lib/auth/sessao';
 import { hojeISO } from '@/lib/domain/datas';
 import { somarCentavos } from '@/lib/domain/dinheiro';
@@ -27,11 +29,12 @@ export default async function PaginaBoletos({ searchParams }: PageProps<'/boleto
   const filtros = lerFiltros(params, hoje);
 
   const { empresas, empresaId } = await obterContextoEmpresas();
-  const [fornecedores, categorias, contas, { lancamentos, truncado }] = await Promise.all([
+  const [fornecedores, categorias, contas, { lancamentos, truncado }, semEmpresa] = await Promise.all([
     listarFornecedores(supabase),
     listarCategorias(),
     listarTodasAsContas(),
     listarLancamentos(supabase, opcoesDosFiltros(filtros, hoje, empresaId)),
+    contarSemEmpresa(supabase),
   ]);
   const total = somarCentavos(lancamentos.map((b) => b.valorCentavos));
   // Com todas as empresas visíveis, o nome da empresa diferencia contas de mesmo apelido.
@@ -40,7 +43,13 @@ export default async function PaginaBoletos({ searchParams }: PageProps<'/boleto
     .filter((c) => !empresaId || c.empresa.id === empresaId)
     .map((c) => ({ id: c.id, rotulo: `${rotuloConta(c)}${mostrarEmpresa ? ` · ${c.empresa.apelido}` : ''}${c.ativa ? '' : ' (inativa)'}` }));
   const filtrado = Object.keys(parametrosDosFiltros(filtros)).length > 0;
-  const resumo = [rotuloDoPeriodo(filtros.periodo), filtros.status === 'todos' ? null : rotuloDoStatus(filtros.status)].filter(Boolean).join(' · ');
+  const resumo = [
+    rotuloDoPeriodo(filtros.periodo),
+    filtros.status === 'todos' ? null : rotuloDoStatus(filtros.status),
+    filtros.semEmpresa ? 'Sem empresa' : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <>
@@ -59,6 +68,13 @@ export default async function PaginaBoletos({ searchParams }: PageProps<'/boleto
           </div>
         }
       />
+      {!filtros.semEmpresa && (
+        <AvisoLancamentosSemEmpresa
+          contagem={semEmpresa}
+          className="mb-4"
+          complemento={empresaId ? 'Não aparecem com uma empresa escolhida no topo. Defina a empresa para incluí-los nos totais.' : undefined}
+        />
+      )}
       <FiltrosLancamentos
         filtros={filtros}
         periodoExplicito={periodoEstaNaUrl(params, hoje)}
@@ -66,6 +82,7 @@ export default async function PaginaBoletos({ searchParams }: PageProps<'/boleto
         fornecedores={fornecedores.map((f) => ({ id: f.id, rotulo: f.nome }))}
         categorias={categorias.map((c) => ({ id: c.id, rotulo: c.nome }))}
         contas={opcoesContas}
+        semEmpresaDisponivel={semEmpresa.quantidade > 0}
       />
       {lancamentos.length === 0 ? (
         <EstadoVazio

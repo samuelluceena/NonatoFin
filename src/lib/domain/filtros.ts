@@ -146,12 +146,17 @@ export function rotuloDoStatus(s: StatusFiltro): string {
 /** Filtro de conta: id de uma conta, SEM_CONTA ou '' (todas). */
 export const SEM_CONTA = 'sem';
 
+/** Filtro de empresa: lançamentos SEM empresa definida (ex.: importados de planilha). */
+export const SEM_EMPRESA = 'sem';
+
 export interface FiltrosLista {
   periodo: Periodo;
   status: StatusFiltro;
   fornecedorId: string;
   categoriaId: string;
   contaId: string;
+  /** Só lançamentos sem empresa definida (vale mesmo com uma empresa escolhida no topo). */
+  semEmpresa: boolean;
   busca: string;
 }
 
@@ -161,6 +166,7 @@ export const FILTROS_PADRAO: FiltrosLista = {
   fornecedorId: '',
   categoriaId: '',
   contaId: '',
+  semEmpresa: false,
   busca: '',
 };
 
@@ -212,7 +218,7 @@ export function atendeCriterio(
 
 /** Quantos filtros além de período e status estão ativos (badge "Mais filtros"). */
 export function quantidadeFiltrosExtras(f: FiltrosLista): number {
-  return [f.fornecedorId, f.categoriaId, f.contaId].filter(Boolean).length;
+  return [f.fornecedorId, f.categoriaId, f.contaId, f.semEmpresa].filter(Boolean).length;
 }
 
 // ---------------------------------------------------------------------- URL --
@@ -280,6 +286,7 @@ export function lerFiltros(p: ParametrosUrl, hoje: DataISO): FiltrosLista {
     fornecedorId: idOuVazio(p.fornecedor),
     categoriaId: idOuVazio(p.categoria),
     contaId: texto(p.conta) === SEM_CONTA ? SEM_CONTA : idOuVazio(p.conta),
+    semEmpresa: texto(p.empresa) === SEM_EMPRESA,
     busca,
   };
 }
@@ -294,6 +301,7 @@ export function parametrosDosFiltros(f: FiltrosLista): Record<string, string> {
   if (f.fornecedorId) r.fornecedor = f.fornecedorId;
   if (f.categoriaId) r.categoria = f.categoriaId;
   if (f.contaId) r.conta = f.contaId;
+  if (f.semEmpresa) r.empresa = SEM_EMPRESA;
   if (f.busca) r.q = f.busca;
   return r;
 }

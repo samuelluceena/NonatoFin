@@ -33,7 +33,7 @@ export default async function globalSetup(config: FullConfig) {
   // Faturas pagas travam as compras: desfaz os pagamentos antes de limpar.
   await admin.from('lancamentos').update({ status: 'pendente', pago_em: null }).eq('user_id', id).not('cartao_id', 'is', null);
   // Ordem respeita as chaves estrangeiras (parcelas saem junto com as compras).
-  for (const tabela of ['compras_cartao', 'lancamentos', 'cartoes', 'contas_bancarias', 'fornecedores', 'empresas', 'categorias']) {
+  for (const tabela of ['importacoes', 'compras_cartao', 'lancamentos', 'cartoes', 'contas_bancarias', 'fornecedores', 'empresas', 'categorias']) {
     const { error: e } = await admin.from(tabela).delete().eq('user_id', id);
     if (e) throw new Error(`limpar ${tabela}: ${e.message}`);
   }

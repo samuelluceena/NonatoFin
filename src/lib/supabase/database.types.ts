@@ -334,6 +334,111 @@ export type Database = {
         }
         Relationships: []
       }
+      importacao_itens: {
+        Row: {
+          categoria_origem: string | null
+          chave: string
+          conta_origem: string | null
+          created_at: string
+          id: string
+          importacao_id: string
+          lancamento_id: string
+          linha: number
+          user_id: string
+          valor_estimado: boolean
+        }
+        Insert: {
+          categoria_origem?: string | null
+          chave: string
+          conta_origem?: string | null
+          created_at?: string
+          id?: string
+          importacao_id: string
+          lancamento_id: string
+          linha: number
+          user_id?: string
+          valor_estimado?: boolean
+        }
+        Update: {
+          categoria_origem?: string | null
+          chave?: string
+          conta_origem?: string | null
+          created_at?: string
+          id?: string
+          importacao_id?: string
+          lancamento_id?: string
+          linha?: number
+          user_id?: string
+          valor_estimado?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "importacao_itens_importacao_fk"
+            columns: ["importacao_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "importacoes"
+            referencedColumns: ["id", "user_id"]
+          },
+          {
+            foreignKeyName: "importacao_itens_lancamento_fk"
+            columns: ["lancamento_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "lancamentos"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      importacoes: {
+        Row: {
+          arquivo_nome: string
+          arquivo_sha256: string
+          criado_em: string
+          desfeita_em: string | null
+          id: string
+          importados: number
+          linhas_arquivo: number
+          periodo_ate: string
+          periodo_de: string
+          removidos: number
+          resumo: Json
+          status: string
+          total_centavos: number
+          user_id: string
+        }
+        Insert: {
+          arquivo_nome: string
+          arquivo_sha256: string
+          criado_em?: string
+          desfeita_em?: string | null
+          id?: string
+          importados?: number
+          linhas_arquivo: number
+          periodo_ate: string
+          periodo_de: string
+          removidos?: number
+          resumo?: Json
+          status?: string
+          total_centavos?: number
+          user_id?: string
+        }
+        Update: {
+          arquivo_nome?: string
+          arquivo_sha256?: string
+          criado_em?: string
+          desfeita_em?: string | null
+          id?: string
+          importados?: number
+          linhas_arquivo?: number
+          periodo_ate?: string
+          periodo_de?: string
+          removidos?: number
+          resumo?: Json
+          status?: string
+          total_centavos?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       lancamentos: {
         Row: {
           ajuste_centavos: number
@@ -343,7 +448,7 @@ export type Database = {
           conta_id: string | null
           created_at: string
           descricao: string
-          empresa_id: string
+          empresa_id: string | null
           fatura_mes: string | null
           fornecedor_id: string
           id: string
@@ -366,7 +471,7 @@ export type Database = {
           conta_id?: string | null
           created_at?: string
           descricao: string
-          empresa_id: string
+          empresa_id?: string | null
           fatura_mes?: string | null
           fornecedor_id: string
           id?: string
@@ -389,7 +494,7 @@ export type Database = {
           conta_id?: string | null
           created_at?: string
           descricao?: string
-          empresa_id?: string
+          empresa_id?: string | null
           fatura_mes?: string | null
           fornecedor_id?: string
           id?: string
@@ -555,6 +660,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      atribuir_empresa_lancamentos: {
+        Args: {
+          p_aplicar_conta_padrao: boolean
+          p_empresa_id: string
+          p_ids: string[]
+        }
+        Returns: number
+      }
       atualizar_compra_cartao: {
         Args: {
           p_cartao_id: string
@@ -634,7 +747,7 @@ export type Database = {
           conta_id: string | null
           created_at: string
           descricao: string
-          empresa_id: string
+          empresa_id: string | null
           fatura_mes: string | null
           fornecedor_id: string
           id: string
@@ -655,6 +768,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      desfazer_importacao: {
+        Args: { p_frase: string; p_importacao_id: string }
+        Returns: Json
       }
       excluir_compra_cartao: { Args: { p_id: string }; Returns: undefined }
       excluir_lancamento: {
@@ -683,6 +800,18 @@ export type Database = {
         Returns: undefined
       }
       hoje_app: { Args: Record<PropertyKey, never>; Returns: string }
+      importar_lancamentos: {
+        Args: {
+          p_arquivo_nome: string
+          p_arquivo_sha256: string
+          p_linhas: Json
+          p_linhas_arquivo: number
+          p_periodo_ate: string
+          p_periodo_de: string
+          p_resumo: Json
+        }
+        Returns: Json
+      }
       inserir_categorias_padrao: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -734,6 +863,7 @@ export type Database = {
         }
         Returns: string
       }
+      travar_operacao_dados: { Args: Record<PropertyKey, never>; Returns: string }
       usuario_autorizado: { Args: Record<PropertyKey, never>; Returns: boolean }
     }
     Enums: {

@@ -16,6 +16,7 @@ const MENSAGENS_DUPLICIDADE: Record<string, string> = {
   empresas_cnpj_unico: 'Esse CNPJ já está cadastrado.',
   categorias_nome_unico: 'Já existe uma categoria com esse nome.',
   cartoes_nome_unico: 'Já existe um cartão com esse nome.',
+  importacao_itens_chave_unica: 'Esta linha da planilha já foi importada.',
 };
 
 export interface OpcoesMensagem {

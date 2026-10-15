@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Building, ChevronRight, DatabaseBackup, Landmark, LogOut, Tags } from 'lucide-react';
+import { Building, ChevronRight, DatabaseBackup, FileSpreadsheet, Landmark, LogOut, Tags } from 'lucide-react';
 import { SeletorTema } from '@/components/layout/seletor-tema';
 import { SimboloLogo } from '@/components/layout/logo';
 import { Botao } from '@/components/ui/botao';
@@ -83,6 +83,14 @@ export default async function PaginaConfiguracoes() {
             </p>
             <BotoesExportar />
           </div>
+          <Link href="/configuracoes/importacao" className="flex min-h-16 items-center gap-3 px-4 py-3 hover:bg-surface-2" data-testid="link-importacao">
+            <FileSpreadsheet className="size-5 text-primary-text" aria-hidden="true" />
+            <span className="min-w-0 flex-1">
+              <span className="block font-medium text-fg">Importar planilha</span>
+              <span className="block truncate text-meta text-fg-2">Contas a pagar de um CSV, com prévia, conferência e histórico</span>
+            </span>
+            <ChevronRight className="size-4 text-fg-3" aria-hidden="true" />
+          </Link>
           <Link href="/configuracoes/dados" className="flex min-h-16 items-center gap-3 px-4 py-3 hover:bg-surface-2" data-testid="link-gerenciar-dados">
             <DatabaseBackup className="size-5 text-primary-text" aria-hidden="true" />
             <span className="min-w-0 flex-1">

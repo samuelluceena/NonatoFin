@@ -32,7 +32,7 @@ Todas as regras ficam em funções puras em `src/lib/domain/` (testadas em `test
 - Fornecedor com boletos **não pode ser excluído** (exclua/mova os boletos antes). Renomear é permitido (sem colidir com outro nome).
 
 ## Empresas (CNPJ)
-- Todo lançamento pertence a uma **empresa** (ex.: Cristina de Lucena Ferreira e J F Lima Confecções). Cadastro em Configurações → Empresas: **apelido** (nome curto nas telas), razão social (opcional) e **CNPJ** (obrigatório no formulário).
+- Todo lançamento pertence a uma **empresa** — exceto os **importados de planilha**, que entram **sem empresa definida** até você atribuir (veja *Importação de planilha*) (ex.: Cristina de Lucena Ferreira e J F Lima Confecções). Cadastro em Configurações → Empresas: **apelido** (nome curto nas telas), razão social (opcional) e **CNPJ** (obrigatório no formulário).
 - CNPJ validado pelos dígitos verificadores no navegador, no servidor **e** no banco (`cnpj_valido`). Aceita o CNPJ numérico e o **alfanumérico** (válido a partir de 2026: letras nas 12 primeiras posições, valor do caractere = código ASCII − 48). Gravado sem pontuação, em maiúsculas; exibido como `12.ABC.345/01DE-35`.
 - Apelido e CNPJ não se repetem na mesma conta. Empresa com lançamentos ou cartões **não pode ser excluída**.
 - **Seletor no topo** (aparece com 2+ empresas): "Todas as empresas" ou uma empresa. A escolha fica num cookie (1 ano) e filtra Hoje, Boletos, Meses, Histórico, Fornecedores, Dashboard, Cartões e Exportação. O novo boleto já vem com a empresa escolhida.
@@ -214,6 +214,37 @@ Visão cronológica e centralizada da movimentação (menu **Transações**). **
 - As duas opções pedem a **senha** e a frase exata, mostram o que será apagado e mantido (com quantidades) e criam um **backup automático** antes de apagar. Sem backup, nada é apagado.
 - **Backups automáticos:** guardam todos os dados (as 9 tabelas), ficam disponíveis por **30 dias** (no máximo 10) e podem ser baixados em `.json`. **Restaurar** (frase `RESTAURAR BACKUP` + senha) substitui os dados atuais do escopo do backup pelos dados dele, com os mesmos ids, status, pagamentos e datas. Antes, o estado atual vira um novo backup, então a restauração também pode ser desfeita. Um backup financeiro só restaura as tabelas financeiras; se algum cadastro que ele usa tiver sido apagado, a restauração é recusada sem alterar nada.
 - **Backup completo (.json)** a qualquer momento, com todos os dados atuais.
+
+## Importação de planilha (Configurações → Importar planilha)
+Código: `lib/domain/importacao.ts` (regras puras, testadas) e `features/importacao/`.
+
+1. **Arquivo e período:** CSV exportado (UTF-16, UTF-8 ou Windows-1252; separador `;`, `,` ou tab) com as colunas data, descrição, valor e status (conta e categoria opcionais), até 900 KB. Período padrão: de hoje até o fim do ano seguinte.
+2. **Prévia (nada é gravado):** cada linha cai na primeira regra que vale:
+
+   | Regra | Resultado |
+   |---|---|
+   | Linha em branco ou de total | fora |
+   | Data, valor, descrição ou status inválidos | fora |
+   | Já paga | fora |
+   | Valor positivo (entrada) | fora |
+   | Valor zero | fora |
+   | Vencimento antes do início do período (vencida) ou depois do fim | fora |
+   | Idêntica a uma linha anterior (data, valor, descrição e conta) | conferir — sugestão: não importar |
+   | Mesma data, valor e conta com fornecedor parecido (ex.: "Brasspress" × "Braspress") | conferir — fica a linha com código de barras |
+   | Parece fatura de cartão ("Reajuste de fatura", "Cartão…", nome de um cartão cadastrado) | conferir — sugestão: não importar |
+   | Mesmo vencimento e valor de um lançamento que já existe no NonatoFin | conferir — **sem sugestão: você decide cada uma** |
+   | Já importada antes (mesma chave) | fora |
+
+   Dívidas diferentes com mesma data e valor (ex.: Via do Terno × Via da Moda) **não** são unificadas: a semelhança compara a palavra principal do fornecedor.
+3. **Gravação:** tudo numa transação (tudo ou nada). Cada lançamento entra **pendente, sem empresa e sem conta**, com a **descrição original**; o **fornecedor** é a descrição sem a parcela final ("Via da Moda (3/6)" → "Via da Moda") e sem um código de barras escrito no texto (que vira o código do lançamento). **Categoria** = a da planilha (reaproveitada sem diferenciar maiúsculas, acentos e espaços). **Observação:** arquivo, data, linha, conta original e "Valor estimado: revisar antes de pagar" quando a descrição tem "Atualizar". Parcelas em andamento **não** viram séries.
+4. **Sem duplicidade:** cada linha tem uma chave (data | valor | descrição | conta | ocorrência). Reimportar o mesmo arquivo grava só o que ainda não entrou.
+5. **Histórico e desfazer:** cada lote mostra o resultado, o que ficou de fora e as linhas **separadas para conferência** (não são descartadas: reimporte o arquivo e marque "Importar"). **Desfazer** (senha + `DESFAZER IMPORTACAO`) remove os lançamentos do lote que ainda estão pendentes; os já pagos ficam.
+
+### Lançamentos sem empresa
+- Não entram em nenhuma conta nem nos números de uma empresa escolhida no topo (com "Todas as empresas" entram nos totais e formam o grupo "Sem empresa definida" do Dashboard).
+- **Boletos sem empresa** (`/boletos/sem-empresa`): filtros por conta original, categoria, lote, valores estimados e pesquisa; marque alguns ou "todos do filtro", escolha a empresa e (opcional) **a conta padrão dela nos pendentes**. Os já pagos recebem só a empresa (o saldo não muda).
+- Filtro "Sem empresa definida" em Boletos e Transações (vale mesmo com uma empresa no topo). Pagar sem empresa: sem conta. Editar exige escolher a empresa.
+- Um lançamento sem empresa **nunca** tem conta (garantido pelo banco).
 
 ## Histórico
 Lista boletos pagos, do pagamento mais recente para o mais antigo; filtros por fornecedor, período (data do pagamento) e pesquisa.

@@ -97,8 +97,19 @@ export default async function PaginaBoleto({ params }: PageProps<'/boletos/[id]'
 
         <ListaDetalhes className="mt-5 border-t border-border">
           <LinhaDetalhe rotulo="Empresa">
-            {lancamento.empresa.apelido}
-            {lancamento.empresa.cnpj && <span className="numeros block text-meta text-fg-3">CNPJ {formatarCnpj(lancamento.empresa.cnpj)}</span>}
+            {lancamento.empresa.id ? (
+              <>
+                {lancamento.empresa.apelido}
+                {lancamento.empresa.cnpj && <span className="numeros block text-meta text-fg-3">CNPJ {formatarCnpj(lancamento.empresa.cnpj)}</span>}
+              </>
+            ) : (
+              <span className="inline-flex flex-wrap items-center justify-end gap-2" data-testid="detalhe-sem-empresa">
+                <span className="text-warning">Sem empresa definida</span>
+                <Link href={`/boletos/${lancamento.id}/editar`} className="font-medium text-primary-text hover:underline">
+                  Definir
+                </Link>
+              </span>
+            )}
           </LinhaDetalhe>
           <LinhaDetalhe rotulo="Categoria">{lancamento.categoria.nome}</LinhaDetalhe>
           <LinhaDetalhe rotulo={status === 'pago' ? 'Pago pela conta' : 'Debitar da conta'}>

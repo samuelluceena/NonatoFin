@@ -114,7 +114,7 @@ describe('URL', () => {
 
   it('lê todos os filtros', () => {
     const f = lerFiltros(
-      { periodo: 'intervalo', de: '2026-09-01', ate: '2026-09-15', status: 'pagos', fornecedor: ID, categoria: ID2, conta: 'sem', q: 'loja' },
+      { periodo: 'intervalo', de: '2026-09-01', ate: '2026-09-15', status: 'pagos', fornecedor: ID, categoria: ID2, conta: 'sem', empresa: 'sem', q: 'loja' },
       HOJE,
     );
     expect(f).toEqual({
@@ -123,13 +123,14 @@ describe('URL', () => {
       fornecedorId: ID,
       categoriaId: ID2,
       contaId: 'sem',
+      semEmpresa: true,
       busca: 'loja',
     });
   });
 
   it('ignora valores inválidos (sem erro)', () => {
     const f = lerFiltros(
-      { periodo: 'xyz', status: 'nada', fornecedor: '1 or 1=1', categoria: ['a', 'b'], conta: 'qualquer', q: 'a,b.c' },
+      { periodo: 'xyz', status: 'nada', fornecedor: '1 or 1=1', categoria: ['a', 'b'], conta: 'qualquer', empresa: ID, q: 'a,b.c' },
       HOJE,
     );
     expect(f).toEqual({ ...FILTROS_PADRAO, periodo: { tipo: 'todos' }, busca: 'a b c' });
@@ -156,6 +157,7 @@ describe('URL', () => {
       { ...FILTROS_PADRAO, periodo: { tipo: 'mes-escolhido', mes: '2026-11' }, fornecedorId: ID },
       { ...FILTROS_PADRAO, periodo: { tipo: 'dia', data: '2026-10-01' }, contaId: 'sem' },
       { ...FILTROS_PADRAO, periodo: { tipo: 'intervalo', de: '2026-09-01', ate: '' }, categoriaId: ID2, status: 'pagos' },
+      { ...FILTROS_PADRAO, periodo: { tipo: 'todos' }, semEmpresa: true },
     ];
     for (const f of casos) expect(lerFiltros(parametrosDosFiltros(f), HOJE)).toEqual(f);
   });
@@ -169,6 +171,8 @@ describe('URL', () => {
   it('conta os filtros extras', () => {
     expect(quantidadeFiltrosExtras(FILTROS_PADRAO)).toBe(0);
     expect(quantidadeFiltrosExtras({ ...FILTROS_PADRAO, fornecedorId: ID, contaId: 'sem' })).toBe(2);
+    expect(quantidadeFiltrosExtras({ ...FILTROS_PADRAO, semEmpresa: true })).toBe(1);
+    expect(consultaDosFiltros({ ...FILTROS_PADRAO, semEmpresa: true })).toBe('?empresa=sem');
   });
 });
 

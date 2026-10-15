@@ -16,6 +16,8 @@ import { type Compromisso, ListaCompromissos } from '@/features/dashboard/compon
 import { carregarBaseRelatorios } from '@/features/dashboard/dados';
 import { AvisoSemEmpresa } from '@/features/empresas/componentes/aviso-sem-empresa';
 import { listarCategorias, obterContextoEmpresas } from '@/features/empresas/consultas';
+import { AvisoLancamentosSemEmpresa } from '@/features/importacao/componentes/aviso-lancamentos-sem-empresa';
+import { contarSemEmpresa } from '@/features/importacao/consultas';
 import { exigirUsuario } from '@/lib/auth/sessao';
 import { adicionarMesesNaChave, chaveDoMes, fimDoMes, formatarData, hojeISO } from '@/lib/domain/datas';
 import { somarCentavos } from '@/lib/domain/dinheiro';
@@ -68,7 +70,11 @@ export default async function PaginaDashboard() {
     );
   }
 
-  const [contas, saldos] = await Promise.all([listarContas(supabase, { empresaId, somenteAtivas: true }), saldosDasContas(supabase)]);
+  const [contas, saldos, semEmpresa] = await Promise.all([
+    listarContas(supabase, { empresaId, somenteAtivas: true }),
+    saldosDasContas(supabase),
+    contarSemEmpresa(supabase),
+  ]);
   const saldo = agruparSaldos(contas, saldos);
   const ind = calcularIndicadores(resumos, hoje);
   // Até o fim do mês = o que vence de hoje até o fim do mês + o que já venceu (mesma soma da tela Contas).
@@ -86,14 +92,15 @@ export default async function PaginaDashboard() {
     href: linkDaLista({ periodo: { tipo: 'todos' }, categoriaId: r.id }),
     resumo: r,
   }));
+  // Lançamentos sem empresa (importados) formam um grupo próprio ('' = sem empresa).
   const porEmpresa =
-    !selecionada && empresas.length > 1
+    !selecionada && (empresas.length > 1 || semEmpresa.quantidade > 0)
       ? resumoPorGrupo(
           resumos,
-          empresas.map((e) => ({ id: e.id, nome: e.apelido })),
+          [...empresas.map((e) => ({ id: e.id, nome: e.apelido })), { id: '', nome: 'Sem empresa definida' }],
           (b) => b.empresaId,
           hoje,
-        ).map((r) => ({ id: r.id, nome: r.nome, resumo: r }))
+        ).map((r) => ({ id: r.id || 'sem-empresa', nome: r.nome, href: r.id ? undefined : '/boletos/sem-empresa', resumo: r }))
       : [];
   const mesAtual = chaveDoMes(hoje);
   const meses = serieMensal(resumos, hoje, adicionarMesesNaChave(mesAtual, -1), 8);
@@ -113,6 +120,15 @@ export default async function PaginaDashboard() {
         subtitulo={`${selecionada ? `${selecionada.apelido} · ` : empresas.length > 1 ? 'Todas as empresas · ' : ''}Situação em ${formatarData(hoje)}`}
       />
       <div className="flex flex-col gap-8 lg:gap-10">
+        <AvisoLancamentosSemEmpresa
+          contagem={semEmpresa}
+          className="-mb-4 lg:-mb-6"
+          complemento={
+            selecionada
+              ? `Não entram nos números de ${selecionada.apelido} até receberem uma empresa.`
+              : 'Entram nos totais gerais, mas não em nenhuma conta nem empresa até você definir.'
+          }
+        />
 
         {/* 1. Posição financeira: saldo (principal), o que ele cobre e atrasados */}
         <DestaqueSaldo

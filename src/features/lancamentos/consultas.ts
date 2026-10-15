@@ -48,6 +48,8 @@ export interface OpcoesListagem {
   fornecedorId?: string;
   /** Id da conta ou SEM_CONTA (lançamentos sem conta definida). */
   contaId?: string;
+  /** Só lançamentos sem empresa definida (ignora `empresaId`). */
+  semEmpresa?: boolean;
   busca?: string;
   limite?: number;
 }
@@ -57,6 +59,7 @@ export function opcoesDosFiltros(filtros: FiltrosLista, hoje: DataISO, empresaId
   return {
     criterio: criterioDosFiltros(filtros, hoje),
     empresaId,
+    semEmpresa: filtros.semEmpresa || undefined,
     categoriaId: filtros.categoriaId || undefined,
     fornecedorId: filtros.fornecedorId || undefined,
     contaId: filtros.contaId || undefined,
@@ -81,7 +84,8 @@ export function consultaFiltrada(supabase: ClienteSupabase, opcoes: OpcoesListag
   if (criterio.vencimentoDe) consulta = consulta.gte('vencimento', criterio.vencimentoDe);
   if (criterio.vencimentoAte) consulta = consulta.lte('vencimento', criterio.vencimentoAte);
   if (opcoes.fornecedorId) consulta = consulta.eq('fornecedor_id', opcoes.fornecedorId);
-  if (opcoes.empresaId) consulta = consulta.eq('empresa_id', opcoes.empresaId);
+  if (opcoes.semEmpresa) consulta = consulta.is('empresa_id', null);
+  else if (opcoes.empresaId) consulta = consulta.eq('empresa_id', opcoes.empresaId);
   if (opcoes.categoriaId) consulta = consulta.eq('categoria_id', opcoes.categoriaId);
   if (opcoes.contaId === SEM_CONTA) consulta = consulta.is('conta_id', null);
   else if (opcoes.contaId) consulta = consulta.eq('conta_id', opcoes.contaId);

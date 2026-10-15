@@ -58,6 +58,11 @@ Na primeira execução do Playwright em outra máquina: `npx playwright install 
 - **Tipos do banco:** `database.types.ts` confere com o banco real (tabelas, colunas, funções e parâmetros) — falha se uma migration mudou e os tipos não foram gerados.
 - **Consultas do app:** cada combinação período × status no banco = mesma regra em memória; filtro por conta e "sem conta"; exportação filtrada = lista; pesquisa (fornecedor sem acento, descrição, observação, contas futuras, caracteres especiais); tela inicial; dashboard e fornecedor com dados reais; histórico por data de pagamento.
 
+### Importação de planilha
+- **Unitários** (`tests/unit/importacao.test.ts`): UTF-16/UTF-8/Windows-1252, CSV com aspas, valores (ponto/vírgula, milhar, R$), datas, fornecedor sem parcela e sem código, código na descrição, "Atualizar", fornecedores parecidos (Braspress × Via do Terno/Via da Moda), faturas de cartão, cada regra da prévia, chaves por ocorrência, decisões, coincidências com o banco, resumo e observação.
+- **Integração** (`tests/integracao/importacao.test.ts`): empresa nula sem conta, assinatura do backup inalterada, gravação (fornecedor/categoria reaproveitados), idempotência, atomicidade, limites, consultas da tela sem empresa e filtros de Boletos/Transações, RLS/IDOR, visitante e não autorizado, atribuição em lote (conta padrão só nos pendentes), desfazer e reimportar, limpar/restaurar com lançamentos sem empresa.
+- **E2E** (`tests/e2e/importacao-planilha.spec.ts`): arquivo UTF-16 → prévia → importar → filtro sem empresa → atribuição em lote em duas etapas → desfazer (com senha), arquivo inválido, sem rolagem horizontal.
+
 ### E2E (`tests/e2e`) — em 375×667, 390×844, 430×932, 768×1024 e 1440×900
 - **Fluxo principal:** login → criar → visualizar em Hoje → **copiar código (confere a área de transferência)** → editar → marcar pago → histórico → desfazer → excluir.
 - **Série:** criar 5 → conferir resumo, valores, datas (31/01…31/05) e fornecedor → editar 3º e próximos → validar → excluir um → validar restantes; excluir "próximos" e "todos".

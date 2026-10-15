@@ -3,7 +3,7 @@
 /**
  * Filtros da lista de Boletos: pesquisa e período numa barra compacta,
  * status em chips (atalhos de uso diário) e "Filtros" (categoria, fornecedor,
- * conta) num painel — popover no desktop, sheet no celular. Tudo fica na URL
+ * conta, sem empresa) num painel — popover no desktop, sheet no celular. Tudo fica na URL
  * — esta tela só lê os filtros atuais (vindos do servidor) e navega para a URL
  * nova. Regras (o que cada filtro significa): lib/domain/filtros.ts.
  */
@@ -21,6 +21,7 @@ import {
   OPCOES_PERIODO,
   PERIODO_PADRAO,
   SEM_CONTA,
+  SEM_EMPRESA,
   STATUS_FILTRO,
   consultaDosFiltros,
   periodoDoTipo,
@@ -45,11 +46,13 @@ interface Props {
   fornecedores: OpcaoFiltro[];
   categorias: OpcaoFiltro[];
   contas: OpcaoFiltro[];
+  /** Oferece o filtro "Sem empresa definida" (há lançamentos sem empresa). */
+  semEmpresaDisponivel?: boolean;
 }
 
-type Extras = Pick<FiltrosLista, 'categoriaId' | 'fornecedorId' | 'contaId'>;
+type Extras = Pick<FiltrosLista, 'categoriaId' | 'fornecedorId' | 'contaId' | 'semEmpresa'>;
 
-export function FiltrosLancamentos({ filtros, periodoExplicito, hoje, fornecedores, categorias, contas }: Props) {
+export function FiltrosLancamentos({ filtros, periodoExplicito, hoje, fornecedores, categorias, contas, semEmpresaDisponivel = false }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [pendente, iniciar] = useTransition();
@@ -73,6 +76,7 @@ export function FiltrosLancamentos({ filtros, periodoExplicito, hoje, fornecedor
     const rotulo = filtros.contaId === SEM_CONTA ? 'Sem conta definida' : nomeDe(contas, filtros.contaId);
     etiquetas.push({ chave: 'conta', rotulo, remover: () => mudar({ contaId: '' }) });
   }
+  if (filtros.semEmpresa) etiquetas.push({ chave: 'empresa', rotulo: 'Sem empresa definida', remover: () => mudar({ semEmpresa: false }) });
   const algoFiltrado = etiquetas.length > 0 || filtros.busca !== '';
 
   return (
@@ -129,6 +133,7 @@ export function FiltrosLancamentos({ filtros, periodoExplicito, hoje, fornecedor
           fornecedores={fornecedores}
           categorias={categorias}
           contas={contas}
+          semEmpresaDisponivel={semEmpresaDisponivel || filtros.semEmpresa}
           aoFechar={() => setMaisAberto(false)}
           aoAplicar={(parcial) => {
             setMaisAberto(false);
@@ -146,15 +151,21 @@ interface PropsMais {
   fornecedores: OpcaoFiltro[];
   categorias: OpcaoFiltro[];
   contas: OpcaoFiltro[];
+  semEmpresaDisponivel: boolean;
   aoFechar: () => void;
   aoAplicar: (parcial: Extras) => void;
 }
 
-/** Categoria, fornecedor e conta: escolhe tudo e aplica de uma vez. */
-function MaisFiltros({ ancora, filtros, fornecedores, categorias, contas, aoFechar, aoAplicar }: PropsMais) {
-  const [escolha, setEscolha] = useState<Extras>({ categoriaId: filtros.categoriaId, fornecedorId: filtros.fornecedorId, contaId: filtros.contaId });
+/** Categoria, fornecedor, conta e empresa: escolhe tudo e aplica de uma vez. */
+function MaisFiltros({ ancora, filtros, fornecedores, categorias, contas, semEmpresaDisponivel, aoFechar, aoAplicar }: PropsMais) {
+  const [escolha, setEscolha] = useState<Extras>({
+    categoriaId: filtros.categoriaId,
+    fornecedorId: filtros.fornecedorId,
+    contaId: filtros.contaId,
+    semEmpresa: filtros.semEmpresa,
+  });
   const definir = (chave: keyof Extras) => (valor: string) => setEscolha((atual) => ({ ...atual, [chave]: valor }));
-  const algum = Boolean(escolha.categoriaId || escolha.fornecedorId || escolha.contaId);
+  const algum = Boolean(escolha.categoriaId || escolha.fornecedorId || escolha.contaId || escolha.semEmpresa);
 
   return (
     <PainelFiltros
@@ -164,7 +175,7 @@ function MaisFiltros({ ancora, filtros, fornecedores, categorias, contas, aoFech
       rodape={
         <>
           {algum && (
-            <Botao variante="fantasma" onClick={() => setEscolha({ categoriaId: '', fornecedorId: '', contaId: '' })}>
+            <Botao variante="fantasma" onClick={() => setEscolha({ categoriaId: '', fornecedorId: '', contaId: '', semEmpresa: false })}>
               Limpar estes filtros
             </Botao>
           )}
@@ -183,6 +194,16 @@ function MaisFiltros({ ancora, filtros, fornecedores, categorias, contas, aoFech
             valor={escolha.contaId}
             aoMudar={definir('contaId')}
             opcoes={[{ id: SEM_CONTA, rotulo: 'Sem conta definida' }, ...contas]}
+          />
+        )}
+        {semEmpresaDisponivel && (
+          <CampoFiltro
+            id="filtro-empresa"
+            rotulo="Empresa"
+            todos="Conforme o seletor do topo"
+            valor={escolha.semEmpresa ? SEM_EMPRESA : ''}
+            aoMudar={(v) => setEscolha((atual) => ({ ...atual, semEmpresa: v === SEM_EMPRESA }))}
+            opcoes={[{ id: SEM_EMPRESA, rotulo: 'Sem empresa definida' }]}
           />
         )}
       </div>

@@ -11,6 +11,7 @@ Postgres do Supabase. Toda a estrutura é criada por **migrations versionadas** 
 | `20260924090000_empresas_categorias.sql` | `cnpj_valido()`, `empresas`, `categorias`, categorias padrão, `lancamentos.empresa_id`/`categoria_id` (com migração dos boletos existentes para "Empresa principal") |
 | `20260925090000_contas_bancarias.sql` | `contas_bancarias`, `movimentos_conta`, `conta_id` em lançamentos e cartões, `hoje_app()`, `saldos_contas()`, `conferir_saldo()`, `transferir_entre_contas()`, `excluir_transferencia()`; `definir_pagamento` e `atualizar_lancamento` com conta; faturas herdam a conta |
 | `20260926090000_conferencia_diaria.sql` | `contas_a_conferir_hoje()` + índice das conferências |
+| `20261014090000_importacao_lancamentos.sql` | `lancamentos.empresa_id` opcional + `lancamentos_conta_exige_empresa`/`lancamentos_fatura_exige_empresa`, `importacoes`, `importacao_itens`, `travar_operacao_dados()`, `importar_lancamentos()`, `desfazer_importacao()`, `atribuir_empresa_lancamentos()` |
 | `20260924090100_cartoes.sql` | `cartoes`, `compras_cartao`, `parcelas_cartao`, campos de fatura em `lancamentos`, gatilhos de fatura e trava, RPCs de compra/ajuste, `atualizar_boleto()` com empresa e categoria |
 
 ## Diagrama
@@ -86,7 +87,7 @@ Por que "atrasado" não é gravado: depende da data atual; gravado, ficaria desa
 `nome` (1–40, `nome_normalizado` gerado e único por usuário), `ordem`. FKs de lançamentos/compras/cartões com `on delete restrict`.
 
 ### `lancamentos` (empresa, categoria e fatura)
-`empresa_id` e `categoria_id` **not null** (FKs compostas). Faturas: `cartao_id`, `fatura_mes` (`AAAA-MM`), `ajuste_centavos`; `check lancamentos_fatura_consistente` (os três juntos, fatura nunca é série) e `unique (cartao_id, fatura_mes)`.
+`categoria_id` **not null**; `empresa_id` **opcional** desde a importação de planilhas (null = sem empresa definida), com `check (conta_id is null or empresa_id is not null)` — a FK composta da conta é MATCH SIMPLE e não confere com empresa nula — e `check (cartao_id is null or empresa_id is not null)`. Índice parcial `(user_id, vencimento) where empresa_id is null`. Faturas: `cartao_id`, `fatura_mes` (`AAAA-MM`), `ajuste_centavos`; `check lancamentos_fatura_consistente` (os três juntos, fatura nunca é série) e `unique (cartao_id, fatura_mes)`.
 
 ### `cartoes`
 `empresa_id`, `fornecedor_id` (emissor), `categoria_fatura_id`, `nome` (único), `final` (`^[0-9]{4}$`), `dia_fechamento`/`dia_vencimento` (1–31, diferentes), `ativo`.
@@ -107,6 +108,9 @@ Por que "atrasado" não é gravado: depende da data atual; gravado, ficaria desa
 `conta_id` (FK composta, `on delete cascade`), `tipo` (`entrada` \| `transferencia` \| `conferencia`), `data`, `valor_centavos` **com sinal** (+ entra, − sai), `saldo_informado` (só conferência), `descricao`, `confirmado` (entrada prevista = false), `transferencia_id` (liga os dois lados). Checks: entrada > 0; transferência com `transferencia_id` e confirmada; conferência ⇔ `saldo_informado`.
 
 Pagamentos **não** viram movimento: o saldo desconta os `lancamentos` com `status = 'pago'` e `conta_id` da conta.
+
+### `importacoes` e `importacao_itens`
+`importacoes`: um registro por lote (`arquivo_nome`, `arquivo_sha256`, período, `linhas_arquivo`, `importados`, `total_centavos`, `resumo` jsonb com contagens por motivo e linhas separadas, `status` `concluida` | `desfeita`, `removidos`, `desfeita_em`). `importacao_itens`: um por lançamento criado — `chave` (única por usuário), `linha`, `conta_origem`, `categoria_origem`, `valor_estimado`; FKs compostas para o lote e para `lancamentos (id, user_id)` com `on delete cascade` (o item some com o lançamento). RLS padrão. **Fora do backup** (as 9 tabelas e a assinatura não mudam).
 
 ### `backups_dados`
 Cópia de **todas** as 9 tabelas do usuário (`conteudo` jsonb, uma lista por tabela), criada automaticamente antes de cada limpeza ou restauração. Colunas: `nivel` (`financeiro` \| `completo`), `motivo` (`limpeza` \| `antes_da_restauracao`), `versao_formato`, `assinatura_esquema` (md5 das colunas das 9 tabelas), `contagens`, `sha256` (do `conteudo::text`), `criado_em`, `expira_em` (+30 dias), `restaurado_em`. Retenção: 30 dias e no máximo 10 por usuário. O usuário só **lê** (policy de select); gravação só pelas funções internas. Ao excluir a conta (`auth.users`), os backups saem em cascata.
@@ -158,6 +162,10 @@ Todas `security invoker` (rodam com as permissões do usuário, RLS aplicada), `
 | `definir_pagamento(p_id, p_pago, p_conta_id?)` | Agora aceita a conta que pagou |
 | `conta_em_exclusao(user_id)` | `security definer`; true quando a conta está sendo apagada — deixa a exclusão da conta passar pela trava de fatura paga |
 
+| `importar_lancamentos(...)` | Grava um lote (até 3.000 linhas) numa transação: fornecedor/categoria obtidos ou criados, lançamentos pendentes sem empresa e sem conta, itens com a chave; ignora chaves já importadas e falha se não sobrar nada |
+| `desfazer_importacao(p_importacao_id, p_frase)` | Frase `DESFAZER IMPORTACAO`; apaga os pendentes do lote, mantém os pagos, marca o lote como desfeito (a Server Action confirma a senha antes) |
+| `atribuir_empresa_lancamentos(p_ids, p_empresa_id, p_aplicar_conta_padrao)` | Só lançamentos sem empresa e não faturas (até 5.000); conta padrão ativa da empresa nos pendentes |
+| `travar_operacao_dados()` | Trava por usuário compartilhada com limpeza/restauração (`55P03` se ocupada) |
 | `resumo_dados()` | Quantidade de registros do usuário em cada uma das 9 tabelas |
 | `exportar_dados()` | Backup completo dos dados atuais (todas as tabelas, com hash e assinatura do esquema) |
 | `limpar_dados(p_nivel, p_frase)` | `financeiro`: apaga lançamentos, compras, parcelas e movimentos. `completo`: também cartões, contas, categorias, fornecedores e empresas. Exige a frase, senha recente (claim `amr` ≤ 120 s) e cria o backup na mesma transação |

@@ -5,6 +5,8 @@ Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/). 
 ## [Não publicado] — redesign premium
 
 ### Adicionado
+- **Importar planilha (CSV)** (Configurações → Importar planilha): prévia antes de gravar, conferência de repetidas, prováveis duplicatas, possíveis faturas de cartão e coincidências com lançamentos existentes; gravação numa única transação; histórico de importações e **desfazer** (com senha e frase). Lançamentos importados entram **pendentes, sem empresa e sem conta**; a conta original da planilha fica na observação. Migration `20261014090000_importacao_lancamentos.sql`.
+- **Lançamentos sem empresa** (`/boletos/sem-empresa`): filtros por conta original, categoria, lote e valores estimados, e **atribuição de empresa em lote** (com a conta padrão da empresa nos pendentes). Filtro "Sem empresa definida" em Boletos e Transações, aviso em Boletos e Dashboard e grupo "Sem empresa definida" no gráfico por empresa.
 - **Gerenciamento de dados** (Configurações → Dados): **limpar dados financeiros** e **restaurar o NonatoFin do zero**, com senha, frase de confirmação, backup automático obrigatório (30 dias, até 10), **restauração de backups** e **backup completo em JSON** de todos os dados. Migration `20261010090000_gerenciamento_dados.sql`.
 - **Recuperação de backup `.json`:** script administrativo `supabase/snippets/importar-backup-json.sql` e guia [RECUPERACAO.md](RECUPERACAO.md) (cópias externas, importação, arquivo de outra versão do banco, dump).
 
