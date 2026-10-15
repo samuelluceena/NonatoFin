@@ -74,7 +74,8 @@ export function paraResumo(linha: LinhaResumo): LancamentoResumo {
   return {
     id: linha.id,
     fornecedorId: linha.fornecedor_id,
-    empresaId: linha.empresa_id,
+    // '' = sem empresa definida (mesmo id do Lancamento sem empresa).
+    empresaId: linha.empresa_id ?? '',
     categoriaId: linha.categoria_id,
     contaId: linha.conta_id,
     valorCentavos: Number(linha.valor_centavos),

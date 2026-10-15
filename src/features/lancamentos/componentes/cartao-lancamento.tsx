@@ -44,7 +44,12 @@ export function CartaoLancamento({ lancamento, hoje, variante = 'compacto' }: Pr
           <p className="truncate text-sm text-fg-2">{lancamento.descricao}</p>
           <p className="mt-0.5 truncate text-meta text-fg-3" data-testid="cartao-meta">
             {lancamento.recorrencia && `Parcela ${lancamento.recorrencia.parcela}/${lancamento.recorrencia.totalParcelas} · `}
-            {lancamento.categoria.nome} · <span className="font-medium text-fg-2">{lancamento.empresa.apelido}</span>
+            {lancamento.categoria.nome} ·{' '}
+            {lancamento.empresa.id ? (
+              <span className="font-medium text-fg-2">{lancamento.empresa.apelido}</span>
+            ) : (
+              <span className="font-medium text-warning">Sem empresa</span>
+            )}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">

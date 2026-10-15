@@ -25,6 +25,7 @@ import { dataNoFuso, formatarData, formatarMes, type DataISO } from './datas';
 import { formatarMoeda, formatarMoedaComSinal, somarCentavos, type Centavos } from './dinheiro';
 import {
   SEM_CONTA,
+  SEM_EMPRESA,
   criterioDosFiltros,
   faixaDoPeriodo,
   idOuVazio,
@@ -168,7 +169,7 @@ export function lerFiltrosTransacoes(p: ParametrosUrl, hoje: DataISO): FiltrosTr
     periodo: lerPeriodo(p, hoje) ?? periodoImplicito(busca),
     tipo: TIPOS_FILTRO_TRANSACAO.find((t) => t.valor === texto(p.tipo))?.valor ?? 'todos',
     status: STATUS_FILTRO_TRANSACAO.find((s) => s.valor === texto(p.status))?.valor ?? 'todos',
-    empresaId: idOuVazio(p.empresa),
+    empresaId: texto(p.empresa) === SEM_EMPRESA ? SEM_EMPRESA : idOuVazio(p.empresa),
     categoriaId: idOuVazio(p.categoria),
     contaId: texto(p.conta) === SEM_CONTA ? SEM_CONTA : idOuVazio(p.conta),
     fornecedorId: idOuVazio(p.fornecedor),
@@ -203,8 +204,10 @@ export function quantidadeFiltrosExtrasTransacoes(f: FiltrosTransacoes): number 
  * Empresa aplicada à consulta: a do seletor do topo vale para o app inteiro;
  * o filtro desta tela só escolhe quando o topo está em "Todas".
  * `null` = combinação impossível (filtro de outra empresa) → lista vazia.
+ * "Sem empresa definida" (SEM_EMPRESA) vale mesmo com uma empresa no topo.
  */
 export function empresaDaConsulta(empresaDoTopo: string | undefined, empresaDoFiltro: string): string | undefined | null {
+  if (empresaDoFiltro === SEM_EMPRESA) return SEM_EMPRESA;
   if (!empresaDoTopo) return empresaDoFiltro || undefined;
   if (empresaDoFiltro && empresaDoFiltro !== empresaDoTopo) return null;
   return empresaDoTopo;
@@ -238,6 +241,8 @@ export function planoDasTransacoes(f: FiltrosTransacoes, hoje: DataISO): PlanoTr
   const tipo = (...aceitos: TipoFiltroTransacao[]) => f.tipo === 'todos' || aceitos.includes(f.tipo);
   const status = (...aceitos: StatusFiltroTransacao[]) => f.status === 'todos' || aceitos.includes(f.status);
   const semConta = f.contaId === SEM_CONTA;
+  // Só lançamentos podem estar sem empresa (contas e cartões sempre têm uma).
+  const semEmpresa = f.empresaId === SEM_EMPRESA;
 
   const statusPendente = f.status in STATUS_DOS_PENDENTES ? STATUS_DOS_PENDENTES[f.status as keyof typeof STATUS_DOS_PENDENTES] : null;
   const pendentes =
@@ -246,7 +251,7 @@ export function planoDasTransacoes(f: FiltrosTransacoes, hoje: DataISO): PlanoTr
   const pagos = tipo('pagamentos') && status('pagos') ? faixa : null;
 
   let movimentos: PlanoTransacoes['movimentos'] = null;
-  if (!f.fornecedorId && !f.categoriaId && !semConta && status('previstos', 'confirmados')) {
+  if (!f.fornecedorId && !f.categoriaId && !semConta && !semEmpresa && status('previstos', 'confirmados')) {
     const tipos: TipoMovimento[] = [];
     if (tipo('entradas')) tipos.push('entrada');
     // Transferências e ajustes são sempre confirmados (não existem previstos).
@@ -257,7 +262,7 @@ export function planoDasTransacoes(f: FiltrosTransacoes, hoje: DataISO): PlanoTr
   }
 
   // Compra no cartão: sem status próprio de pagamento, sem fornecedor e sem conta.
-  const compras = tipo('compras-cartao') && f.status === 'todos' && !f.fornecedorId && !f.contaId ? faixa : null;
+  const compras = tipo('compras-cartao') && f.status === 'todos' && !f.fornecedorId && !f.contaId && !semEmpresa ? faixa : null;
 
   return { pendentes, pagos, movimentos, compras };
 }

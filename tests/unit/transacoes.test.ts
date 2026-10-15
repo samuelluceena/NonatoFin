@@ -203,6 +203,16 @@ describe('plano de consulta (quais fontes entram)', () => {
     expect(empresaDaConsulta(UUID_A, UUID_A)).toBe(UUID_A);
     expect(empresaDaConsulta(UUID_A, UUID_B)).toBeNull();
   });
+
+  it('"sem empresa definida" vale mesmo com uma empresa no topo e só busca lançamentos', () => {
+    expect(lerFiltrosTransacoes({ empresa: 'sem' }, HOJE).empresaId).toBe('sem');
+    expect(empresaDaConsulta(undefined, 'sem')).toBe('sem');
+    expect(empresaDaConsulta(UUID_A, 'sem')).toBe('sem');
+    const p = planoDasTransacoes(f({ empresaId: 'sem' }), HOJE);
+    expect(p.pendentes).not.toBeNull();
+    expect(p.pagos).not.toBeNull();
+    expect(p).toMatchObject({ movimentos: null, compras: null });
+  });
 });
 
 describe('cada tipo de transação', () => {

@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/filtros-lista';
 import { PainelFiltros } from '@/components/ui/painel-filtros';
 import type { DataISO } from '@/lib/domain/datas';
-import { OPCOES_PERIODO, SEM_CONTA, periodoDoTipo, periodoImplicito, rotuloDoPeriodo, type TipoPeriodo } from '@/lib/domain/filtros';
+import { OPCOES_PERIODO, SEM_CONTA, SEM_EMPRESA, periodoDoTipo, periodoImplicito, rotuloDoPeriodo, type TipoPeriodo } from '@/lib/domain/filtros';
 import {
   FILTROS_TRANSACOES_PADRAO,
   STATUS_FILTRO_TRANSACAO,
@@ -52,12 +52,14 @@ interface Props {
   categorias: OpcaoFiltro[];
   contas: OpcaoFiltro[];
   fornecedores: OpcaoFiltro[];
+  /** Oferece "Sem empresa definida" no filtro de empresa (há lançamentos sem empresa). */
+  semEmpresaDisponivel?: boolean;
 }
 
 type Extras = Pick<FiltrosTransacoes, 'empresaId' | 'categoriaId' | 'contaId' | 'fornecedorId'>;
 const EXTRAS_VAZIOS: Extras = { empresaId: '', categoriaId: '', contaId: '', fornecedorId: '' };
 
-export function FiltrosTransacoes({ filtros, periodoExplicito, hoje, empresas, categorias, contas, fornecedores }: Props) {
+export function FiltrosTransacoes({ filtros, periodoExplicito, hoje, empresas, categorias, contas, fornecedores, semEmpresaDisponivel = false }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [pendente, iniciar] = useTransition();
@@ -78,7 +80,10 @@ export function FiltrosTransacoes({ filtros, periodoExplicito, hoje, empresas, c
   }
   if (filtros.tipo !== 'todos') etiquetas.push({ chave: 'tipo', rotulo: rotuloTipoFiltro(filtros.tipo), remover: () => mudar({ tipo: 'todos' }) });
   if (filtros.status !== 'todos') etiquetas.push({ chave: 'status', rotulo: rotuloStatusFiltro(filtros.status), remover: () => mudar({ status: 'todos' }) });
-  if (filtros.empresaId) etiquetas.push({ chave: 'empresa', rotulo: nomeDe(empresas, filtros.empresaId), remover: () => mudar({ empresaId: '' }) });
+  if (filtros.empresaId) {
+    const rotulo = filtros.empresaId === SEM_EMPRESA ? 'Sem empresa definida' : nomeDe(empresas, filtros.empresaId);
+    etiquetas.push({ chave: 'empresa', rotulo, remover: () => mudar({ empresaId: '' }) });
+  }
   if (filtros.categoriaId) etiquetas.push({ chave: 'categoria', rotulo: nomeDe(categorias, filtros.categoriaId), remover: () => mudar({ categoriaId: '' }) });
   if (filtros.contaId) {
     const rotulo = filtros.contaId === SEM_CONTA ? 'Sem conta definida' : nomeDe(contas, filtros.contaId);
@@ -150,6 +155,7 @@ export function FiltrosTransacoes({ filtros, periodoExplicito, hoje, empresas, c
           categorias={categorias}
           contas={contas}
           fornecedores={fornecedores}
+          semEmpresaDisponivel={semEmpresaDisponivel || filtros.empresaId === SEM_EMPRESA}
           aoFechar={() => setMaisAberto(false)}
           aoAplicar={(parcial) => {
             setMaisAberto(false);
@@ -168,12 +174,13 @@ interface PropsMais {
   categorias: OpcaoFiltro[];
   contas: OpcaoFiltro[];
   fornecedores: OpcaoFiltro[];
+  semEmpresaDisponivel: boolean;
   aoFechar: () => void;
   aoAplicar: (parcial: Extras) => void;
 }
 
 /** Empresa, categoria, conta e fornecedor: escolhe tudo e aplica de uma vez. */
-function MaisFiltros({ ancora, filtros, empresas, categorias, contas, fornecedores, aoFechar, aoAplicar }: PropsMais) {
+function MaisFiltros({ ancora, filtros, empresas, categorias, contas, fornecedores, semEmpresaDisponivel, aoFechar, aoAplicar }: PropsMais) {
   const [escolha, setEscolha] = useState<Extras>({
     empresaId: filtros.empresaId,
     categoriaId: filtros.categoriaId,
@@ -201,8 +208,15 @@ function MaisFiltros({ ancora, filtros, empresas, categorias, contas, fornecedor
       }
     >
       <div className="flex flex-col gap-4">
-        {empresas.length > 1 && (
-          <CampoFiltro id="filtro-empresa" rotulo="Empresa" todos="Todas as empresas" valor={escolha.empresaId} aoMudar={definir('empresaId')} opcoes={empresas} />
+        {(empresas.length > 1 || semEmpresaDisponivel) && (
+          <CampoFiltro
+            id="filtro-empresa"
+            rotulo="Empresa"
+            todos={empresas.length > 1 ? 'Todas as empresas' : 'Conforme o seletor do topo'}
+            valor={escolha.empresaId}
+            aoMudar={definir('empresaId')}
+            opcoes={[...(semEmpresaDisponivel ? [{ id: SEM_EMPRESA, rotulo: 'Sem empresa definida' }] : []), ...empresas]}
+          />
         )}
         <CampoFiltro id="filtro-categoria" rotulo="Categoria" todos="Todas as categorias" valor={escolha.categoriaId} aoMudar={definir('categoriaId')} opcoes={categorias} />
         {contas.length > 0 && (

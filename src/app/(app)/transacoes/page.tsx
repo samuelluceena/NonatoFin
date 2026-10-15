@@ -7,6 +7,7 @@ import { EstadoVazio } from '@/components/ui/estado-vazio';
 import { listarTodasAsContas } from '@/features/contas/consultas';
 import { AvisoSemEmpresa } from '@/features/empresas/componentes/aviso-sem-empresa';
 import { listarCategorias, obterContextoEmpresas } from '@/features/empresas/consultas';
+import { contarSemEmpresa } from '@/features/importacao/consultas';
 import { listarFornecedores } from '@/features/fornecedores/consultas';
 import { AbasStatus } from '@/features/transacoes/componentes/abas-status';
 import { FiltrosTransacoes } from '@/features/transacoes/componentes/filtros-transacoes';
@@ -39,11 +40,12 @@ export default async function PaginaTransacoes({ searchParams }: PageProps<'/tra
 
   const { empresas, empresaId } = await obterContextoEmpresas();
   if (empresas.length === 0) return <AvisoSemEmpresa />;
-  const [fornecedores, categorias, contas, resultado] = await Promise.all([
+  const [fornecedores, categorias, contas, resultado, semEmpresa] = await Promise.all([
     listarFornecedores(supabase),
     listarCategorias(),
     listarTodasAsContas(),
     listarTransacoes(supabase, filtros, hoje, empresaId),
+    contarSemEmpresa(supabase),
   ]);
 
   const { itens, truncado } = resultado;
@@ -90,6 +92,7 @@ export default async function PaginaTransacoes({ searchParams }: PageProps<'/tra
         categorias={categorias.map((c) => ({ id: c.id, rotulo: c.nome }))}
         contas={opcoesContas}
         fornecedores={fornecedores.map((f) => ({ id: f.id, rotulo: f.nome }))}
+        semEmpresaDisponivel={semEmpresa.quantidade > 0}
       />
 
       {itens.length === 0 ? (

@@ -12,7 +12,7 @@ import 'server-only';
  */
 import { LIMITES } from '@/lib/config';
 import { adicionarDias, instanteInicioDoDia, type DataISO } from '@/lib/domain/datas';
-import { SEM_CONTA, sanitizarBusca } from '@/lib/domain/filtros';
+import { SEM_CONTA, SEM_EMPRESA, sanitizarBusca } from '@/lib/domain/filtros';
 import {
   empresaDaConsulta,
   mesclarFontes,
@@ -56,7 +56,8 @@ function fonte<T>(linhas: T[] | null, montar: (linhas: T[]) => FonteTransacoes['
 function opcoesLancamentos(c: Contexto, criterio: OpcoesListagem['criterio']): OpcoesListagem {
   return {
     criterio,
-    empresaId: c.empresaId,
+    empresaId: c.empresaId === SEM_EMPRESA ? undefined : c.empresaId,
+    semEmpresa: c.empresaId === SEM_EMPRESA || undefined,
     categoriaId: c.filtros.categoriaId || undefined,
     fornecedorId: c.filtros.fornecedorId || undefined,
     contaId: c.filtros.contaId || undefined,

@@ -254,7 +254,7 @@ export async function pendentesSemContaPorEmpresa(supabase: ClienteSupabase): Pr
     .limit(5000);
   if (error) falharConsulta(error, 'contar lançamentos sem conta');
   const mapa = new Map<string, number>();
-  for (const l of data ?? []) mapa.set(l.empresa_id, (mapa.get(l.empresa_id) ?? 0) + 1);
+  for (const l of data ?? []) if (l.empresa_id) mapa.set(l.empresa_id, (mapa.get(l.empresa_id) ?? 0) + 1);
   return mapa;
 }
 

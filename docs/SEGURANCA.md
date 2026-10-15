@@ -32,6 +32,13 @@ Configurações → Dados permite **limpar dados financeiros**, **restaurar o No
 - **Execução duplicada:** trava por usuário (`pg_try_advisory_xact_lock`), botão desabilitado durante a operação e diálogo que não fecha enquanto processa.
 - **Privilégio extra concedido:** `service_role` pode apenas **ler** a marca de restauração (necessário porque os gatilhos das parcelas também rodam em scripts administrativos). Nenhuma credencial nova na Vercel.
 
+## Importação de planilhas
+- O arquivo vai para uma **Server Action** (sessão obrigatória), é lido e validado no servidor (tamanho, colunas, datas reais, valores com até 2 casas, limites de linhas) e gravado por `importar_lancamentos` como o próprio usuário (`SECURITY INVOKER`, RLS): nenhuma chave de serviço.
+- A confirmação reenvia o arquivo e **refaz a análise**; o hash precisa ser o mesmo da prévia. As decisões do navegador são só listas de chaves validadas (Zod).
+- Itens de importação têm FKs compostas (`lancamento_id, user_id`) e (`importacao_id, user_id`): não é possível ligar um item a lançamento ou lote de outra conta. A atribuição em lote só altera lançamentos do próprio usuário e só aceita empresa dele (`P0002`).
+- **Desfazer** exige senha (sessão temporária, como em Dados) e a frase `DESFAZER IMPORTACAO`, conferida no navegador, no servidor e no banco. Importar, desfazer, limpar e restaurar usam a mesma trava por usuário.
+- O texto da planilha é tratado só como dado; a exportação continua neutralizando fórmulas.
+
 ## Consultas compostas (Transações)
 A tela Transações só lê: compõe lançamentos, movimentos de conta e compras no cartão com o cliente do usuário (RLS em todas as consultas), sem tabela nova e sem chave de serviço. O teste de integração `transacoes.test.ts` confere que outro usuário não vê nada com nenhum filtro (inclusive passando ids de conta, empresa ou fornecedor do dono). A contagem de uso das categorias também passa pela RLS.
 
