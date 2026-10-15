@@ -154,6 +154,65 @@ test.describe('importar planilha', () => {
     expect(count).toBe(0);
   });
 
+  test('boleto importado: depois da atribuição em lote, a empresa é trocada pelo formulário de edição', async ({ page }) => {
+    const a = admin();
+    const userId = await idDoUsuarioE2E(a);
+    await gerarPrevia(page, token, nomeArquivo);
+    const coincidencias = page.getByTestId('grupo-coincide-com-existente');
+    if (await coincidencias.count()) {
+      for (const botao of await coincidencias.getByTestId('decidir-importar').all()) await botao.click();
+    }
+    await page.getByTestId('importar').click();
+    await page.getByTestId('confirmar-importacao').click();
+    await expect(page).toHaveURL(/\/configuracoes\/importacao\/[0-9a-f-]{36}$/, { timeout: 20_000 });
+
+    // Atribuição em lote SEM conta (classificação inicial em uma empresa).
+    await page.getByTestId('atribuir-empresas-lote').click();
+    await page.getByTestId('marcar-visiveis').check();
+    await escolherOpcao(page.getByTestId('empresa-atribuir'), EMPRESAS_E2E[0].apelido);
+    // Empresa sem conta padrão: a opção fica desmarcada e desabilitada (nada de conta).
+    const usarConta = page.getByTestId('usar-conta-padrao');
+    if (await usarConta.isEnabled()) await usarConta.uncheck();
+    await expect(usarConta).not.toBeChecked();
+    await page.getByTestId('atribuir-empresa').click();
+    await expect(page.getByText('Empresa definida em 4 lançamentos')).toBeVisible();
+
+    // A outra empresa tem conta padrão: ao trocar, o formulário sugere a conta, mas dá para escolher "Sem conta definida".
+    const { data: empresas } = await a.from('empresas').select('id, apelido').eq('user_id', userId);
+    const destino = empresas!.find((e) => e.apelido === EMPRESAS_E2E[1].apelido)!.id;
+    const conta = (await a.from('contas_bancarias').insert({ user_id: userId, empresa_id: destino, apelido: `Conta ${token}`, banco: 'Banco', padrao: true }).select('id').single()).data!.id;
+    // Como no cadastro pelo app: o saldo inicial vira a conferência de hoje (senão a conferência diária bloqueia as telas).
+    await a.from('movimentos_conta').insert({ user_id: userId, conta_id: conta, tipo: 'conferencia', data: dataRelativa(0), valor_centavos: 0, saldo_informado: 0, descricao: 'Saldo inicial' });
+    try {
+      const { data: antes } = await a
+        .from('lancamentos')
+        .select('id, valor_centavos, vencimento, descricao, fornecedor_id, categoria_id, status, observacao, conta_id')
+        .eq('user_id', userId)
+        .ilike('descricao', `Fornecedor B ${token}`)
+        .single();
+      expect(antes!.conta_id).toBeNull();
+
+      await page.goto(`/boletos/${antes!.id}`);
+      await page.getByRole('link', { name: 'Editar' }).click();
+      await expect(page.getByRole('heading', { name: 'Editar boleto' })).toBeVisible();
+      await escolherOpcao(page.locator('#empresaId'), EMPRESAS_E2E[1].apelido);
+      await expect(page.locator('#contaId').and(page.getByRole('combobox'))).toContainText(`Conta ${token}`);
+      await escolherOpcao(page.locator('#contaId'), 'Sem conta definida');
+      await page.getByRole('button', { name: 'Salvar alterações' }).click();
+      await expect(page).toHaveURL(new RegExp(`/boletos/${antes!.id}$`));
+      await expect(page.getByText(EMPRESAS_E2E[1].apelido).first()).toBeVisible();
+
+      const { data: depois } = await a
+        .from('lancamentos')
+        .select('id, valor_centavos, vencimento, descricao, fornecedor_id, categoria_id, status, observacao, conta_id, empresa_id')
+        .eq('id', antes!.id)
+        .single();
+      expect(depois).toEqual({ ...antes, empresa_id: destino });
+    } finally {
+      await a.from('contas_bancarias').delete().eq('id', conta);
+    }
+  });
+
   test('arquivo inválido mostra o erro sem gravar nada', async ({ page }) => {
     await page.goto('/configuracoes/importacao/nova');
     await page.getByTestId('arquivo-importacao').setInputFiles({ name: nomeArquivo, mimeType: 'text/csv', buffer: Buffer.from('nome;quantia\nx;1') });
